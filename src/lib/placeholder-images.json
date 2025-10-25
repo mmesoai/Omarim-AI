@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "product1",
+      "description": "A modern smart watch on a stand",
+      "imageUrl": "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzbWFydCUyMHdhdGNofGVufDB8fHx8MTc2MTQwMzA0Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smart watch"
+    },
+    {
+      "id": "product2",
+      "description": "High-quality wireless headphones",
+      "imageUrl": "https://images.unsplash.com/photo-1598331668826-20cecc596b86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3aXJlbGVzcyUyMGhlYWRwaG9uZXN8ZW58MHx8fHwxNzYxMzUwMDI0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wireless headphones"
+    },
+    {
+      "id": "product3",
+      "description": "A sleek and powerful laptop",
+      "imageUrl": "https://images.unsplash.com/photo-1542393545-10f5cde2c810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxsYXB0b3AlMjBjb21wdXRlcnxlbnwwfHx8fDE3NjEzMzMwMzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop computer"
+    },
+    {
+      "id": "product4",
+      "description": "A professional-grade camera",
+      "imageUrl": "https://images.unsplash.com/photo-1541766066774-c86dcf76dff2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkaWdpdGFsJTIwY2FtZXJhfGVufDB8fHx8MTc2MTMyNTQwMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "digital camera"
+    },
+    {
+      "id": "product5",
+      "description": "A comfortable ergonomic office chair",
+      "imageUrl": "https://images.unsplash.com/photo-1688578735427-994ecdea3ea4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxvZmZpY2UlMjBjaGFpcnxlbnwwfHx8fDE3NjE0MTYxNTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "office chair"
+    },
+    {
+      "id": "product6",
+      "description": "A virtual reality headset",
+      "imageUrl": "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxWUiUyMGhlYWRzZXR8ZW58MHx8fHwxNzYxMzY0ODQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "VR headset"
+    },
+    {
+      "id": "product7",
+      "description": "A smart home hub device",
+      "imageUrl": "https://images.unsplash.com/photo-1608377205619-03a0b4c4e270?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzbWFydCUyMGhvbWV8ZW58MHx8fHwxNzYxMzU4NDA2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smart home"
+    },
+    {
+      "id": "product8",
+      "description": "An electric scooter for urban commuting",
+      "imageUrl": "https://images.unsplash.com/photo-1655101336147-10b23f1226ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxlbGVjdHJpYyUyMHNjb290ZXJ8ZW58MHx8fHwxNzYxNDMzMDE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "electric scooter"
+    }
+  ]
 }
