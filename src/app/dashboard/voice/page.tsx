@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { convertSpeechToText } from "@/ai/flows/convert-speech-to-text";
+import { convertTextToSpeech } from "@/ai/flows/convert-text-to-speech";
 import { Label } from "@/components/ui/label";
 
 export default function VoicePage() {
@@ -14,9 +15,13 @@ export default function VoicePage() {
   const [transcription, setTranscription] = useState("");
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [textToSpeak, setTextToSpeak] = useState("Hello from Omarim AI. I can read any text you provide.");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [transcribedAudioUrl, setTranscribedAudioUrl] = useState<string | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const audioPlayerRef = useRef<HTMLAudioElement>(null);
 
   const { toast } = useToast();
 
@@ -29,6 +34,8 @@ export default function VoicePage() {
   }, []);
 
   const handleStartRecording = async () => {
+    setTranscription("");
+    setTranscribedAudioUrl(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
@@ -79,6 +86,9 @@ export default function VoicePage() {
       const audioDataUri = await blobToDataURL(audioBlob);
       const result = await convertSpeechToText({ audioDataUri });
       setTranscription(result.transcription);
+      if (result.transcription) {
+        handleSpeak(result.transcription, setTranscribedAudioUrl);
+      }
     } catch (error) {
       console.error("Transcription failed:", error);
       toast({
@@ -91,21 +101,35 @@ export default function VoicePage() {
     }
   };
 
-  const handleSpeak = () => {
-    if ('speechSynthesis' in window && textToSpeak) {
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      window.speechSynthesis.speak(utterance);
-    } else {
+  const handleSpeak = async (text: string, audioUrlSetter: (url: string | null) => void) => {
+    if (!text) return;
+    setIsSpeaking(true);
+    audioUrlSetter(null);
+    try {
+      const result = await convertTextToSpeech({ text });
+      audioUrlSetter(result.audioDataUri);
+    } catch (error) {
+       console.error("Text-to-speech failed:", error);
       toast({
-        title: "Browser Not Supported",
-        description: "Your browser does not support text-to-speech.",
+        title: "Text-to-Speech Failed",
+        description: "Could not convert text to speech. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSpeaking(false);
     }
   };
+  
+  useEffect(() => {
+    if (audioUrl && audioPlayerRef.current) {
+      audioPlayerRef.current.src = audioUrl;
+      audioPlayerRef.current.play();
+    }
+  }, [audioUrl]);
 
   return (
     <div className="space-y-6">
+       <audio ref={audioPlayerRef} />
       <div>
         <h2 className="text-2xl font-headline font-semibold">Voice Tools</h2>
         <p className="text-muted-foreground">
@@ -124,12 +148,13 @@ export default function VoicePage() {
                 size="lg"
                 onClick={isRecording ? handleStopRecording : handleStartRecording}
                 className={`rounded-full w-24 h-24 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                disabled={isTranscribing}
               >
-                {isRecording ? <Square size={32} /> : <Mic size={32} />}
+                {isTranscribing ? <Loader2 size={32} className="animate-spin" /> : (isRecording ? <Square size={32} /> : <Mic size={32} />) }
               </Button>
             </div>
             <p className="text-center text-sm text-muted-foreground">
-              {isRecording ? "Recording... Click to stop." : "Click the button to start recording."}
+              {isTranscribing ? "Transcribing..." : (isRecording ? "Recording... Click to stop." : "Click the button to start recording.")}
             </p>
             <div className="space-y-2">
               <Label htmlFor="transcription">Transcription</Label>
@@ -141,10 +166,10 @@ export default function VoicePage() {
                 className="min-h-[150px]"
               />
             </div>
-            {isTranscribing && (
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Transcribing audio...
+            {transcribedAudioUrl && (
+              <div>
+                <Label>Listen to Transcription</Label>
+                <audio src={transcribedAudioUrl} controls className="w-full mt-2" />
               </div>
             )}
           </CardContent>
@@ -165,10 +190,19 @@ export default function VoicePage() {
                 className="min-h-[150px]"
               />
             </div>
-            <Button onClick={handleSpeak}>
-              <Volume2 className="mr-2 h-4 w-4" />
+            <Button onClick={() => handleSpeak(textToSpeak, setAudioUrl)} disabled={isSpeaking || !textToSpeak}>
+              {isSpeaking ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Volume2 className="mr-2 h-4 w-4" />
+              )}
               Speak Text
             </Button>
+             {audioUrl && (
+                <div>
+                  <audio src={audioUrl} controls className="w-full mt-4" />
+                </div>
+              )}
           </CardContent>
         </Card>
       </div>
