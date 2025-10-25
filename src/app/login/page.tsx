@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,10 +15,17 @@ import { Label } from "@/components/ui/label"
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
+    <div className="relative flex min-h-screen flex-col items-center justify-center">
+      <Image
+        src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop"
+        alt="Futuristic background"
+        fill
+        className="-z-10 object-cover opacity-40"
+        data-ai-hint="abstract space"
+      />
+      <Card className="w-full max-w-sm border-white/20">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Icons.logo className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
