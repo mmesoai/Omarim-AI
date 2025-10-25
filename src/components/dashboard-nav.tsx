@@ -12,6 +12,7 @@ import {
   Mic,
   Send,
   Settings,
+  Sparkles,
 } from "lucide-react"
 
 import {
@@ -23,6 +24,7 @@ import {
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
+  { href: "/dashboard/agent", icon: Sparkles, label: "AI Agent" },
   { href: "/dashboard/leads", icon: FolderKanban, label: "Lead Scrape" },
   { href: "/dashboard/outreach", icon: Send, label: "Outreach" },
   { href: "/dashboard/new-site", icon: BotMessageSquare, label: "Intake Form" },
