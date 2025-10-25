@@ -36,7 +36,7 @@ export default function DashboardLayout({
           <Link href="/dashboard" className="flex items-center gap-2">
             <Icons.logo className="size-6 text-sidebar-primary" />
             <span className="font-headline text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
-              OmarimAI
+              Omarim AI
             </span>
           </Link>
         </SidebarHeader>

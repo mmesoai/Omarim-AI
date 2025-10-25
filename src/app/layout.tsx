@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'OmarimAI',
-  description: 'The Omarim-AI Full Stack Application',
+  title: 'Omarim AI',
+  description: 'The Omarim AI Full Stack Application',
 };
 
 export default function RootLayout({

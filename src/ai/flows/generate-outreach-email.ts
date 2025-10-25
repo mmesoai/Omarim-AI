@@ -30,7 +30,7 @@ const generateOutreachEmailPrompt = ai.definePrompt({
   input: { schema: GenerateOutreachEmailInputSchema },
   output: { schema: GenerateOutreachEmailOutputSchema },
   prompt: `You are an expert sales development representative.
-You will be given a LinkedIn profile URL. Your task is to generate a compelling and personalized outreach email to pitch OmarimAI's services.
+You will be given a LinkedIn profile URL. Your task is to generate a compelling and personalized outreach email to pitch Omarim AI's services.
 
 Here is the LinkedIn URL: {{{linkedInUrl}}}
 
@@ -40,7 +40,7 @@ Assume you have already scraped the profile and have the following (hypothetical
 - Company: [Assume a company from the profile]
 - Recent Activity: [Assume some recent activity or posts]
 
-Based on this information, write a personalized email. The email should be concise, professional, and highlight how OmarimAI can solve a potential problem for their company.
+Based on this information, write a personalized email. The email should be concise, professional, and highlight how Omarim AI can solve a potential problem for their company.
 Start the email by addressing the person by their assumed name.
 Reference their role, company, or recent activity to show you've done your research.
 End with a clear call to action.
