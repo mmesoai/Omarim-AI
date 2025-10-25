@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Play, Loader2, Volume2, Square, Bot } from "lucide-react";
+import { Mic, Square, Loader2, Volume2, Bot, Badge } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { convertSpeechToText } from "@/ai/flows/convert-speech-to-text";
@@ -13,6 +19,7 @@ import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/a
 import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/flows/generate-outreach-email";
 
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 type CommandState = 
   | 'idle' 
@@ -31,12 +38,12 @@ export default function VoicePage() {
   const [transcription, setTranscription] = useState("");
   const [textToSpeak, setTextToSpeak] = useState("Hello from Omarim AI. I can read any text you provide.");
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [agentResult, setAgentResult] = useState<AgentResult | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement>(null);
+  const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -53,7 +60,7 @@ export default function VoicePage() {
     setAgentResult(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       audioChunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -81,7 +88,6 @@ export default function VoicePage() {
   const handleStopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop();
-      setCommandState('transcribing');
     }
   };
 
@@ -142,7 +148,7 @@ export default function VoicePage() {
       } else {
          responseText = "I'm sorry, I did not recognize that command. Please try again.";
       }
-      handleSpeak(responseText, setAudioUrl);
+      handleSpeak(responseText);
     } catch (error) {
        console.error("Execution failed:", error);
        toast({ title: "Action Failed", description: "There was an error performing the action.", variant: "destructive" });
@@ -150,13 +156,18 @@ export default function VoicePage() {
     }
   };
 
-  const handleSpeak = async (text: string, audioUrlSetter: (url: string | null) => void) => {
+  const handleSpeak = async (text: string) => {
     if (!text) return;
-    setCommandState('responding');
-    audioUrlSetter(null);
+    const isCommandResponse = commandState !== 'idle';
+    if(isCommandResponse) {
+      setCommandState('responding');
+    } else {
+      setIsSpeaking(true);
+    }
+    setTtsAudioUrl(null);
     try {
       const result = await convertTextToSpeech({ text });
-      audioUrlSetter(result.audioDataUri);
+      setTtsAudioUrl(result.audioDataUri);
     } catch (error) {
        console.error("Text-to-speech failed:", error);
       toast({
@@ -165,17 +176,20 @@ export default function VoicePage() {
         variant: "destructive",
       });
     } finally {
-      setIsSpeaking(false);
-      setCommandState('idle');
+      if(isCommandResponse) {
+        setCommandState('idle');
+      } else {
+        setIsSpeaking(false);
+      }
     }
   };
   
   useEffect(() => {
-    if (audioUrl && audioPlayerRef.current) {
-      audioPlayerRef.current.src = audioUrl;
+    if (ttsAudioUrl && audioPlayerRef.current) {
+      audioPlayerRef.current.src = ttsAudioUrl;
       audioPlayerRef.current.play().catch(e => console.error("Audio playback failed", e));
     }
-  }, [audioUrl]);
+  }, [ttsAudioUrl]);
 
   const getStatusText = () => {
     switch (commandState) {
@@ -193,7 +207,7 @@ export default function VoicePage() {
 
   return (
     <div className="space-y-6">
-       <audio ref={audioPlayerRef} onEnded={() => setAudioUrl(null)} />
+       <audio ref={audioPlayerRef} onEnded={() => setTtsAudioUrl(null)} />
       <div>
         <h2 className="text-2xl font-headline font-semibold">Voice Tools</h2>
         <p className="text-muted-foreground">
@@ -254,7 +268,7 @@ export default function VoicePage() {
                 className="min-h-[150px]"
               />
             </div>
-            <Button onClick={() => handleSpeak(textToSpeak, setAudioUrl)} disabled={isSpeaking || !textToSpeak || commandState !== 'idle'}>
+            <Button onClick={() => handleSpeak(textToSpeak)} disabled={isSpeaking || !textToSpeak || commandState !== 'idle'}>
               {isSpeaking ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -262,10 +276,10 @@ export default function VoicePage() {
               )}
               Speak Text
             </Button>
-             {audioUrl && (
+             {ttsAudioUrl && (
                 <div className="pt-4">
                   <Label>AI Voice Output</Label>
-                  <audio src={audioUrl} controls className="w-full mt-2" />
+                  <audio src={ttsAudioUrl} controls className="w-full mt-2" />
                 </div>
               )}
           </CardContent>
