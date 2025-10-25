@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useForm as useSocialForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -24,271 +24,219 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles, Send } from "lucide-react";
+import { Loader2, Sparkles, Send, Bot } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/flows/generate-outreach-email";
 import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
-const outreachFormSchema = z.object({
-  linkedInUrl: z.string().url({ message: "Please enter a valid LinkedIn URL." }),
+const agentFormSchema = z.object({
+  agentType: z.enum(["outreach", "social"]),
+  prompt: z.string().min(10, { message: "Please enter a prompt of at least 10 characters." }),
 });
 
-const socialFormSchema = z.object({
-  topic: z.string().min(10, { message: "Please enter a topic of at least 10 characters." }),
-});
+type AgentResult = 
+  | { type: 'outreach'; data: GenerateOutreachEmailOutput }
+  | { type: 'social'; data: GenerateSocialMediaPostOutput };
 
 export default function AgentPage() {
-  const [isOutreachLoading, setIsOutreachLoading] = useState(false);
-  const [outreachResult, setOutreachResult] = useState<GenerateOutreachEmailOutput | null>(null);
-
-  const [isSocialLoading, setIsSocialLoading] = useState(false);
-  const [socialResult, setSocialResult] = useState<GenerateSocialMediaPostOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<AgentResult | null>(null);
 
   const { toast } = useToast();
 
-  const outreachForm = useForm<z.infer<typeof outreachFormSchema>>({
-    resolver: zodResolver(outreachFormSchema),
+  const agentForm = useForm<z.infer<typeof agentFormSchema>>({
+    resolver: zodResolver(agentFormSchema),
     defaultValues: {
-      linkedInUrl: "",
+      agentType: "outreach",
+      prompt: "",
     },
   });
 
-  const socialForm = useSocialForm<z.infer<typeof socialFormSchema>>({
-    resolver: zodResolver(socialFormSchema),
-    defaultValues: {
-      topic: "",
-    },
-  });
+  const agentType = agentForm.watch("agentType");
 
-  async function onOutreachSubmit(values: z.infer<typeof outreachFormSchema>) {
-    setIsOutreachLoading(true);
-    setOutreachResult(null);
+  async function onSubmit(values: z.infer<typeof agentFormSchema>) {
+    setIsLoading(true);
+    setResult(null);
     try {
-      const output = await generateOutreachEmail(values);
-      setOutreachResult(output);
+      if (values.agentType === "outreach") {
+        if (!z.string().url().safeParse(values.prompt).success) {
+          toast({
+            variant: "destructive",
+            title: "Invalid Input",
+            description: "Please enter a valid LinkedIn URL for the outreach agent.",
+          });
+          setIsLoading(false);
+          return;
+        }
+        const output = await generateOutreachEmail({ linkedInUrl: values.prompt });
+        setResult({ type: 'outreach', data: output });
+      } else if (values.agentType === "social") {
+        const output = await generateSocialMediaPost({ topic: values.prompt });
+        setResult({ type: 'social', data: output });
+      }
     } catch (error) {
-      console.error("Error generating outreach:", error);
+      console.error("Error running agent:", error);
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: "There was a problem generating the outreach email.",
+        description: "There was a problem communicating with the AI agent.",
       });
     } finally {
-      setIsOutreachLoading(false);
-    }
-  }
-
-  async function onSocialSubmit(values: z.infer<typeof socialFormSchema>) {
-    setIsSocialLoading(true);
-    setSocialResult(null);
-    try {
-      const output = await generateSocialMediaPost(values);
-      setSocialResult(output);
-    } catch (error) {
-      console.error("Error generating social post:", error);
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem generating the social media post.",
-      });
-    } finally {
-      setIsSocialLoading(false);
+      setIsLoading(false);
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-headline font-semibold">AI Agent</h2>
+        <h2 className="text-2xl font-headline font-semibold">Agent Hub</h2>
         <p className="text-muted-foreground">
-          Your intelligent assistant for automating tasks.
+          Your command center for AI-powered agents.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* Outreach Card */}
-        <div className="space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Personalized Outreach</CardTitle>
-                <CardDescription>
-                  Enter a LinkedIn profile URL to generate a personalized outreach email.
-                </CardDescription>
-              </CardHeader>
-              <Form {...outreachForm}>
-                <form onSubmit={outreachForm.handleSubmit(onOutreachSubmit)}>
-                  <CardContent>
-                    <FormField
-                      control={outreachForm.control}
-                      name="linkedInUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>LinkedIn Profile URL</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://www.linkedin.com/in/username" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                  <CardFooter>
-                    <Button type="submit" disabled={isOutreachLoading}>
-                      {isOutreachLoading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-2 h-4 w-4" />
-                      )}
-                      Generate Outreach
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Form>
-            </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Content Agent</CardTitle>
+          <CardDescription>
+            Generate personalized outreach emails or engaging social media posts.
+          </CardDescription>
+        </CardHeader>
+        <Form {...agentForm}>
+          <form onSubmit={agentForm.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+              <FormField
+                control={agentForm.control}
+                name="agentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Agent Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an agent type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="outreach">Personalized Outreach Email</SelectItem>
+                        <SelectItem value="social">Social Media Post</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={agentForm.control}
+                name="prompt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {agentType === "outreach" ? "LinkedIn Profile URL" : "Topic or Product"}
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder={agentType === "outreach" ? "https://www.linkedin.com/in/username" : "e.g., Our new line of smart watches"} 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                Run Agent
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+      
+      {isLoading && (
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-4">
+              <Bot className="h-8 w-8" />
+              <div>
+                <CardTitle>Agent is thinking...</CardTitle>
+                <CardDescription>The AI is crafting the perfect response.</CardDescription>
+              </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <div className="w-full h-40 bg-muted animate-pulse rounded-md" />
+          </CardContent>
+        </Card>
+      )}
 
-            {isOutreachLoading && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Generating...</CardTitle>
-                  <CardDescription>The AI is crafting the perfect email.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Subject</Label>
-                    <div className="w-full h-10 bg-muted animate-pulse rounded-md" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Body</Label>
-                    <div className="w-full h-40 bg-muted animate-pulse rounded-md" />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {outreachResult && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Generated Email</CardTitle>
-                  <CardDescription>
-                    Review the generated email below.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" readOnly value={outreachResult.subject} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="body">Body</Label>
-                    <Textarea
-                      id="body"
-                      readOnly
-                      value={outreachResult.body}
-                      className="h-60"
-                    />
-                  </div>
-                </CardContent>
-                 <CardFooter>
-                  <Button>Send Email</Button>
-                </CardFooter>
-              </Card>
-            )}
-        </div>
-
-        {/* Social Media Card */}
-        <div className="space-y-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Social Media Post Generator</CardTitle>
-                    <CardDescription>
-                    Generate engaging social media posts to build brand awareness.
-                    </CardDescription>
-                </CardHeader>
-                <Form {...socialForm}>
-                    <form onSubmit={socialForm.handleSubmit(onSocialSubmit)}>
-                    <CardContent>
-                        <FormField
-                        control={socialForm.control}
-                        name="topic"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Topic or Product</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., Our new line of smart watches" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                    </CardContent>
-                    <CardFooter>
-                        <Button type="submit" disabled={isSocialLoading}>
-                        {isSocialLoading ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                            <Sparkles className="mr-2 h-4 w-4" />
-                        )}
-                        Generate Post
-                        </Button>
-                    </CardFooter>
-                    </form>
-                </Form>
-            </Card>
-
-            {isSocialLoading && (
-            <Card>
-                <CardHeader>
-                <CardTitle>Generating...</CardTitle>
-                <CardDescription>The AI is creating a social media masterpiece.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
+      {result && (
+         <Card>
+            <CardHeader className="flex flex-row items-center gap-4">
+                <Bot className="h-8 w-8 text-primary" />
+                <div>
+                    <CardTitle>Agent Response</CardTitle>
+                    <CardDescription>Review the generated content below.</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent>
+            {result.type === 'outreach' && (
+                <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Post Content</Label>
-                        <div className="w-full h-24 bg-muted animate-pulse rounded-md" />
+                        <Label htmlFor="subject">Subject</Label>
+                        <Input id="subject" readOnly value={result.data.subject} />
                     </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="body">Body</Label>
+                        <Textarea
+                        id="body"
+                        readOnly
+                        value={result.data.body}
+                        className="h-60"
+                        />
+                    </div>
+                    <Button><Send className="mr-2 h-4 w-4" /> Send Email</Button>
+                </div>
+            )}
+            {result.type === 'social' && (
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="post-content">Post Content</Label>
+                        <Textarea
+                            id="post-content"
+                            readOnly
+                            value={result.data.postContent}
+                            className="h-40"
+                        />
+                    </div>
+                     <Separator />
                     <div className="space-y-2">
                         <Label>Hashtags</Label>
-                        <div className="w-full h-10 bg-muted animate-pulse rounded-md" />
+                        <div className="flex flex-wrap gap-2">
+                        {result.data.hashtags.map((tag, index) => (
+                            <Badge key={index} variant="secondary">{tag}</Badge>
+                        ))}
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
+                    <Button><Send className="mr-2 h-4 w-4" /> Post Now</Button>
+                </div>
             )}
-
-            {socialResult && (
-            <Card>
-                <CardHeader>
-                <CardTitle>Generated Social Media Post</CardTitle>
-                <CardDescription>
-                    Review and share the generated content.
-                </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                      <Label htmlFor="post-content">Post Content</Label>
-                      <Textarea
-                      id="post-content"
-                      readOnly
-                      value={socialResult.postContent}
-                      className="h-40"
-                      />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Hashtags</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {socialResult.hashtags.map((tag, index) => (
-                        <Badge key={index} variant="secondary">{tag}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button><Send className="mr-2 h-4 w-4" /> Post Now</Button>
-                </CardFooter>
-            </Card>
-            )}
-        </div>
-      </div>
+            </CardContent>
+         </Card>
+      )}
     </div>
   );
 }
