@@ -1,23 +1,38 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, MicOff, Play, Loader2, Volume2, Square } from "lucide-react";
+import { Mic, MicOff, Play, Loader2, Volume2, Square, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { convertSpeechToText } from "@/ai/flows/convert-speech-to-text";
 import { convertTextToSpeech } from "@/ai/flows/convert-text-to-speech";
+import { interpretCommand } from "@/ai/flows/interpret-command";
+import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
+import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/flows/generate-outreach-email";
+
 import { Label } from "@/components/ui/label";
 
+type CommandState = 
+  | 'idle' 
+  | 'recording' 
+  | 'transcribing' 
+  | 'interpreting' 
+  | 'executing' 
+  | 'responding';
+
+type AgentResult = 
+  | { type: 'outreach'; data: GenerateOutreachEmailOutput }
+  | { type: 'social'; data: GenerateSocialMediaPostOutput };
+
 export default function VoicePage() {
-  const [isRecording, setIsRecording] = useState(false);
+  const [commandState, setCommandState] = useState<CommandState>('idle');
   const [transcription, setTranscription] = useState("");
-  const [isTranscribing, setIsTranscribing] = useState(false);
   const [textToSpeak, setTextToSpeak] = useState("Hello from Omarim AI. I can read any text you provide.");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [transcribedAudioUrl, setTranscribedAudioUrl] = useState<string | null>(null);
+  const [agentResult, setAgentResult] = useState<AgentResult | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -35,7 +50,7 @@ export default function VoicePage() {
 
   const handleStartRecording = async () => {
     setTranscription("");
-    setTranscribedAudioUrl(null);
+    setAgentResult(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
@@ -52,7 +67,7 @@ export default function VoicePage() {
       };
 
       mediaRecorderRef.current.start();
-      setIsRecording(true);
+      setCommandState('recording');
     } catch (err) {
       console.error("Error accessing microphone:", err);
       toast({
@@ -66,7 +81,7 @@ export default function VoicePage() {
   const handleStopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
+      setCommandState('transcribing');
     }
   };
 
@@ -80,30 +95,64 @@ export default function VoicePage() {
   }
 
   const handleTranscription = async (audioBlob: Blob) => {
-    setIsTranscribing(true);
+    setCommandState('transcribing');
     setTranscription("");
     try {
       const audioDataUri = await blobToDataURL(audioBlob);
       const result = await convertSpeechToText({ audioDataUri });
       setTranscription(result.transcription);
       if (result.transcription) {
-        handleSpeak(result.transcription, setTranscribedAudioUrl);
+        handleInterpretation(result.transcription);
+      } else {
+        toast({ title: "Transcription Failed", description: "The audio was unclear. Please try again.", variant: "destructive" });
+        setCommandState('idle');
       }
     } catch (error) {
       console.error("Transcription failed:", error);
-      toast({
-        title: "Transcription Failed",
-        description: "Could not transcribe the audio. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTranscribing(false);
+      toast({ title: "Transcription Failed", description: "Could not transcribe the audio.", variant: "destructive" });
+      setCommandState('idle');
+    }
+  };
+
+  const handleInterpretation = async (commandText: string) => {
+    setCommandState('interpreting');
+    try {
+      const result = await interpretCommand({ command: commandText });
+      handleExecution(result.action, result.prompt);
+    } catch (error) {
+      console.error("Interpretation failed:", error);
+      toast({ title: "Interpretation Failed", description: "Could not understand the command.", variant: "destructive" });
+      setCommandState('idle');
+    }
+  };
+  
+  const handleExecution = async (action: string, prompt: string) => {
+    setCommandState('executing');
+    setAgentResult(null);
+    try {
+      let responseText = "";
+      if (action === "generate_outreach_email") {
+        const output = await generateOutreachEmail({ linkedInUrl: prompt });
+        setAgentResult({ type: 'outreach', data: output });
+        responseText = "I have drafted an outreach email for you.";
+      } else if (action === "generate_social_post") {
+        const output = await generateSocialMediaPost({ topic: prompt });
+        setAgentResult({ type: 'social', data: output });
+        responseText = `I've created a social media post about ${prompt}.`;
+      } else {
+         responseText = "I'm sorry, I did not recognize that command. Please try again.";
+      }
+      handleSpeak(responseText, setAudioUrl);
+    } catch (error) {
+       console.error("Execution failed:", error);
+       toast({ title: "Action Failed", description: "There was an error performing the action.", variant: "destructive" });
+       setCommandState('idle');
     }
   };
 
   const handleSpeak = async (text: string, audioUrlSetter: (url: string | null) => void) => {
     if (!text) return;
-    setIsSpeaking(true);
+    setCommandState('responding');
     audioUrlSetter(null);
     try {
       const result = await convertTextToSpeech({ text });
@@ -117,19 +166,34 @@ export default function VoicePage() {
       });
     } finally {
       setIsSpeaking(false);
+      setCommandState('idle');
     }
   };
   
   useEffect(() => {
     if (audioUrl && audioPlayerRef.current) {
       audioPlayerRef.current.src = audioUrl;
-      audioPlayerRef.current.play();
+      audioPlayerRef.current.play().catch(e => console.error("Audio playback failed", e));
     }
   }, [audioUrl]);
 
+  const getStatusText = () => {
+    switch (commandState) {
+      case 'idle': return 'Click the button and speak a command. e.g., "Create a social media post about AI."';
+      case 'recording': return "Listening...";
+      case 'transcribing': return "Transcribing your speech...";
+      case 'interpreting': return "Understanding your command...";
+      case 'executing': return "Working on your request...";
+      case 'responding': return "Finalizing response...";
+      default: return "Ready for your command.";
+    }
+  }
+
+  const isProcessing = commandState !== 'idle' && commandState !== 'recording';
+
   return (
     <div className="space-y-6">
-       <audio ref={audioPlayerRef} />
+       <audio ref={audioPlayerRef} onEnded={() => setAudioUrl(null)} />
       <div>
         <h2 className="text-2xl font-headline font-semibold">Voice Tools</h2>
         <p className="text-muted-foreground">
@@ -139,37 +203,36 @@ export default function VoicePage() {
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Speech-to-Text</CardTitle>
+          <CardHeader className="flex-row gap-4 items-center">
+            <Bot className="w-10 h-10 text-primary" />
+            <div>
+              <CardTitle>Voice Command Center</CardTitle>
+              <CardDescription>Speak your commands to the AI.</CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 text-center">
             <div className="flex justify-center">
               <Button
                 size="lg"
-                onClick={isRecording ? handleStopRecording : handleStartRecording}
-                className={`rounded-full w-24 h-24 ${isRecording ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                disabled={isTranscribing}
+                onClick={commandState === 'recording' ? handleStopRecording : handleStartRecording}
+                className={`rounded-full w-24 h-24 ${commandState === 'recording' ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                disabled={isProcessing}
               >
-                {isTranscribing ? <Loader2 size={32} className="animate-spin" /> : (isRecording ? <Square size={32} /> : <Mic size={32} />) }
+                {isProcessing ? <Loader2 size={32} className="animate-spin" /> : (commandState === 'recording' ? <Square size={32} /> : <Mic size={32} />) }
               </Button>
             </div>
-            <p className="text-center text-sm text-muted-foreground">
-              {isTranscribing ? "Transcribing..." : (isRecording ? "Recording... Click to stop." : "Click the button to start recording.")}
+            <p className="text-sm text-muted-foreground min-h-[40px] flex items-center justify-center px-4">
+              {getStatusText()}
             </p>
-            <div className="space-y-2">
-              <Label htmlFor="transcription">Transcription</Label>
-              <Textarea
-                id="transcription"
-                placeholder="Your transcribed text will appear here..."
-                value={transcription}
-                readOnly
-                className="min-h-[150px]"
-              />
-            </div>
-            {transcribedAudioUrl && (
-              <div>
-                <Label>Listen to Transcription</Label>
-                <audio src={transcribedAudioUrl} controls className="w-full mt-2" />
+            {transcription && (
+               <div className="text-left space-y-2 pt-4">
+                  <Label>Your Command</Label>
+                  <Textarea
+                    id="transcription"
+                    value={transcription}
+                    readOnly
+                    className="italic text-muted-foreground"
+                  />
               </div>
             )}
           </CardContent>
@@ -178,6 +241,7 @@ export default function VoicePage() {
         <Card>
           <CardHeader>
             <CardTitle>Text-to-Speech</CardTitle>
+             <CardDescription>A utility to convert any text into high-quality speech.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
              <div className="space-y-2">
@@ -190,7 +254,7 @@ export default function VoicePage() {
                 className="min-h-[150px]"
               />
             </div>
-            <Button onClick={() => handleSpeak(textToSpeak, setAudioUrl)} disabled={isSpeaking || !textToSpeak}>
+            <Button onClick={() => handleSpeak(textToSpeak, setAudioUrl)} disabled={isSpeaking || !textToSpeak || commandState !== 'idle'}>
               {isSpeaking ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -199,13 +263,63 @@ export default function VoicePage() {
               Speak Text
             </Button>
              {audioUrl && (
-                <div>
-                  <audio src={audioUrl} controls className="w-full mt-4" />
+                <div className="pt-4">
+                  <Label>AI Voice Output</Label>
+                  <audio src={audioUrl} controls className="w-full mt-2" />
                 </div>
               )}
           </CardContent>
         </Card>
       </div>
+
+       {agentResult && (
+         <Card>
+            <CardHeader className="flex flex-row items-center gap-4">
+                <Bot className="h-8 w-8 text-primary" />
+                <div>
+                    <CardTitle>Agent Response</CardTitle>
+                    <CardDescription>Here is the content generated from your voice command.</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent>
+            {agentResult.type === 'outreach' && (
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="subject">Subject</Label>
+                        <Input id="subject" readOnly value={agentResult.data.subject} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="body">Body</Label>
+                        <Textarea
+                        id="body"
+                        readOnly
+                        value={agentResult.data.body}
+                        className="h-60"
+                        />
+                    </div>
+                </div>
+            )}
+            {agentResult.type === 'social' && (
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="post-content">Post Content</Label>
+                        <Textarea
+                            id="post-content"
+                            readOnly
+                            value={agentResult.data.postContent}
+                            className="h-40"
+                        />
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-4">
+                        {agentResult.data.hashtags.map((tag, index) => (
+                            <Badge key={index} variant="secondary">{tag}</Badge>
+                        ))}
+                        </div>
+                </div>
+            )}
+            </CardContent>
+         </Card>
+      )}
     </div>
   );
 }
