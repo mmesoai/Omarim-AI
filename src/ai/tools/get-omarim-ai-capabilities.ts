@@ -35,7 +35,7 @@ export const getOmarimAiCapabilities = ai.defineTool(
       features: [
         {
           featureName: 'Autonomous Business Agent',
-          description: 'Users can provide a high-level objective (e.g., "Find me 5 local businesses that need a new website"), and the agent will autonomously find, qualify, and even initiate contact with potential leads. It can identify decision-makers and determine if a company could benefit from AI-powered web services.',
+          description: 'Users can provide a high-level objective (e.g., "Find me 5 local businesses that need a new website"), and the agent will autonomously find, qualify, and even initiate contact with potential leads. It uses AI to generate plausible leads in real-time, identify decision-makers, and determine if a company could benefit from AI-powered web services.',
           relatedTools: ['autonomousLeadGen', 'initiateOutreach', 'findAndQualifyLeads'],
         },
         {
@@ -45,7 +45,7 @@ export const getOmarimAiCapabilities = ai.defineTool(
         },
         {
           featureName: 'AI-Powered Content Generation',
-          description: 'The AI can generate various types of content on demand. This includes personalized outreach emails based on a lead\'s profile and engaging social media posts on a given topic.',
+          description: "The AI can generate various types of content on demand. This includes personalized outreach emails based on a lead's profile and engaging social media posts on a given topic.",
           relatedTools: ['generateOutreachEmail', 'generateSocialMediaPost'],
         },
         {
