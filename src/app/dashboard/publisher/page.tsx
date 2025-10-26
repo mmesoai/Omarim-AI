@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,6 +12,7 @@ import {
   Linkedin,
   Facebook,
   Bot,
+  Youtube,
 } from 'lucide-react';
 import {
   generateMultipleSocialPosts,
@@ -39,9 +41,10 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
 const publisherFormSchema = z.object({
-  topic: z
+  topicOrContent: z
     .string()
-    .min(10, { message: 'Please provide a topic or content of at least 10 characters.' }),
+    .min(10, { message: 'Please provide at least 10 characters.' }),
+  youtubeUrl: z.string().url().optional().or(z.literal('')),
 });
 
 const PlatformIcon = ({ platform }: { platform: string }) => {
@@ -66,7 +69,8 @@ export default function PublisherPage() {
   const form = useForm<z.infer<typeof publisherFormSchema>>({
     resolver: zodResolver(publisherFormSchema),
     defaultValues: {
-      topic: '',
+      topicOrContent: '',
+      youtubeUrl: '',
     },
   });
 
@@ -75,7 +79,8 @@ export default function PublisherPage() {
     setGeneratedPosts(null);
     try {
       const response = await generateMultipleSocialPosts({
-        topicOrContent: values.topic,
+        topicOrContent: values.topicOrContent,
+        youtubeUrl: values.youtubeUrl,
       });
       setGeneratedPosts(response);
     } catch (error) {
@@ -108,15 +113,15 @@ export default function PublisherPage() {
             <CardTitle>Content Generator</CardTitle>
           </div>
           <CardDescription>
-            Enter a topic, a block of text, or a link, and the AI will create tailored posts for each platform.
+            Enter a topic, a block of text, or a YouTube URL, and the AI will create tailored posts for each platform.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <CardContent>
+            <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="topic"
+                name="topicOrContent"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Topic or Content</FormLabel>
@@ -126,6 +131,27 @@ export default function PublisherPage() {
                         {...field}
                         disabled={isLoading}
                         className="min-h-[150px]"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="youtubeUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                        <Youtube className="h-5 w-5 text-red-500" /> 
+                        YouTube URL (Optional)
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                        {...field}
+                        disabled={isLoading}
+                        className="min-h-[50px]"
                       />
                     </FormControl>
                     <FormMessage />
