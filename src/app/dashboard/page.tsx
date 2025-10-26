@@ -231,7 +231,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {(isFindingProduct || trendingProduct) && (
+      {(isFindingProduct || trendingProduct) && isClient && (
         <audio src="/audio/blip.mp3" autoPlay onLoadedData={() => {}} onError={() => {}} />
       )}
       <div>
@@ -249,7 +249,7 @@ export default function DashboardPage() {
             <CardDescription>Monthly performance across all business units.</CardDescription>
           </CardHeader>
           <CardContent>
-            {isClient && (
+            {isClient && revenueData && (
               <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={revenueData} barSize={20}>
@@ -335,7 +335,7 @@ export default function DashboardPage() {
                 </div>
             </CardHeader>
             <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                 {leads && leads.length > 0 ? (
+                 {isClient && leads && leads.length > 0 ? (
                     <div className="h-[150px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -586,5 +586,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
