@@ -48,6 +48,11 @@ export const getOmarimAiCapabilities = ai.defineTool(
           relatedTools: ['generateOutreachEmail', 'generateSocialMediaPost'],
         },
         {
+          featureName: 'E-commerce Product Sourcing',
+          description: "The AI can analyze product categories to identify trending items, generate marketing campaigns, and even find potential (fictional) suppliers. This allows it to autonomously propose new product opportunities and initiate the sourcing process, representing a key outbound channel.",
+          relatedTools: ['findTrendingProducts', 'generateProductCampaign', 'generateProductIdeas'],
+        },
+        {
           featureName: 'Voice Interaction Tools',
           description: 'The platform includes a Voice Command Center that can transcribe spoken audio into text commands and execute them. It also features text-to-speech capabilities to read text aloud in a natural-sounding AI voice.',
           relatedTools: ['convertSpeechToText', 'convertTextToSpeech'],
