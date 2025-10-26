@@ -11,12 +11,11 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import {
-  type TrendingProduct,
   GenerateProductCampaignInputSchema,
   GenerateProductCampaignOutputSchema,
   type GenerateProductCampaignOutput,
   type GenerateProductCampaignInput,
-} from '@/ai/tools/find-trending-products';
+} from '@/app/actions';
 
 export {
   type GenerateProductCampaignInput,
