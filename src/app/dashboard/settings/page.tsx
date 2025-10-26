@@ -56,7 +56,7 @@ import { Loader2, PlusCircle } from "lucide-react";
 
 const storeFormSchema = z.object({
   name: z.string().min(2, { message: "Store name must be at least 2 characters." }),
-  type: z.enum(["Shopify", "WooCommerce", "Amazon", "eBay"]),
+  type: z.enum(["Shopify", "WooCommerce", "Amazon", "eBay"], { required_error: "Please select a store platform."}),
   apiKey: z.string().min(10, { message: "API Key seems too short." }),
   apiUrl: z.string().url({ message: "Please enter a valid URL." }),
 });
@@ -84,14 +84,15 @@ export default function SettingsPage() {
   });
 
   useEffect(() => {
-    const tab = searchParams.get('tab');
     const action = searchParams.get('action');
     const storeType = searchParams.get('storeType');
 
     if (action === 'addStore') {
       setIsDialogOpen(true);
       if (storeType && ["Shopify", "WooCommerce", "Amazon", "eBay"].includes(storeType)) {
-        storeForm.setValue('type', storeType as "Shopify" | "WooCommerce" | "Amazon" | "eBay");
+        // Capitalize the first letter to match the enum
+        const capitalizedStoreType = storeType.charAt(0).toUpperCase() + storeType.slice(1);
+        storeForm.setValue('type', capitalizedStoreType as "Shopify" | "WooCommerce" | "Amazon" | "eBay");
       }
     }
   }, [searchParams, storeForm]);

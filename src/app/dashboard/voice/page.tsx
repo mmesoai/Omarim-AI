@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Volume2, Bot, Badge } from "lucide-react";
+import { Mic, Square, Loader2, Volume2, Bot, Badge as UIBadge } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -149,9 +149,13 @@ export default function VoicePage() {
         setAgentResult({ type: 'social', data: output });
         responseText = `I've created a social media post about ${prompt}.`;
       } else if (action === 'add_store') {
-        responseText = `Understood. Taking you to the integrations page to add your ${prompt || 'new'} store.`;
+        responseText = `Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
         router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`);
-        // No need to show an agent result card for this, just navigate.
+        // For navigation, we don't need to show an agent result card or keep the state busy.
+        // We just say what we're doing and then do it.
+        handleSpeak(responseText);
+        setCommandState('idle'); // Reset state after navigation is initiated
+        return; // Exit early
       } else {
          responseText = "I'm sorry, I did not recognize that command. Please try again.";
       }
@@ -333,7 +337,7 @@ export default function VoicePage() {
                     </div>
                     <div className="flex flex-wrap gap-2 pt-4">
                         {agentResult.data.hashtags.map((tag, index) => (
-                            <Badge key={index} variant="secondary">{tag}</Badge>
+                            <UIBadge key={index} variant="secondary">{tag}</UIBadge>
                         ))}
                         </div>
                 </div>
