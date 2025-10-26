@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -31,6 +32,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/hooks/use-toast"
 
 interface MailDisplayProps {
   mail: Mail | null
@@ -39,6 +41,7 @@ interface MailDisplayProps {
 export function MailDisplay({ mail }: MailDisplayProps) {
   const [aiAnalysis, setAiAnalysis] = useState<ClassifyInboundReplyOutput | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (mail) {
@@ -50,14 +53,18 @@ export function MailDisplay({ mail }: MailDisplayProps) {
           setAiAnalysis(result)
         } catch (error) {
           console.error("AI analysis failed:", error)
-          // Optionally set an error state here
+          toast({
+            variant: "destructive",
+            title: "AI Analysis Failed",
+            description: "Could not analyze the email.",
+          })
         } finally {
           setIsLoading(false)
         }
       }
       analyzeMail()
     }
-  }, [mail])
+  }, [mail, toast])
 
   return (
     <div className="flex h-full flex-col">

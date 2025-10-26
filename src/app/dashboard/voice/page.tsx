@@ -38,7 +38,7 @@ type AgentResult =
 export default function VoicePage() {
   const [commandState, setCommandState] = useState<CommandState>('idle');
   const [transcription, setTranscription] = useState("");
-  const [textToSpeak, setTextToSpeak] = useState("Hello from Omarim AI. I can read any text you provide.");
+  const [textToSpeak, setTextToSpeak] = useState("Hello, I am Omarim AI. I can read any text you provide.");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [agentResult, setAgentResult] = useState<AgentResult | null>(null);
   
@@ -143,13 +143,13 @@ export default function VoicePage() {
       if (action === "generate_outreach_email") {
         const output = await generateOutreachEmail({ linkedInUrl: prompt });
         setAgentResult({ type: 'outreach', data: output });
-        responseText = "I have drafted an outreach email for you.";
+        responseText = "This is Omarim AI. I have drafted an outreach email for you.";
       } else if (action === "generate_social_post") {
         const output = await generateSocialMediaPost({ topic: prompt });
         setAgentResult({ type: 'social', data: output });
-        responseText = `I've created a social media post about ${prompt}.`;
+        responseText = `This is Omarim AI. I've created a social media post about ${prompt}.`;
       } else if (action === 'add_store') {
-        responseText = `Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
+        responseText = `This is Omarim AI. Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
         router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`);
         // For navigation, we don't need to show an agent result card or keep the state busy.
         // We just say what we're doing and then do it.
@@ -204,7 +204,7 @@ export default function VoicePage() {
 
   const getStatusText = () => {
     switch (commandState) {
-      case 'idle': return 'Click the button and speak a command. e.g., "Add my Shopify store."';
+      case 'idle': return 'I am Omarim AI. Click the button and speak a command.';
       case 'recording': return "Listening...";
       case 'transcribing': return "Transcribing your speech...";
       case 'interpreting': return "Understanding your command...";
@@ -232,7 +232,7 @@ export default function VoicePage() {
             <Bot className="w-10 h-10 text-primary" />
             <div>
               <CardTitle>Voice Command Center</CardTitle>
-              <CardDescription>Speak your commands to the AI.</CardDescription>
+              <CardDescription>Speak your commands to Omarim AI.</CardDescription>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
@@ -348,5 +348,3 @@ export default function VoicePage() {
     </div>
   );
 }
-
-    
