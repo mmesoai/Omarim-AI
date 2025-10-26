@@ -2,7 +2,6 @@
 "use client"
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,7 +22,7 @@ import {
   SidebarContent,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Search, Loader2, Bell, PanelLeft } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { Icons } from "@/components/icons";
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -32,7 +31,7 @@ import { doc } from "firebase/firestore";
 
 const Header = () => {
     const { user } = useUser();
-    const firestore = useFirestore(); // Call hook unconditionally
+    const firestore = useFirestore();
 
     const userDocRef = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -43,7 +42,7 @@ const Header = () => {
     const auth = useAuth();
     const handleLogout = () => { signOut(auth) };
 
-    const userInitial = userData ? userData.firstName.charAt(0).toUpperCase() : "";
+    const userInitial = userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : "";
     const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
 
     return (
@@ -59,10 +58,6 @@ const Header = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="h-5 w-5" />
-                <span className="sr-only">Notifications</span>
-              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
@@ -99,8 +94,8 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const auth = useAuth();
-  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -111,20 +106,17 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!isUserLoading && !user) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [user, isUserLoading, router]);
 
   const handleLogout = () => {
-    signOut(auth).then(() => {
-      router.push("/login");
-    });
+    signOut(auth);
   };
+  
+  const isLoading = isUserLoading || (user && isUserDataLoading);
 
-  const userInitial = userData ? userData.firstName.charAt(0).toUpperCase() : "";
-  const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
-
-  if (isUserLoading || isUserDataLoading) {
+  if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -133,9 +125,12 @@ export default function DashboardLayout({
   }
   
   if (!user) {
-    // This can happen briefly while redirecting
+    // This can happen briefly while redirecting, or if not logged in.
     return null;
   }
+
+  const userInitial = userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : "";
+  const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
 
   return (
     <SidebarProvider>
