@@ -456,35 +456,30 @@ export default function DashboardPage() {
                 </CardFooter>
             </Card>
           ))}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {recentActivities.map((activity) => (
-                            <div key={activity.id} className="flex items-center gap-4">
-                                <Avatar className="h-9 w-9">
-                                    <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", activity.color)}>
-                                        <activity.icon className="h-5 w-5 text-background" />
-                                    </div>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <p className="text-sm">{activity.description}</p>
-                                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-      </div>
-    </div>
+          <Card>
+              <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <div className="space-y-4">
+                      {recentActivities.map((activity) => (
+                          <div key={activity.id} className="flex items-center gap-4">
+                              <Avatar className="h-9 w-9">
+                                  <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", activity.color)}>
+                                      <activity.icon className="h-5 w-5 text-background" />
+                                  </div>
+                              </Avatar>
+                              <div className="flex-1">
+                                  <p className="text-sm">{activity.description}</p>
+                                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              </CardContent>
+          </Card>
 
-    {/* AI Floating Modals and Buttons */}
-    {(isFindingProduct || trendingProduct) && (
-        <div className="fixed bottom-4 right-4 z-50 w-full max-w-md">
+          {(isFindingProduct || trendingProduct) && (
             <Card className="border-primary/20 bg-background/80 backdrop-blur-lg">
                 <CardHeader className="flex flex-row items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -494,9 +489,9 @@ export default function DashboardPage() {
                             <CardDescription>Omarim requires human confirmation to proceed.</CardDescription>
                         </div>
                     </div>
-                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleReject}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleReject}>
                         <X className="h-4 w-4" />
-                     </Button>
+                      </Button>
                 </CardHeader>
                 {isFindingProduct && (
                     <CardContent className="flex items-center justify-center py-12">
@@ -507,7 +502,7 @@ export default function DashboardPage() {
                 {trendingProduct && (
                     <>
                         <CardContent className="space-y-4">
-                             <div>
+                              <div>
                                 <h3 className="font-headline text-xl font-bold text-foreground">{trendingProduct.productName}</h3>
                                 <p className="text-sm text-muted-foreground mt-1">{trendingProduct.description}</p>
                             </div>
@@ -530,9 +525,13 @@ export default function DashboardPage() {
                     </>
                 )}
             </Card>
-        </div>
-      )}
+          )}
 
+        </div>
+      </div>
+    </div>
+
+    {/* Quick Action Button */}
     <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogTrigger asChild>
             <Button
@@ -575,5 +574,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    
