@@ -100,16 +100,16 @@ export default function AgentPage() {
     try {
       const result = await initiateOutreach({ lead, userId: user.uid });
       toast({
-        title: 'Outreach Initiated',
-        description: `Lead record created for ${lead.name} and email has been generated.`,
+        title: 'Engagement Successful',
+        description: result.message,
       });
       setOutreachState(prev => ({...prev, [index]: 'done'}));
     } catch (error) {
       console.error('Outreach failed:', error);
       toast({
         variant: 'destructive',
-        title: 'Outreach Failed',
-        description: 'Could not initiate outreach for this lead.',
+        title: 'Engagement Failed',
+        description: 'Could not complete the engagement for this lead.',
       });
       setOutreachState(prev => ({...prev, [index]: 'done'})); // Reset even on error
     }
@@ -160,7 +160,7 @@ export default function AgentPage() {
           ) : (
              <Briefcase className="mr-2 h-4 w-4" />
           )}
-         {isDone ? 'Outreach Initiated' : 'Initiate Outreach'}
+         {isDone ? 'Engagement Complete' : 'Engage Lead'}
         </Button>
       </CardFooter>
     </Card>

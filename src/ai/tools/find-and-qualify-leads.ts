@@ -9,16 +9,16 @@ import { z } from 'genkit';
 
 // Mock database of potential leads
 const MOCK_LEADS_DATABASE = [
-  { company: 'Innovate LLC', name: 'John Smith', title: 'CEO', industry: 'Tech', website: 'innovate-llc.com' },
-  { company: 'Healthful Goods', name: 'Jane Doe', title: 'Founder', industry: 'Retail', website: 'healthfulgoods.com' },
-  { company: 'Construct Co', name: 'Peter Jones', title: 'Director of Operations', industry: 'Construction', website: null },
-  { company: 'Legal Eagles', name: 'Mary Williams', title: 'Partner', industry: 'Legal', website: 'legaleagles.net' },
-  { company: 'Foodie Ventures', name: 'David Brown', title: 'Co-Owner', industry: 'Restaurant', website: null },
-  { company: 'Marketing Pros', name: 'Emily Davis', title: 'Marketing Manager', industry: 'Marketing', website: 'marketingpros.com' },
-  { company: 'GreenScape Landscaping', name: 'Michael Miller', title: 'Owner', industry: 'Landscaping', website: null },
-  { company: 'Education Forward', name: 'Susan Wilson', title: 'Executive Director', industry: 'Education', website: 'educationforward.org'},
-  { company: 'AutoFix Experts', name: 'Chris Garcia', title: 'Head Mechanic', industry: 'Automotive', website: 'autofixexperts.com'},
-  { company: 'Glamour Boutique', name: 'Jessica Rodriguez', title: 'Proprietor', industry: 'Fashion', website: null},
+  { company: 'Innovate LLC', name: 'John Smith', title: 'CEO', industry: 'Tech', website: 'innovate-llc.com', email: 'john.smith@innovate-llc.com' },
+  { company: 'Healthful Goods', name: 'Jane Doe', title: 'Founder', industry: 'Retail', website: 'healthfulgoods.com', email: 'jane.doe@healthfulgoods.com' },
+  { company: 'Construct Co', name: 'Peter Jones', title: 'Director of Operations', industry: 'Construction', website: null, email: 'peter.jones@constructco.com' },
+  { company: 'Legal Eagles', name: 'Mary Williams', title: 'Partner', industry: 'Legal', website: 'legaleagles.net', email: 'mary.williams@legaleagles.net' },
+  { company: 'Foodie Ventures', name: 'David Brown', title: 'Co-Owner', industry: 'Restaurant', website: null, email: 'david.brown@foodieventures.com' },
+  { company: 'Marketing Pros', name: 'Emily Davis', title: 'Marketing Manager', industry: 'Marketing', website: 'marketingpros.com', email: 'emily.davis@marketingpros.com' },
+  { company: 'GreenScape Landscaping', name: 'Michael Miller', title: 'Owner', industry: 'Landscaping', website: null, email: 'michael.miller@greenscape.com' },
+  { company: 'Education Forward', name: 'Susan Wilson', title: 'Executive Director', industry: 'Education', website: 'educationforward.org', email: 'susan.wilson@educationforward.org' },
+  { company: 'AutoFix Experts', name: 'Chris Garcia', title: 'Head Mechanic', industry: 'Automotive', website: 'autofixexperts.com', email: 'chris.garcia@autofixexperts.com' },
+  { company: 'Glamour Boutique', name: 'Jessica Rodriguez', title: 'Proprietor', industry: 'Fashion', website: null, email: 'jessica.rodriguez@glamourboutique.com' },
 ];
 
 const QualifiedLeadSchema = z.object({
@@ -26,6 +26,7 @@ const QualifiedLeadSchema = z.object({
     name: z.string().describe("The full name of the lead."),
     title: z.string().describe("The job title of the lead (e.g., CEO, Founder, Director)."),
     industry: z.string().describe("The industry the company operates in."),
+    email: z.string().email().describe("The email address of the lead."),
     qualificationReason: z.string().describe("The reason this lead is a good prospect, specifically why they would need an AI-powered website or application."),
     hasWebsite: z.boolean().describe("Whether the company currently has a website."),
 });
@@ -70,6 +71,7 @@ export const findAndQualifyLeads = ai.defineTool(
             name: lead.name,
             title: lead.title,
             industry: lead.industry,
+            email: lead.email,
             qualificationReason: reason,
             hasWebsite: !!lead.website,
         });

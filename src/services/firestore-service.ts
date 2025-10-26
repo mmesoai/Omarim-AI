@@ -4,10 +4,9 @@
  * This service uses the Firebase Admin SDK to perform backend operations.
  */
 
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeApp, getApps, App } from 'firebase-admin/app';
 import { firebaseConfig } from '@/firebase/config';
-import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
 
 // Initialize Firebase Admin SDK
 function getFirebaseAdminApp(): App {
@@ -96,54 +95,53 @@ export async function addLeadsToSequence(params: {
 
 
 type LeadData = {
-  firstName: string;
-  lastName: string;
-  company: string;
-  domain: string;
-  email: string;
-  status: string;
-};
-
-type EmailData = {
-  subject: string;
-  body: string;
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  domain?: string;
+  email?: string;
+  status?: string;
 };
 
 /**
- * Saves a qualified lead to the database and generates an outreach email record.
+ * Saves or updates a lead in the database.
+ * If a leadId is provided, it updates the existing lead. Otherwise, it creates a new one.
  * @param {object} params - The parameters for the operation.
  * @param {string} params.userId - The ID of the user.
- * @param {LeadData} params.leadData - The data for the lead to be created.
- * @param {EmailData} params.emailData - The content of the outreach email.
- * @returns {Promise<{leadId: string}>} - The ID of the newly created lead.
+ * @param {LeadData} params.leadData - The data for the lead.
+ * @param {string} [params.leadId] - The ID of the lead to update.
+ * @returns {Promise<{leadId: string}>} - The ID of the created or updated lead.
  */
-export async function saveLeadAndGenerateEmail(params: {
+export async function saveLead(params: {
   userId: string;
   leadData: LeadData;
-  emailData: EmailData;
+  leadId?: string;
 }): Promise<{ leadId: string }> {
-  const { userId, leadData, emailData } = params;
+  const { userId, leadData, leadId } = params;
   const db = getFirestore(getFirebaseAdminApp());
 
   try {
     const leadsCollection = db.collection(`users/${userId}/leads`);
     
-    // Add the new lead to the 'leads' collection
-    const leadDocRef = await leadsCollection.add({
-      ...leadData,
-      createdAt: new Date().toISOString(),
-    });
-
-    // In a real application, you would create an 'emails' subcollection
-    // and add the email there, or send it via an email service.
-    // For now, we'll just log it to demonstrate the process is complete.
-    console.log(`Generated email for lead ${leadDocRef.id}:`);
-    console.log(`Subject: ${emailData.subject}`);
-    console.log(`Body: ${emailData.body}`);
-
-    return { leadId: leadDocRef.id };
+    if (leadId) {
+      // Update existing lead
+      const leadDocRef = leadsCollection.doc(leadId);
+      await leadDocRef.update({
+        ...leadData,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return { leadId };
+    } else {
+      // Create new lead
+      const leadDocRef = await leadsCollection.add({
+        ...leadData,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+      return { leadId: leadDocRef.id };
+    }
   } catch (error: any) {
-    console.error("Error saving lead and generating email:", error);
-    throw new Error(`An internal error occurred: ${error.message}`);
+    console.error("Error saving lead:", error);
+    throw new Error(`An internal error occurred while saving the lead: ${error.message}`);
   }
 }

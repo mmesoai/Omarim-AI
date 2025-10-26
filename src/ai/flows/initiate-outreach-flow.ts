@@ -6,8 +6,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
-import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
-import { saveLeadAndGenerateEmail } from '@/services/firestore-service';
+import { saveLead } from '@/services/firestore-service';
+import { sendEmail } from '@/ai/tools/send-email';
 
 const InitiateOutreachInputSchema = z.object({
   lead: findAndQualifyLeads.outputSchema.element, // A single qualified lead
@@ -17,10 +17,7 @@ export type InitiateOutreachInput = z.infer<typeof InitiateOutreachInputSchema>;
 
 const InitiateOutreachOutputSchema = z.object({
   leadId: z.string().describe('The ID of the newly saved lead in Firestore.'),
-  email: z.object({
-    subject: z.string(),
-    body: z.string(),
-  }),
+  emailSent: z.boolean().describe('Whether the email was successfully sent.'),
   message: z.string().describe('A summary of the action taken.'),
 });
 export type InitiateOutreachOutput = z.infer<
@@ -73,31 +70,47 @@ const initiateOutreachFlow = ai.defineFlow(
     outputSchema: InitiateOutreachOutputSchema,
   },
   async ({ lead, userId }) => {
-    // Step 1: Generate the personalized email using an AI prompt
-    const { output: email } = await generateEmailPrompt({ lead });
-
-    if (!email) {
-      throw new Error('Failed to generate email content.');
-    }
-
-    // Step 2: Save the lead and the generated email to the database
-    const { leadId } = await saveLeadAndGenerateEmail({
+    // Step 1: Save the lead to the database
+    const { leadId } = await saveLead({
       userId,
       leadData: {
         firstName: lead.name.split(' ')[0] || '',
         lastName: lead.name.split(' ').slice(1).join(' ') || '',
         company: lead.company,
         domain: lead.hasWebsite ? new URL(`http://${lead.company.toLowerCase().replace(/ /g, '')}.com`).hostname : 'unknown.com', // Simulate domain
-        email: `${lead.name.split(' ')[0]?.toLowerCase()}.${lead.name.split(' ').slice(1).join('').toLowerCase()}@${lead.company.toLowerCase().replace(/ /g, '')}.com`, // Simulate email
+        email: lead.email,
         status: 'Contacted',
       },
-      emailData: email,
     });
+
+    // Step 2: Generate the personalized email using an AI prompt
+    const { output: emailContent } = await generateEmailPrompt({ lead });
+
+    if (!emailContent) {
+      throw new Error('Failed to generate email content.');
+    }
+
+    // Step 3: Send the email using the sendEmail tool
+    const sendResult = await sendEmail({
+      to: lead.email,
+      subject: emailContent.subject,
+      body: emailContent.body,
+    });
+    
+    // Step 4: Update the lead status to 'Contacted' in Firestore
+     await saveLead({
+      userId,
+      leadId: leadId, // Pass leadId to update the existing document
+      leadData: { status: 'Contacted' },
+    });
+
 
     return {
       leadId,
-      email,
-      message: `Successfully initiated outreach to ${lead.name}.`,
+      emailSent: sendResult.success,
+      message: sendResult.success 
+        ? `Successfully engaged ${lead.name} and sent an introductory email.`
+        : `Saved ${lead.name} as a lead, but failed to send email.`,
     };
   }
 );
