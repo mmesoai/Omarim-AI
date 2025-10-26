@@ -38,6 +38,16 @@ export const getOmarimAiCapabilities = ai.defineTool(
           relatedTools: ['autonomousLeadGen', 'initiateOutreach', 'findAndQualifyLeads'],
         },
         {
+          featureName: 'Automated Digital Product Funnel',
+          description: 'A fully automated channel that identifies trending digital products, generates the product content (like an e-book or course outline), creates a marketing campaign, and simulates placing it for sale. This represents a complete, hands-off business funnel.',
+          relatedTools: ['automatedDigitalProductFunnel', 'findTrendingDigitalProduct', 'generateDigitalProduct'],
+        },
+        {
+          featureName: 'E-commerce Product Sourcing',
+          description: "The AI can analyze product categories to identify trending items, generate marketing campaigns, and find potential (fictional) suppliers. This allows it to autonomously propose new product opportunities and initiate contact with suppliers, representing a key outbound channel.",
+          relatedTools: ['findTrendingProducts', 'generateProductCampaign', 'generateProductIdeas'],
+        },
+        {
           featureName: 'Conversational Chat Interface',
           description: 'A chat interface where users can issue natural language commands to the AI. The AI interprets these commands and executes the appropriate action, such as generating content, managing marketing campaigns, or navigating the user to other parts of the application.',
           relatedTools: ['interpretCommand'],
@@ -46,11 +56,6 @@ export const getOmarimAiCapabilities = ai.defineTool(
           featureName: 'AI-Powered Content Generation',
           description: "The AI can generate various types of content on demand. This includes personalized outreach emails based on a lead's profile and engaging social media posts on a given topic.",
           relatedTools: ['generateOutreachEmail', 'generateSocialMediaPost'],
-        },
-        {
-          featureName: 'E-commerce Product Sourcing',
-          description: "The AI can analyze product categories to identify trending items, generate marketing campaigns, and even find potential (fictional) suppliers. This allows it to autonomously propose new product opportunities and initiate the sourcing process, representing a key outbound channel.",
-          relatedTools: ['findTrendingProducts', 'generateProductCampaign', 'generateProductIdeas'],
         },
         {
           featureName: 'Voice Interaction Tools',
@@ -71,3 +76,4 @@ export const getOmarimAiCapabilities = ai.defineTool(
     };
   }
 );
+

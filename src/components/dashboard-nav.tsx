@@ -16,6 +16,7 @@ import {
   Settings,
   BotMessageSquare,
   Share2,
+  ShoppingBag,
 } from "lucide-react"
 
 import {
@@ -41,6 +42,7 @@ const mainNav = [
 
 const featureNav = [
   { href: "/dashboard/agent", icon: Bot, label: "Autonomous Agent" },
+  { href: "/dashboard/digital-products", icon: ShoppingBag, label: "Digital Products" },
   { href: "/dashboard/leads", icon: FolderKanban, label: "Lead Intelligence" },
   { href: "/dashboard/outreach", icon: Send, label: "Outreach Engine" },
   { href: "/dashboard/stores", icon: Building2, label: "E-Commerce" },
