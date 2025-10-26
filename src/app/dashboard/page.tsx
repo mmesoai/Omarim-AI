@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -88,6 +87,11 @@ export default function DashboardPage() {
   const [campaignAssets, setCampaignAssets] = useState<GenerateProductCampaignOutput | null>(null);
   const [isCampaignLoading, setIsCampaignLoading] = useState(false);
   const [isFindingProduct, setIsFindingProduct] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     async function getTrendingProduct() {
@@ -244,7 +248,7 @@ export default function DashboardPage() {
             <CardDescription>Monthly performance across all business units.</CardDescription>
           </CardHeader>
           <CardContent>
-            {revenueData && (
+            {isClient && (
               <div className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={revenueData} barSize={20}>
@@ -581,5 +585,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
