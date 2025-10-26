@@ -49,7 +49,7 @@ export default function DashboardPage() {
                     bottom: 5,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="name" stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
                   <Tooltip
@@ -59,8 +59,8 @@ export default function DashboardPage() {
                     }}
                    />
                   <Legend />
-                  <Bar dataKey="quantity" fill="hsl(var(--primary))" name="Stock Quantity" />
-                  <Bar dataKey="price" fill="hsl(var(--accent))" name="Price" />
+                  <Bar dataKey="quantity" fill="hsl(var(--primary))" name="Stock Quantity" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="price" fill="hsl(var(--accent))" name="Price" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
