@@ -1,10 +1,8 @@
 
-
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
@@ -37,7 +35,7 @@ import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -53,6 +51,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="lg:col-span-3 flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
+const LeadIntelligenceChart = dynamic(() => import('./components/lead-intelligence-chart').then(mod => mod.LeadIntelligenceChart), { ssr: false, loading: () => <div className="h-[150px] w-full flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div> });
 
 
 const recentSales = [
@@ -77,15 +76,6 @@ const recentActivities = [
     { id: 4, icon: Users, description: "Lead 'John Doe' status changed to 'Interested'.", time: "3h ago", color: "text-teal-400" },
     { id: 5, icon: Building2, description: "Successfully connected new Shopify store 'My Awesome Store'.", time: "1d ago", color: "text-pink-400" },
 ];
-
-const leadStatusColors: { [key: string]: string } = {
-  New: 'hsl(var(--chart-1))',
-  Contacted: 'hsl(var(--chart-2))',
-  Interested: 'hsl(var(--chart-3))',
-  Replied: 'hsl(var(--chart-4))',
-  'Not Interested': 'hsl(var(--chart-5))',
-  default: 'hsl(var(--muted-foreground))',
-};
 
 const quickActionSchema = z.object({
   command: z.string().min(1, { message: "Command cannot be empty." }),
@@ -203,21 +193,6 @@ export default function DashboardPage() {
   const { data: products, isLoading: isLoadingProducts } = useCollection(productsCollectionRef);
   const { data: sequences, isLoading: isLoadingSequences } = useCollection(sequencesCollectionRef);
 
-  const leadStatusData = useMemo(() => {
-    if (!leads) return [];
-    const statusCounts = leads.reduce((acc, lead) => {
-      const status = lead.status || 'Unknown';
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {} as { [key: string]: number });
-
-    return Object.entries(statusCounts).map(([name, value]) => ({ 
-        name, 
-        value,
-        fill: leadStatusColors[name as keyof typeof leadStatusColors] || leadStatusColors.default
-    }));
-  }, [leads]);
-  
   const isLoading = isLoadingLeads || isLoadingProducts || isLoadingSequences;
 
   const kpiData = [
@@ -334,48 +309,8 @@ export default function DashboardPage() {
                 </div>
             </CardHeader>
             <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <div className="h-[150px] w-full">
-                {isClient && leads && leads.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                        <Pie
-                            data={leadStatusData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={60}
-                            innerRadius={30}
-                            fill="#8884d8"
-                            dataKey="value"
-                        >
-                            {leadStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
-                            ))}
-                        </Pie>
-                        <Tooltip 
-                            cursor={{fill: 'hsla(var(--muted), 0.5)'}}
-                            contentStyle={{ 
-                            backgroundColor: 'hsl(var(--background))',
-                            borderColor: 'hsl(var(--border))',
-                            borderRadius: 'var(--radius)',
-                            fontSize: '0.8rem',
-                        }}/>
-                         <Legend 
-                            iconSize={8}
-                            wrapperStyle={{fontSize: '0.7rem', marginLeft: '10px'}}
-                            payload={leadStatusData.map(item => ({ value: item.name, type: 'square', color: item.fill }))}
-                         />
-                        </PieChart>
-                    </ResponsiveContainer>
-                ) : (
-                    <div className="flex flex-col items-center justify-center text-center bg-muted/50 rounded-lg p-4 h-full">
-                        <Users className="h-8 w-8 text-muted-foreground" />
-                        <p className="mt-2 text-sm font-semibold">No Lead Data</p>
-                        <p className="text-xs text-muted-foreground">Your pipeline will appear here.</p>
-                    </div>
-                )}
-                </div>
-                 <div>
+                <LeadIntelligenceChart leads={leads} />
+                <div>
                      <p className="text-2xl font-bold">{leads?.length ?? 0}</p>
                      <p className="text-xs text-muted-foreground">Active Leads</p>
                      <Button size="sm" variant="outline" className="mt-4" onClick={() => router.push("/dashboard/leads")}>
@@ -592,6 +527,7 @@ export default function DashboardPage() {
             <Button
               variant="default"
               className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg"
+              onClick={() => setIsActionDialogOpen(true)}
             >
               <Sparkles className="h-8 w-8" />
               <span className="sr-only">Quick Action</span>
@@ -619,7 +555,9 @@ export default function DashboardPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">Execute</Button>
+                <DialogFooter>
+                    <Button type="submit" className="w-full">Execute</Button>
+                </DialogFooter>
               </form>
             </Form>
         </DialogContent>
