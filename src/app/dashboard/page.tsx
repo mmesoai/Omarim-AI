@@ -32,11 +32,11 @@ import { cn } from '@/lib/utils';
 
 
 const leadStatusColors: { [key: string]: string } = {
-  New: 'var(--chart-1)',
-  Contacted: 'var(--chart-2)',
-  Interested: 'var(--chart-3)',
-  Replied: 'var(--chart-4)',
-  'Not Interested': 'var(--chart-5)',
+  New: 'hsl(var(--chart-1))',
+  Contacted: 'hsl(var(--chart-2))',
+  Interested: 'hsl(var(--chart-3))',
+  Replied: 'hsl(var(--chart-4))',
+  'Not Interested': 'hsl(var(--chart-5))',
   default: 'hsl(var(--muted-foreground))',
 };
 
@@ -150,6 +150,86 @@ export default function DashboardPage() {
             <span className="text-2xl font-semibold text-muted-foreground"> Intelligent Warehouse</span>
         </h1>
         <p className="text-sm text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
+      </div>
+      
+       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>Lead Status Overview</CardTitle>
+                <CardDescription>A real-time breakdown of your current lead pipeline.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {leads && leads.length > 0 ? (
+                    <div className="h-[350px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                        <Pie
+                            data={leadStatusData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={120}
+                            innerRadius={70}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                            {leadStatusData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                            ))}
+                        </Pie>
+                        <Tooltip 
+                            cursor={{fill: 'hsla(var(--muted), 0.5)'}}
+                            contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))',
+                            borderColor: 'hsl(var(--border))',
+                            borderRadius: 'var(--radius)',
+                        }}/>
+                        <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </div>
+                ) : (
+                    <div className="flex h-[350px] w-full flex-col items-center justify-center text-center">
+                    <Users className="h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-lg font-semibold">No Lead Data</p>
+                    <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
+                    <Button variant="secondary" className="mt-4" onClick={() => router.push('/dashboard/leads')}>
+                        Add a Lead
+                    </Button>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+        
+        {/* Control Center */}
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Control Center</CardTitle>
+                <CardDescription>Real-time system monitoring.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 text-sm">
+                    <ShieldCheck className="h-4 w-4 text-green-400" />
+                    <span className="text-green-400 font-medium">All Systems Operational</span>
+                </div>
+                {controlCenterStatus.map((system, index) => (
+                    <div key={index}>
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-muted-foreground">{system.name}</span>
+                            <span className="text-sm font-bold">{system.progress}%</span>
+                        </div>
+                        <Progress value={system.progress} indicatorClassName="bg-primary" />
+                    </div>
+                ))}
+            </CardContent>
+            <CardFooter>
+                 <Button variant="outline" className="w-full">
+                    <Cpu className="mr-2 h-4 w-4"/>
+                    Run System Check
+                </Button>
+            </CardFooter>
+        </Card>
       </div>
 
       {/* KPI Cards */}
@@ -293,88 +373,6 @@ export default function DashboardPage() {
             </CardContent>
         </Card>
       </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-            <CardHeader>
-                <CardTitle>Lead Status Overview</CardTitle>
-                <CardDescription>A real-time breakdown of your current lead pipeline.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {leads && leads.length > 0 ? (
-                    <div className="h-[350px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                        <Pie
-                            data={leadStatusData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={120}
-                            innerRadius={70}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                            {leadStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
-                            ))}
-                        </Pie>
-                        <Tooltip 
-                            cursor={{fill: 'hsla(var(--muted), 0.5)'}}
-                            contentStyle={{ 
-                            backgroundColor: 'hsl(var(--background))',
-                            borderColor: 'hsl(var(--border))',
-                            borderRadius: 'var(--radius)',
-                        }}/>
-                        <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                    </div>
-                ) : (
-                    <div className="flex h-[350px] w-full flex-col items-center justify-center text-center">
-                    <Users className="h-12 w-12 text-muted-foreground" />
-                    <p className="mt-4 text-lg font-semibold">No Lead Data</p>
-                    <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
-                    <Button variant="secondary" className="mt-4" onClick={() => router.push('/dashboard/leads')}>
-                        Add a Lead
-                    </Button>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-        
-        {/* Control Center */}
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Control Center</CardTitle>
-                <CardDescription>Real-time system monitoring.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center gap-2 text-sm">
-                    <ShieldCheck className="h-4 w-4 text-green-400" />
-                    <span className="text-green-400 font-medium">All Systems Operational</span>
-                </div>
-                {controlCenterStatus.map((system, index) => (
-                    <div key={index}>
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium text-muted-foreground">{system.name}</span>
-                            <span className="text-sm font-bold">{system.progress}%</span>
-                        </div>
-                        <Progress value={system.progress} indicatorClassName="bg-primary" />
-                    </div>
-                ))}
-            </CardContent>
-            <CardFooter>
-                 <Button variant="outline" className="w-full">
-                    <Cpu className="mr-2 h-4 w-4"/>
-                    Run System Check
-                </Button>
-            </CardFooter>
-        </Card>
-      </div>
     </div>
   );
 }
-
-    
