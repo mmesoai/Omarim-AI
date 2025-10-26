@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -36,6 +37,9 @@ import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="lg:col-span-3 flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
 
@@ -225,6 +229,7 @@ export default function DashboardPage() {
   }
 
   return (
+    <>
     <div className="space-y-8">
       {(isFindingProduct || trendingProduct) && isClient && (
         <audio src="/audio/blip.mp3" autoPlay onLoadedData={() => {}} onError={() => {}} />
@@ -551,7 +556,36 @@ export default function DashboardPage() {
             </CardContent>
         </Card>
       )}
-
     </div>
+
+    <Dialog>
+        <DialogTrigger asChild>
+            <Button
+              variant="default"
+              className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg"
+            >
+              <Sparkles className="h-8 w-8" />
+              <span className="sr-only">Quick Action</span>
+            </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Quick Action</DialogTitle>
+                <DialogDescription>
+                    Issue a command to Omarim AI.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="command" className="text-right">
+                        Command
+                    </Label>
+                    <Input id="command" placeholder="e.g., 'Generate a social post about AI'" className="col-span-3" />
+                </div>
+            </div>
+            <Button type="submit">Execute</Button>
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
