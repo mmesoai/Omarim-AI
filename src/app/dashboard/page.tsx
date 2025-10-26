@@ -31,8 +31,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
-import { findTrendingProducts, type TrendingProduct, type GenerateProductCampaignOutput } from "@/ai/tools/find-trending-products";
-import { generateProductCampaign } from "@/ai/flows/generate-product-campaign";
+import { findTrendingProducts, generateProductCampaign } from '@/app/actions';
+import type { TrendingProduct, GenerateProductCampaignOutput } from "@/ai/tools/find-trending-products";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 
@@ -94,7 +94,7 @@ export default function DashboardPage() {
     async function getTrendingProduct() {
       setIsFindingProduct(true);
       try {
-        const result = await findTrendingProducts({ category: "home office tech" });
+        const result = await findTrendingProducts("home office tech");
         setTrendingProduct(result);
         setHasProposal(true);
       } catch (error) {
@@ -601,4 +601,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
