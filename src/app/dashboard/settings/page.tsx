@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
-import { collection }_from 'firebase/firestore';
+import { collection } from 'firebase/firestore';
 
 import { Button } from "@/components/ui/button";
 import {

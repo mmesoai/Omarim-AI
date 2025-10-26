@@ -297,7 +297,8 @@
         },
         "createdAt": {
           "type": "string",
-w-date-time"
+          "description": "Timestamp when the provisioning was created.",
+          "format": "date-time"
         }
       },
       "required": [
