@@ -35,7 +35,7 @@ import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -102,22 +102,24 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsClient(true);
+    getTrendingProduct();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    async function getTrendingProduct() {
-      setIsFindingProduct(true);
-      try {
-        const result = await findTrendingProducts("home office tech");
-        setTrendingProduct(result);
-      } catch (error) {
-        console.error("Failed to find trending products:", error);
-      } finally {
-        setIsFindingProduct(false);
-      }
+  async function getTrendingProduct() {
+    setIsFindingProduct(true);
+    setCampaignAssets(null); // Clear previous campaign assets
+    setTrendingProduct(null); // Clear previous product
+    try {
+      const result = await findTrendingProducts("home office tech");
+      setTrendingProduct(result);
+    } catch (error) {
+      console.error("Failed to find trending products:", error);
+    } finally {
+      setIsFindingProduct(false);
     }
-    getTrendingProduct();
-  }, []);
+  }
+
 
   const productsCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -478,54 +480,52 @@ export default function DashboardPage() {
                   </div>
               </CardContent>
           </Card>
-
-          {(isFindingProduct || trendingProduct) && (
-            <Card className="border-primary/20 bg-background/80 backdrop-blur-lg">
-                <CardHeader className="flex flex-row items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <Bot className="h-6 w-6 text-primary animate-pulse" />
-                        <div>
-                            <CardTitle className="text-lg">AI Approval Request</CardTitle>
-                            <CardDescription>Omarim requires human confirmation to proceed.</CardDescription>
-                        </div>
-                    </div>
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleReject}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                </CardHeader>
-                {isFindingProduct && (
-                    <CardContent className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                        <p className="ml-4 text-muted-foreground">Searching for opportunities...</p>
-                    </CardContent>
-                )}
-                {trendingProduct && (
-                    <>
-                        <CardContent className="space-y-4">
-                              <div>
-                                <h3 className="font-headline text-xl font-bold text-foreground">{trendingProduct.productName}</h3>
-                                <p className="text-sm text-muted-foreground mt-1">{trendingProduct.description}</p>
-                            </div>
-                            <Separator />
+          
+          <Card className="border-primary/20 bg-background/80 backdrop-blur-lg">
+              <CardHeader className="flex flex-row items-start justify-between">
+                  <div className="flex items-center gap-3">
+                      <Bot className="h-6 w-6 text-primary animate-pulse" />
+                      <div>
+                          <CardTitle className="text-lg">AI Approval Request</CardTitle>
+                          <CardDescription>Omarim requires human confirmation to proceed.</CardDescription>
+                      </div>
+                  </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleReject}>
+                      <X className="h-4 w-4" />
+                    </Button>
+              </CardHeader>
+              {isFindingProduct && (
+                  <CardContent className="flex items-center justify-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                      <p className="ml-4 text-muted-foreground">Searching for opportunities...</p>
+                  </CardContent>
+              )}
+              {trendingProduct && (
+                  <>
+                      <CardContent className="space-y-4">
                             <div>
-                                <h4 className="font-semibold text-foreground flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4 text-primary"/> Marketing Angle</h4>
-                                <p className="mt-1 text-sm text-muted-foreground">{trendingProduct.marketingAngle}</p>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="flex gap-2">
-                            <Button onClick={handleApproveAndLaunch} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
-                                {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4" />}
-                                {!!campaignAssets ? "Approved" : "Approve & Launch"}
-                            </Button>
-                            <Button variant="outline" onClick={handleReject} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
-                                <X className="mr-2 h-4 w-4"/>
-                                Deny
-                            </Button>
-                        </CardFooter>
-                    </>
-                )}
-            </Card>
-          )}
+                              <h3 className="font-headline text-xl font-bold text-foreground">{trendingProduct.productName}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">{trendingProduct.description}</p>
+                          </div>
+                          <Separator />
+                          <div>
+                              <h4 className="font-semibold text-foreground flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4 text-primary"/> Marketing Angle</h4>
+                              <p className="mt-1 text-sm text-muted-foreground">{trendingProduct.marketingAngle}</p>
+                          </div>
+                      </CardContent>
+                      <CardFooter className="flex gap-2">
+                          <Button onClick={handleApproveAndLaunch} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
+                              {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4" />}
+                              {!!campaignAssets ? "Approved" : "Approve & Launch"}
+                          </Button>
+                          <Button variant="outline" onClick={handleReject} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
+                              <X className="mr-2 h-4 w-4"/>
+                              Deny
+                          </Button>
+                      </CardFooter>
+                  </>
+              )}
+          </Card>
 
         </div>
       </div>
