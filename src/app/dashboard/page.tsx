@@ -51,7 +51,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
-const LeadIntelligenceChart = dynamic(() => import('./components/lead-intelligence-chart').then(mod => mod.LeadIntelligenceChart), { ssr: false, loading: () => <div className="h-[150px] w-full flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div> });
+const LeadIntelligenceChart = dynamic(() => import('./components/lead-intelligence-chart').then(mod => mod.LeadIntelligenceChart), { ssr: false, loading: () => <div className="h-[150px] w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> });
 
 
 const recentSales = [
@@ -171,6 +171,8 @@ export default function DashboardPage() {
         title: "Proposal Rejected",
         description: "The AI will look for another product opportunity.",
     });
+    // Immediately fetch a new product
+    getTrendingProduct();
   }
 
   function onActionSubmit(values: z.infer<typeof quickActionSchema>) {
@@ -545,5 +547,7 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
 
     
