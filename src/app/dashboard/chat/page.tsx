@@ -208,7 +208,7 @@ export default function ChatPage() {
                                 : "bg-muted"
                             }`}
                         >
-                            <p>{message.content}</p>
+                            <p className="whitespace-pre-wrap">{message.content}</p>
                         </div>
                         {message.role === "user" && (
                             <Avatar className="h-9 w-9 border">
