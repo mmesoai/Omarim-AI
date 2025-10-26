@@ -24,13 +24,78 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { Search, Loader2, Bell } from "lucide-react";
+import { Search, Loader2, Bell, PanelLeft } from "lucide-react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { Icons } from "@/components/icons";
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
+
+const Header = () => {
+    const { toggleSidebar } = useSidebar();
+    const { user } = useUser();
+    const { data: userData } = useDoc(useMemoFirebase(() => user ? doc(useFirestore(), "users", user.uid) : null, [user]));
+    const handleLogout = () => { signOut(useAuth()) };
+
+    const userInitial = userData ? userData.firstName.charAt(0).toUpperCase() : "";
+    const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
+
+    return (
+        <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm md:px-6">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={toggleSidebar}
+              >
+                <PanelLeft />
+                <span className="sr-only">Toggle Sidebar</span>
+              </Button>
+              <div className="relative hidden w-full max-w-sm md:block">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search features..."
+                  className="w-full rounded-lg bg-background pl-8 text-foreground"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Notifications</span>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.photoURL || ""} alt={userName} />
+                      <AvatarFallback>{userInitial}</AvatarFallback>
+                    </Avatar>
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>Support</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+        </header>
+    );
+};
+
 
 export default function DashboardLayout({
   children,
@@ -125,48 +190,7 @@ export default function DashboardLayout({
       </Sidebar>
       <SidebarInset>
         <div className="relative isolate flex h-full min-h-svh flex-col">
-          <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm md:px-6">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="md:hidden" />
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search features..."
-                  className="w-full rounded-lg bg-background pl-8 text-foreground"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Bell className="h-5 w-5" />
-                <span className="sr-only">Notifications</span>
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.photoURL || ""} alt={userName} />
-                      <AvatarFallback>{userInitial}</AvatarFallback>
-                    </Avatar>
-                    <span className="sr-only">Toggle user menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard/settings">Settings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>Support</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </header>
+          <Header />
           <main className="flex-1 overflow-auto p-4 md:p-6">
             {children}
           </main>
