@@ -15,7 +15,7 @@ import {
   GenerateProductCampaignOutputSchema,
   type GenerateProductCampaignOutput,
   type GenerateProductCampaignInput,
-} from '@/app/actions';
+} from '@/app/schemas';
 
 export {
   type GenerateProductCampaignInput,
