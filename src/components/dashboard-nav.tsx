@@ -27,13 +27,6 @@ import {
   SidebarSeparator
 } from "@/components/ui/sidebar"
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-
 
 const mainNav = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
@@ -76,39 +69,18 @@ export function DashboardNav() {
       </SidebarMenuItem>
     ))
   );
-  
-  const NavAccordion = ({ title, items }: { title: string, items: typeof featureNav | typeof secondaryNav }) => (
-    <Accordion type="single" collapsible className="w-full" defaultValue={items.some(item => pathname.startsWith(item.href)) ? title : undefined}>
-      <AccordionItem value={title} className="border-none">
-        <AccordionTrigger className="py-2 px-3 text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md group-data-[collapsible=icon]:hidden">
-           {title}
-        </AccordionTrigger>
-        <AccordionContent className="pb-0 pl-4 group-data-[collapsible=icon]:hidden">
-          <SidebarMenu className="py-2">
-            {buildNav(items as typeof mainNav)}
-          </SidebarMenu>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
 
   return (
     <SidebarMenu>
       {buildNav(mainNav)}
-      <SidebarSeparator />
-      <div className="px-2 space-y-1 group-data-[collapsible=icon]:hidden">
-        <NavAccordion title="Features" items={featureNav} />
-        <NavAccordion title="Tools" items={secondaryNav} />
-      </div>
       
-      {/* Icon-only display for collapsed sidebar */}
-      <div className="hidden group-data-[collapsible=icon]:flex flex-col gap-1">
-        <SidebarGroupLabel className="!mt-0">Features</SidebarGroupLabel>
-        {buildNav(featureNav as typeof mainNav)}
-        <SidebarSeparator />
-        <SidebarGroupLabel>Tools</SidebarGroupLabel>
-        {buildNav(secondaryNav as typeof mainNav)}
-      </div>
+      <SidebarSeparator />
+      <SidebarGroupLabel>Features</SidebarGroupLabel>
+      {buildNav(featureNav)}
+      
+      <SidebarSeparator />
+      <SidebarGroupLabel>Tools</SidebarGroupLabel>
+      {buildNav(secondaryNav)}
 
       <SidebarMenuItem className="mt-auto">
         <SidebarMenuButton
