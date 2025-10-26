@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useUser, useFirestore, useCollection, addDocumentNonBlocking, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { useUser, useFirestore, useCollection, addDocumentNonBlocking, updateDocumentNonBlocking, useMemoFirebase } from "@/firebase";
+import { collection, doc } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,19 +22,16 @@ import {
 } from "@/components/ui/table";
 import { PlusCircle, Loader2, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LeadsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
 
-  // IMPORTANT: The path `/users/${user.uid}/leads` is a placeholder.
-  // According to backend.json, it should be `/users/{userId}/notionPages/{notionPageId}/leads/{leadId}`
-  // For simplicity in this step, we will use a top-level `leads` sub-collection.
-  // We will need to address the full path when Notion integration is built.
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    // For now, we'll use a simplified path. We can update this later.
     return collection(firestore, `users/${user.uid}/leads`);
   }, [firestore, user]);
 
@@ -43,8 +40,6 @@ export default function LeadsPage() {
   const handleScrapeNewLead = () => {
     if (!leadsCollectionRef) return;
     
-    // This is a placeholder for a real scraping mechanism.
-    // It adds a sample lead to the user's collection in Firestore.
     const sampleLead = {
       firstName: "Alex",
       lastName: "Morgan",
@@ -52,14 +47,24 @@ export default function LeadsPage() {
       domain: "innovate.com",
       email: `alex.morgan_${Date.now()}@innovate.com`,
       status: "New",
-      notionPageId: "placeholder_page_id", // Placeholder
+      notionPageId: "placeholder_page_id",
     };
     addDocumentNonBlocking(leadsCollectionRef, sampleLead);
   };
   
   const handleDraftEmail = (lead: any) => {
-    // This simulates the AI analyzing the lead.
-    // For now, we'll just use a placeholder URL as the generateOutreachEmail flow expects a linkedInUrl.
+    if (!user || !firestore || !lead.id) return;
+    
+    // Update the lead's status to 'Contacted' in a non-blocking way
+    const leadDocRef = doc(firestore, `users/${user.uid}/leads`, lead.id);
+    updateDocumentNonBlocking(leadDocRef, { status: 'Contacted' });
+
+    toast({
+      title: "Status Updated",
+      description: `${lead.firstName} ${lead.lastName} has been marked as 'Contacted'.`,
+    });
+    
+    // Redirect to the agent page to draft the email
     const mockLinkedInUrl = `https://www.linkedin.com/in/${lead.firstName.toLowerCase()}${lead.lastName.toLowerCase()}`;
     router.push(`/dashboard/agent?agentType=outreach&prompt=${encodeURIComponent(mockLinkedInUrl)}`);
   };
@@ -113,13 +118,15 @@ export default function LeadsPage() {
                   <TableCell>
                     <Badge variant={
                       lead.status === "Interested" ? "default" : 
+                      lead.status === "Contacted" ? "default" :
                       lead.status === "Replied" ? "default" :
                       lead.status === "New" ? "secondary" : 
                       lead.status === "Not Interested" ? "destructive" : "outline"
                     }
                     className={
                       lead.status === "Interested" ? 'bg-green-500/80 hover:bg-green-500' :
-                      lead.status === "Replied" ? 'bg-blue-500/80 hover:bg-blue-500' : ''
+                      lead.status === "Contacted" ? 'bg-blue-500/80 hover:bg-blue-500' :
+                      lead.status === "Replied" ? 'bg-yellow-500/80 hover:bg-yellow-500' : ''
                     }
                     >
                       {lead.status}
