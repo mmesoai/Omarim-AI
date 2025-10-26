@@ -14,6 +14,7 @@ import {
   ChevronRight,
   XCircle,
   CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   autonomousLeadGen,
@@ -43,6 +44,17 @@ import {
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const agentFormSchema = z.object({
   objective: z
@@ -55,6 +67,8 @@ export default function AgentPage() {
   const [outreachState, setOutreachState] = useState<{ [key: string]: 'loading' | 'done' }>({});
   const [agentResponse, setAgentResponse] =
     useState<AutonomousLeadGenOutput | null>(null);
+  
+  const [leadForConfirmation, setLeadForConfirmation] = useState<{lead: QualifiedLead, index: number} | null>(null);
 
   const { user } = useUser();
   const { toast } = useToast();
@@ -85,7 +99,11 @@ export default function AgentPage() {
     }
   }
 
-  const handleInitiateOutreach = async (lead: QualifiedLead, index: number) => {
+  const handleInitiateOutreach = async () => {
+    if (!leadForConfirmation) return;
+
+    const { lead, index } = leadForConfirmation;
+
     if (!user) {
       toast({
         variant: 'destructive',
@@ -96,6 +114,7 @@ export default function AgentPage() {
     }
     
     setOutreachState(prev => ({...prev, [index]: 'loading'}));
+    setLeadForConfirmation(null); // Close dialog
     
     try {
       const result = await initiateOutreach({ lead, userId: user.uid });
@@ -153,7 +172,7 @@ export default function AgentPage() {
       <CardFooter>
         <Button
           className="w-full"
-          onClick={() => handleInitiateOutreach(lead, index)}
+          onClick={() => setLeadForConfirmation({ lead, index })}
           disabled={isProcessing || isDone}
         >
           {isProcessing ? (
@@ -168,6 +187,7 @@ export default function AgentPage() {
   )};
 
   return (
+    <>
     <div className="container mx-auto max-w-5xl space-y-8 py-8">
       <div className="text-center">
         <h1 className="font-headline text-3xl font-bold md:text-4xl">
@@ -250,5 +270,32 @@ export default function AgentPage() {
         </Card>
       )}
     </div>
+    
+      <AlertDialog open={!!leadForConfirmation} onOpenChange={(open) => !open && setLeadForConfirmation(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="text-yellow-400" />
+                Confirm Action
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to engage this lead? This will save the lead to your database and send a personalized outreach email drafted by Omarim AI. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {leadForConfirmation && (
+             <div className="text-sm rounded-md border bg-muted p-4">
+                 <p className="font-bold">{leadForConfirmation.lead.name}</p>
+                 <p className="text-muted-foreground">{leadForConfirmation.lead.company}</p>
+             </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleInitiateOutreach}>
+              Yes, engage lead
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
