@@ -100,8 +100,9 @@ export default function AgentPage() {
     try {
       const result = await initiateOutreach({ lead, userId: user.uid });
       toast({
-        title: 'Engagement Successful',
+        title: result.emailSent ? 'Engagement Successful' : 'Engagement Partially Failed',
         description: result.message,
+        variant: result.emailSent ? 'default' : 'destructive',
       });
       setOutreachState(prev => ({...prev, [index]: 'done'}));
     } catch (error) {

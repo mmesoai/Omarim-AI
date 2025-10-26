@@ -79,7 +79,7 @@ const initiateOutreachFlow = ai.defineFlow(
         company: lead.company,
         domain: lead.hasWebsite ? new URL(`http://${lead.company.toLowerCase().replace(/ /g, '')}.com`).hostname : 'unknown.com', // Simulate domain
         email: lead.email,
-        status: 'Contacted',
+        status: 'New', // Start with New status
       },
     });
 
@@ -97,12 +97,14 @@ const initiateOutreachFlow = ai.defineFlow(
       body: emailContent.body,
     });
     
-    // Step 4: Update the lead status to 'Contacted' in Firestore
-     await saveLead({
-      userId,
-      leadId: leadId, // Pass leadId to update the existing document
-      leadData: { status: 'Contacted' },
-    });
+    // Step 4: If email was sent successfully, update the lead status to 'Contacted' in Firestore
+    if (sendResult.success) {
+      await saveLead({
+        userId,
+        leadId: leadId, // Pass leadId to update the existing document
+        leadData: { status: 'Contacted' },
+      });
+    }
 
 
     return {
