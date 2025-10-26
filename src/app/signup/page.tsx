@@ -73,6 +73,7 @@ export default function SignupPage() {
           lastName: values.lastName,
           email: values.email,
         };
+        // Use setDoc without merge on signup to ensure it's a create operation
         setDocumentNonBlocking(userDocRef, userData);
       }
     } catch (error) {
@@ -81,7 +82,7 @@ export default function SignupPage() {
     }
   }
 
-  if (isUserLoading || user) {
+  if (isUserLoading || (!isUserLoading && user)) {
     return (
       <div className="relative flex min-h-screen flex-col items-center justify-center">
         <p>Loading...</p>
@@ -109,7 +110,7 @@ export default function SignupPage() {
           </CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <CardContent className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <FormField

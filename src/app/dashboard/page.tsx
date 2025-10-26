@@ -24,6 +24,9 @@ export default function DashboardPage() {
 
   const { data: products, isLoading } = useCollection(productsCollectionRef);
 
+  // Derive data for the chart, handling the null/empty case
+  const chartData = products && products.length > 0 ? products : [];
+
   return (
     <div className="space-y-6">
       <Card>
@@ -37,11 +40,11 @@ export default function DashboardPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           )}
-          {!isLoading && products && products.length > 0 && (
+          {!isLoading && chartData.length > 0 && (
             <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={products}
+                  data={chartData}
                   margin={{
                     top: 5,
                     right: 30,
@@ -65,9 +68,10 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
           )}
-           {!isLoading && (!products || products.length === 0) && (
-            <div className="flex h-80 w-full items-center justify-center">
-              <p className="text-muted-foreground">No product data available. Add products in the 'Product Sourcing' page to see the chart.</p>
+           {!isLoading && chartData.length === 0 && (
+            <div className="flex h-80 w-full flex-col items-center justify-center text-center">
+              <p className="text-lg font-semibold">No Product Data Available</p>
+              <p className="text-muted-foreground">Add products in the 'Product Sourcing' page to see your inventory chart.</p>
             </div>
           )}
         </CardContent>
