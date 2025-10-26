@@ -127,7 +127,7 @@ export default function VoicePage() {
     setCommandState('interpreting');
     try {
       const result = await interpretCommand({ command: commandText });
-      handleExecution(result.action, result.prompt);
+      await handleExecution(result.action, result.prompt);
     } catch (error) {
       console.error("Interpretation failed:", error);
       toast({ title: "Interpretation Failed", description: "Could not understand the command.", variant: "destructive" });
@@ -146,15 +146,11 @@ export default function VoicePage() {
         responseText = `This is Omarim AI. I've created a social media post about ${prompt}.`;
       } else if (action === 'add_store') {
         responseText = `This is Omarim AI. Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
-        router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`);
-        await handleSpeak(responseText);
-        setCommandState('idle'); 
-        return; 
+        setTimeout(() => router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`), 2000);
       } else {
          responseText = "This is Omarim AI. I'm sorry, I did not recognize that command. Please try again.";
       }
-      await handleSpeak(responseText);
-      setCommandState('idle');
+      await handleSpeak(responseText, true);
     } catch (error) {
        console.error("Execution failed:", error);
        toast({ title: "Action Failed", description: "There was an error performing the action.", variant: "destructive" });
@@ -162,9 +158,8 @@ export default function VoicePage() {
     }
   };
 
-  const handleSpeak = async (text: string) => {
+  const handleSpeak = async (text: string, isCommandResponse = false) => {
     if (!text) return;
-    const isCommandResponse = commandState !== 'idle';
     if(isCommandResponse) {
       setCommandState('responding');
     } else {
@@ -182,6 +177,7 @@ export default function VoicePage() {
         variant: "destructive",
       });
     } finally {
+      // The 'idle' state for command responses will be set in the onEnded event of the audio player
       if(!isCommandResponse) {
         setIsSpeaking(false);
       }
@@ -194,6 +190,13 @@ export default function VoicePage() {
       audioPlayerRef.current.play().catch(e => console.error("Audio playback failed", e));
     }
   }, [ttsAudioUrl]);
+
+  const onAudioEnded = () => {
+    if (commandState === 'responding') {
+      setCommandState('idle');
+    }
+    setTtsAudioUrl(null);
+  };
 
   const getStatusInfo = () => {
     switch (commandState) {
@@ -212,7 +215,7 @@ export default function VoicePage() {
 
   return (
     <div className="space-y-6">
-       <audio ref={audioPlayerRef} onEnded={() => setTtsAudioUrl(null)} />
+       <audio ref={audioPlayerRef} onEnded={onAudioEnded} />
       <div>
         <h2 className="text-2xl font-headline font-semibold">Voice Tools</h2>
         <p className="text-muted-foreground">
@@ -281,7 +284,7 @@ export default function VoicePage() {
               )}
               Speak Text
             </Button>
-             {ttsAudioUrl && (
+             {ttsAudioUrl && commandState === 'idle' && (
                 <div className="pt-4">
                   <Label>AI Voice Output</Label>
                   <audio src={ttsAudioUrl} controls className="w-full mt-2" />
@@ -314,7 +317,7 @@ export default function VoicePage() {
                     </div>
                     <div className="flex flex-wrap gap-2 pt-4">
                         {agentResult.data.hashtags.map((tag, index) => (
-                            <Badge key={index} variant="secondary">{tag}</Badge>
+                            <Badge key={index} variant="secondary">#{tag}</Badge>
                         ))}
                         </div>
                 </div>
@@ -325,3 +328,5 @@ export default function VoicePage() {
     </div>
   );
 }
+
+    
