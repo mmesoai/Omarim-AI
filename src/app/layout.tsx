@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
+import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Omarim AI',
@@ -24,7 +26,13 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <FirebaseClientProvider>{children}</FirebaseClientProvider>
+        <Suspense fallback={
+          <div className="flex h-screen w-screen items-center justify-center bg-background">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        }>
+          <FirebaseClientProvider>{children}</FirebaseClientProvider>
+        </Suspense>
         <Toaster />
       </body>
     </html>

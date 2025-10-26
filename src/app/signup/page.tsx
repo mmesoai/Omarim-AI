@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useEffect } from "react"
 import { doc } from "firebase/firestore"
+import { Loader2 } from "lucide-react"
 
 import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
@@ -73,19 +74,17 @@ export default function SignupPage() {
           lastName: values.lastName,
           email: values.email,
         };
-        // Use setDoc without merge on signup to ensure it's a create operation
         setDocumentNonBlocking(userDocRef, userData);
       }
     } catch (error) {
       console.error("Error signing up:", error);
-      // You can add a toast notification here to inform the user.
     }
   }
 
-  if (isUserLoading || (!isUserLoading && user)) {
+  if (isUserLoading || user) {
     return (
       <div className="relative flex min-h-screen flex-col items-center justify-center">
-        <p>Loading...</p>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useEffect } from "react"
+import { Loader2 } from "lucide-react"
 
 import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
@@ -28,7 +29,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useAuth, useUser, initiateEmailSignIn } from "@/firebase"
-import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email." }),
@@ -39,7 +39,6 @@ export default function LoginPage() {
   const router = useRouter()
   const auth = useAuth()
   const { user, isUserLoading } = useUser()
-  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,7 +61,7 @@ export default function LoginPage() {
   if (isUserLoading || user) {
     return (
       <div className="relative flex min-h-screen flex-col items-center justify-center">
-        <p>Loading...</p>
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
