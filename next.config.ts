@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -30,6 +31,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Resolve 'async_hooks' to a an empty module on the client side.
+      // This is required to prevent a build error from a Genkit dependency.
+      config.resolve.alias.async_hooks = false;
+    }
+    return config;
+  }
 };
 
 export default nextConfig;
