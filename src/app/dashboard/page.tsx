@@ -3,7 +3,7 @@
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
@@ -12,10 +12,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, ShoppingBag, Send, PlusCircle, List, Activity } from 'lucide-react';
+import { Loader2, Users, ShoppingBag, Send, PlusCircle, Activity } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 
-const leadStatusColors = {
+const leadStatusColors: { [key: string]: string } = {
   New: '#3b82f6', // blue-500
   Contacted: '#f97316', // orange-500
   Interested: '#22c55e', // green-500
@@ -66,9 +67,9 @@ export default function DashboardPage() {
   const isLoading = isLoadingLeads || isLoadingProducts || isLoadingSequences;
 
   const kpiData = [
-    { title: 'Total Leads', value: leads?.length ?? 0, icon: Users },
-    { title: 'Synced Products', value: products?.length ?? 0, icon: ShoppingBag },
-    { title: 'Outreach Sequences', value: sequences?.length ?? 0, icon: Send },
+    { title: 'Total Leads', value: leads?.length ?? 0, icon: Users, path: '/dashboard/leads' },
+    { title: 'Synced Products', value: products?.length ?? 0, icon: ShoppingBag, path: '/dashboard/stores' },
+    { title: 'Outreach Sequences', value: sequences?.length ?? 0, icon: Send, path: '/dashboard/outreach' },
   ];
 
   const recentActivities = [
@@ -92,7 +93,7 @@ export default function DashboardPage() {
       {/* KPI Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {kpiData.map((kpi, index) => (
-          <Card key={index}>
+          <Card key={index} className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-1" onClick={() => router.push(kpi.path)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
               <kpi.icon className="h-4 w-4 text-muted-foreground" />
@@ -100,7 +101,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{kpi.value}</div>
               <p className="text-xs text-muted-foreground">
-                Real-time data from your integrations
+                Click to view details
               </p>
             </CardContent>
           </Card>
@@ -109,25 +110,25 @@ export default function DashboardPage() {
       
       {/* Quick Actions */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-         <Button variant="outline" size="lg" className="h-20" onClick={() => router.push('/dashboard/leads')}>
-            <PlusCircle className="mr-4 h-6 w-6" />
-            <div className="text-left">
+         <Button variant="outline" className="h-20 w-full justify-start p-4 text-left" onClick={() => router.push('/dashboard/leads')}>
+            <PlusCircle className="mr-4 h-6 w-6 text-primary" />
+            <div>
                 <p className="font-semibold">Add New Lead</p>
-                <p className="font-normal text-muted-foreground">Manually add a lead to your pipeline.</p>
+                <p className="text-sm font-normal text-muted-foreground">Manually add a lead to your pipeline.</p>
             </div>
          </Button>
-         <Button variant="outline" size="lg" className="h-20" onClick={() => router.push('/dashboard/outreach')}>
-            <Send className="mr-4 h-6 w-6" />
-             <div className="text-left">
+         <Button variant="outline" className="h-20 w-full justify-start p-4 text-left" onClick={() => router.push('/dashboard/outreach')}>
+            <Send className="mr-4 h-6 w-6 text-primary" />
+             <div>
                 <p className="font-semibold">Create Sequence</p>
-                <p className="font-normal text-muted-foreground">Start a new email outreach campaign.</p>
+                <p className="text-sm font-normal text-muted-foreground">Start a new email outreach campaign.</p>
             </div>
          </Button>
-         <Button variant="outline" size="lg" className="h-20" onClick={() => router.push('/dashboard/settings?tab=integrations')}>
-            <ShoppingBag className="mr-4 h-6 w-6" />
-             <div className="text-left">
+         <Button variant="outline" className="h-20 w-full justify-start p-4 text-left" onClick={() => router.push('/dashboard/settings?tab=integrations')}>
+            <ShoppingBag className="mr-4 h-6 w-6 text-primary" />
+             <div>
                 <p className="font-semibold">Connect a Store</p>
-                <p className="font-normal text-muted-foreground">Sync products from Shopify, etc.</p>
+                <p className="text-sm font-normal text-muted-foreground">Sync products from Shopify, etc.</p>
             </div>
          </Button>
       </div>
@@ -168,8 +169,13 @@ export default function DashboardPage() {
                 </div>
             ) : (
                 <div className="flex h-80 w-full flex-col items-center justify-center text-center">
-                <p className="text-lg font-semibold">No Lead Data</p>
-                <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
+                  <Users className="h-12 w-12 text-muted-foreground" />
+                  <p className="mt-4 text-lg font-semibold">No Lead Data</p>
+                  <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
+                  <Button variant="secondary" className="mt-4" onClick={() => router.push('/dashboard/leads')}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add a Lead
+                  </Button>
                 </div>
             )}
           </CardContent>
@@ -185,7 +191,7 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                     {recentActivities.map((activity, index) => (
                         <div key={index} className="flex items-start gap-4">
-                            <div className="rounded-full bg-muted p-2">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                                 <activity.icon className="h-4 w-4 text-muted-foreground" />
                             </div>
                             <div className="flex-1">

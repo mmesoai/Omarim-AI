@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Volume2, Bot, Send as UIBadge, BrainCircuit, Waves } from "lucide-react";
+import { Mic, Square, Loader2, Volume2, Bot, BrainCircuit, Waves } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -221,7 +221,7 @@ export default function VoicePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        <Card>
+        <Card className="flex flex-col">
           <CardHeader className="flex-row gap-4 items-center">
             <Bot className="w-10 h-10 text-primary" />
             <div>
@@ -229,21 +229,21 @@ export default function VoicePage() {
               <CardDescription>Speak your commands to Omarim AI.</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center space-y-4 text-center h-[300px]">
+          <CardContent className="flex flex-grow flex-col items-center justify-center space-y-4 text-center">
             <Button
               size="lg"
               onClick={commandState === 'recording' ? handleStopRecording : handleStartRecording}
               className={cn(
-                'rounded-full w-24 h-24 transition-all duration-300',
+                'rounded-full w-24 h-24 transition-all duration-300 shadow-lg',
                 commandState === 'recording' ? 'bg-red-500 hover:bg-red-600 animate-pulse' : 'bg-primary hover:bg-primary/90',
-                isProcessing && 'bg-muted-foreground'
+                isProcessing && 'bg-muted-foreground cursor-not-allowed'
               )}
               disabled={isProcessing}
             >
               {isProcessing ? <Loader2 size={32} className="animate-spin" /> : (commandState === 'recording' ? <Square size={32} /> : <Mic size={32} />) }
             </Button>
             
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground h-5">
               <StatusIcon className={cn('h-4 w-4', isSpinning && 'animate-spin')} />
               <span>{statusText}</span>
             </div>
@@ -251,7 +251,7 @@ export default function VoicePage() {
             {transcription && (
                <div className="w-full text-left space-y-2 pt-4">
                   <Label>Your Command</Label>
-                  <p className="text-sm italic text-foreground p-2 bg-muted rounded-md">{transcription}</p>
+                  <p className="text-sm italic text-foreground p-3 bg-muted rounded-md border">{transcription}</p>
               </div>
             )}
           </CardContent>

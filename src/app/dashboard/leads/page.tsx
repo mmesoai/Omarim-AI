@@ -37,7 +37,7 @@ export default function LeadsPage() {
 
   const { data: leads, isLoading } = useCollection(leadsCollectionRef);
 
-  const handleScrapeNewLead = () => {
+  const handleAddSampleLead = () => {
     if (!leadsCollectionRef) return;
     
     const sampleLead = {
@@ -79,7 +79,7 @@ export default function LeadsPage() {
             Manage your leads and initiate outreach campaigns.
           </p>
         </div>
-        <Button onClick={handleScrapeNewLead} disabled={!user || isLoading}>
+        <Button onClick={handleAddSampleLead} disabled={!user || isLoading}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Sample Lead
         </Button>
@@ -106,7 +106,7 @@ export default function LeadsPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={5} className="text-center py-10">
                     <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                   </TableCell>
                 </TableRow>
@@ -143,7 +143,7 @@ export default function LeadsPage() {
               ))}
               {!isLoading && (!leads || leads.length === 0) && (
                  <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
                     You have no leads yet. Try adding a sample lead.
                   </TableCell>
                 </TableRow>
