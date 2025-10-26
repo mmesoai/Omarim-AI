@@ -41,8 +41,8 @@ const Header = () => {
     const auth = useAuth();
     const handleLogout = () => { signOut(auth) };
 
-    const userInitial = userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : "";
-    const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
+    const userInitial = userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || "U");
+    const userName = userData ? `${userData.firstName} ${userData.lastName}` : (user?.email || "User");
 
     return (
         <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm md:px-6">
@@ -91,12 +91,16 @@ export default function DashboardLayout({
     }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     ); 
+  }
+
+  if (!user) {
+    return null; // Don't render the dashboard if there's no user. The useEffect will redirect.
   }
 
   return (

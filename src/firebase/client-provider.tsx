@@ -18,21 +18,29 @@ type FirebaseServices = {
   firestore: Firestore;
 };
 
+// Singleton promise to ensure Firebase initializes only once
+let firebaseInitializationPromise: Promise<FirebaseServices | null> | null = null;
+
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [firebaseServices, setFirebaseServices] = useState<FirebaseServices | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize Firebase on the client side, once per component mount.
-    const services = initializeFirebase();
-    if (services) {
-      setFirebaseServices(services);
+    if (firebaseInitializationPromise === null) {
+      firebaseInitializationPromise = new Promise((resolve) => {
+        const services = initializeFirebase();
+        resolve(services);
+      });
     }
-    // Regardless of outcome, initialization attempt is complete.
-    setIsLoading(false);
-  }, []); // Empty dependency array ensures this runs only once on mount
 
-  // While attempting to initialize, show a loading state.
+    firebaseInitializationPromise.then(services => {
+      if (services) {
+        setFirebaseServices(services);
+      }
+      setIsLoading(false);
+    });
+  }, []); 
+
   if (isLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
@@ -41,8 +49,6 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
     );
   }
 
-  // If initialization failed or returned null, render nothing or an error message.
-  // This prevents children from trying to access a null context.
   if (!firebaseServices) {
     return (
        <div className="flex h-screen w-screen items-center justify-center bg-background text-destructive-foreground">
