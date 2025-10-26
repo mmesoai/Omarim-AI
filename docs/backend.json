@@ -7,10 +7,6 @@
       "type": "object",
       "description": "Represents a lead scraped from various sources.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Lead entity."
-        },
         "email": {
           "type": "string",
           "description": "Email address of the lead.",
@@ -32,19 +28,18 @@
           "type": "string",
           "description": "Domain name of the lead's company."
         },
-        "notionPageId": {
+        "status": {
           "type": "string",
-          "description": "Reference to NotionPage. (Relationship: NotionPage 1:N Lead)"
+          "description": "The current status of the lead (e.g., New, Contacted, Interested)."
         }
       },
       "required": [
-        "id",
         "email",
         "firstName",
         "lastName",
         "company",
         "domain",
-        "notionPageId"
+        "status"
       ]
     },
     "NotionPage": {
@@ -321,14 +316,6 @@
       "type": "object",
       "description": "Represents a product listed on a store.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Product entity."
-        },
-        "storeId": {
-          "type": "string",
-          "description": "Reference to Store. (Relationship: Store 1:N Product)"
-        },
         "name": {
           "type": "string",
           "description": "Name of the product."
@@ -345,20 +332,22 @@
           "type": "number",
           "description": "Available quantity of the product."
         },
-        "imageUrl": {
+        "imageId": {
           "type": "string",
-          "description": "URL of the product image.",
-          "format": "uri"
+          "description": "ID of the product image from the placeholder library."
+        },
+        "source": {
+            "type": "string",
+            "description": "The e-commerce platform this product is from (e.g., Shopify, WooCommerce)."
         }
       },
       "required": [
-        "id",
-        "storeId",
         "name",
         "description",
         "price",
         "quantity",
-        "imageUrl"
+        "imageId",
+        "source"
       ]
     },
     "Store": {
@@ -438,57 +427,27 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Collection of user profiles.  Root level is used to store public user profile information.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
+          "description": "Collection of user profiles."
         }
       },
       {
-        "path": "/users/{userId}/notionPages/{notionPageId}",
-        "definition": {
-          "entityName": "NotionPage",
-          "schema": {
-            "$ref": "#/backend/entities/NotionPage"
-          },
-          "description": "Collection of Notion pages owned by a user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "notionPageId",
-              "description": "The unique identifier of the Notion page."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/notionPages/{notionPageId}/leads/{leadId}",
+        "path": "/users/{userId}/leads/{leadId}",
         "definition": {
           "entityName": "Lead",
           "schema": {
             "$ref": "#/backend/entities/Lead"
           },
-          "description": "Collection of leads associated with a Notion page owned by a user. Includes denormalized 'notionPageId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "notionPageId",
-              "description": "The unique identifier of the Notion page."
-            },
-            {
-              "name": "leadId",
-              "description": "The unique identifier of the lead."
-            }
-          ]
+          "description": "Collection of leads owned by a user."
+        }
+      },
+      {
+        "path": "/users/{userId}/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Collection of products owned by a user."
         }
       },
       {
@@ -498,17 +457,7 @@
           "schema": {
             "$ref": "#/backend/entities/OutreachSequence"
           },
-          "description": "Collection of outreach sequences created by a user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "outreachSequenceId",
-              "description": "The unique identifier of the outreach sequence."
-            }
-          ]
+          "description": "Collection of outreach sequences created by a user."
         }
       },
       {
@@ -518,132 +467,9 @@
           "schema": {
             "$ref": "#/backend/entities/Email"
           },
-          "description": "Collection of emails associated with an outreach sequence owned by a user. Includes denormalized 'outreachSequenceId' and 'leadId' for authorization independence and efficient querying.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "outreachSequenceId",
-              "description": "The unique identifier of the outreach sequence."
-            },
-            {
-              "name": "emailId",
-              "description": "The unique identifier of the email."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/emails/{emailId}/inboundReplies/{inboundReplyId}",
-        "definition": {
-          "entityName": "InboundReply",
-          "schema": {
-            "$ref": "#/backend/entities/InboundReply"
-          },
-          "description": "Collection of inbound replies associated with a specific email. Public Read.",
-          "params": [
-            {
-              "name": "emailId",
-              "description": "The unique identifier of the email."
-            },
-            {
-              "name": "inboundReplyId",
-              "description": "The unique identifier of the inbound reply."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/domainChecks/{domainCheckId}",
-        "definition": {
-          "entityName": "DomainCheck",
-          "schema": {
-            "$ref": "#/backend/entities/DomainCheck"
-          },
-          "description": "Collection of domain check results. Public Read.",
-          "params": [
-            {
-              "name": "domainCheckId",
-              "description": "The unique identifier of the domain check."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/payments/{paymentId}",
-        "definition": {
-          "entityName": "Payment",
-          "schema": {
-            "$ref": "#/backend/entities/Payment"
-          },
-          "description": "Collection of payments made by a user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "paymentId",
-              "description": "The unique identifier of the payment."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/provisioning/{provisioningId}",
-        "definition": {
-          "entityName": "Provisioning",
-          "schema": {
-            "$ref": "#/backend/entities/Provisioning"
-          },
-          "description": "Collection of provisioning records.  Contains sensitive information, limited admin access.",
-          "params": [
-            {
-              "name": "provisioningId",
-              "description": "The unique identifier of the provisioning record."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/stores/{storeId}",
-        "definition": {
-          "entityName": "Store",
-          "schema": {
-            "$ref": "#/backend/entities/Store"
-          },
-          "description": "Collection of store integrations. Limited to Admin access.",
-          "params": [
-            {
-              "name": "storeId",
-              "description": "The unique identifier of the store."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/stores/{storeId}/products/{productId}",
-        "definition": {
-          "entityName": "Product",
-          "schema": {
-            "$ref": "#/backend/entities/Product"
-          },
-          "description": "Collection of products belonging to a store. Limited to Admin Access",
-          "params": [
-            {
-              "name": "storeId",
-              "description": "The unique identifier of the store."
-            },
-            {
-              "name": "productId",
-              "description": "The unique identifier of the product."
-            }
-          ]
+          "description": "Collection of emails associated with an outreach sequence."
         }
       }
-    ],
-    "reasoning": "The Firestore data structure is designed to support the core features of the Omarim-AI application, focusing on lead management, outreach sequences, domain checks, payments, and store integrations. It emphasizes authorization independence and clear access control using denormalization and structural segregation. Each collection is designed to have a homogeneous security posture, simplifying security rules and ensuring data integrity.\n\n*   **Authorization Independence:** Access control is managed without hierarchical `get()` calls in security rules. For example, access to leads within a NotionPage is controlled by denormalizing NotionPage membership information into the Lead documents.\n*   **Structural Segregation:** Data with different access requirements are stored in separate collections. User-owned data resides under `/users/{userId}`. Collaborative data uses membership maps.\n*   **QAPs (Queryability and Protection):** Secure `list` operations are supported by segregating data and using path-based ownership where applicable. For instance, each user owns their OutreachSequences in `/users/{userId}/outreachSequences/{outreachSequenceId}` enabling easy filtering by user.\n*   **Invariants:** Ownership is enforced through path-based access and denormalized data.\n\nSpecifically, the following denormalization strategies are used:\n\n*   **Leads:** Each Lead document contains a `notionPageId`, establishing a relationship between Leads and NotionPages. There is also a User ID for ownership.\n*   **Emails:** Emails include `outreachSequenceId` and `leadId` for easy querying and association with specific outreach sequences and leads.\n\nThe Membership Map pattern is not used in this design, as the entities are owned by a single user, not collaboratively by multiple users."
+    ]
   }
 }
