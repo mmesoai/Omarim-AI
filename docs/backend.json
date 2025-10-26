@@ -350,6 +350,32 @@
         "source"
       ]
     },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        }
+      },
+      "required": [
+        "email",
+        "firstName",
+        "lastName"
+      ]
+    },
     "Store": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Store",
@@ -378,32 +404,6 @@
         "type",
         "apiUrl",
         "apiKey"
-      ]
-    },
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
-      "type": "object",
-      "description": "Represents a user of the application.",
-      "properties": {
-        "email": {
-          "type": "string",
-          "description": "Email address of the user.",
-          "format": "email"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "First name of the user."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "Last name of the user."
-        }
-      },
-      "required": [
-        "email",
-        "firstName",
-        "lastName"
       ]
     }
   },
@@ -478,5 +478,3 @@
     ]
   }
 }
-
-    
