@@ -13,7 +13,8 @@ import {
   Mic,
   Send,
   Settings,
-  BotMessageSquare
+  BotMessageSquare,
+  ChevronDown
 } from "lucide-react"
 
 import {
@@ -23,6 +24,15 @@ import {
   SidebarGroupLabel,
   SidebarSeparator
 } from "@/components/ui/sidebar"
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { cn } from "@/lib/utils"
+
 
 const mainNav = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
@@ -62,16 +72,41 @@ export function DashboardNav() {
       </SidebarMenuItem>
     ))
   );
+  
+  const NavAccordion = ({ title, items }: { title: string, items: typeof featureNav }) => (
+    <Accordion type="single" collapsible className="w-full" defaultValue={items.some(item => pathname.startsWith(item.href)) ? title : undefined}>
+      <AccordionItem value={title} className="border-none">
+        <AccordionTrigger className="py-2 px-3 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md [&[data-state=open]>svg]:rotate-180 group-data-[collapsible=icon]:hidden">
+           {title}
+          <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+        </AccordionTrigger>
+        <AccordionContent className="pb-0 pl-4 group-data-[collapsible=icon]:hidden">
+          <SidebarMenu className="py-2">
+            {buildNav(items)}
+          </SidebarMenu>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
 
   return (
     <SidebarMenu>
       {buildNav(mainNav)}
       <SidebarSeparator />
-      <SidebarGroupLabel>Features</SidebarGroupLabel>
-      {buildNav(featureNav)}
-      <SidebarSeparator />
-      <SidebarGroupLabel>Tools</SidebarGroupLabel>
-      {buildNav(secondaryNav)}
+      <div className="px-2 space-y-1 group-data-[collapsible=icon]:hidden">
+        <NavAccordion title="Features" items={featureNav} />
+        <NavAccordion title="Tools" items={secondaryNav} />
+      </div>
+      
+      {/* Icon-only display for collapsed sidebar */}
+      <div className="hidden group-data-[collapsible=icon]:flex flex-col gap-1">
+        <SidebarGroupLabel className="!mt-0">Features</SidebarGroupLabel>
+        {buildNav(featureNav)}
+        <SidebarSeparator />
+        <SidebarGroupLabel>Tools</SidebarGroupLabel>
+        {buildNav(secondaryNav)}
+      </div>
+
       <SidebarMenuItem className="mt-auto">
         <SidebarMenuButton
           asChild
