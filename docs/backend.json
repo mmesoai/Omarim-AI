@@ -297,8 +297,7 @@
         },
         "createdAt": {
           "type": "string",
-          "description": "Timestamp when the provisioning was initiated.",
-          "format": "date-time"
+w-date-time"
         }
       },
       "required": [
@@ -356,10 +355,6 @@
       "type": "object",
       "description": "Represents a store integrated with the application.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Store entity."
-        },
         "name": {
           "type": "string",
           "description": "Name of the store."
@@ -378,7 +373,6 @@
         }
       },
       "required": [
-        "id",
         "name",
         "type",
         "apiUrl",
@@ -468,6 +462,16 @@
             "$ref": "#/backend/entities/Email"
           },
           "description": "Collection of emails associated with an outreach sequence."
+        }
+      },
+      {
+        "path": "/users/{userId}/stores/{storeId}",
+        "definition": {
+          "entityName": "Store",
+          "schema": {
+            "$ref": "#/backend/entities/Store"
+          },
+          "description": "Collection of stores integrated by a user."
         }
       }
     ]

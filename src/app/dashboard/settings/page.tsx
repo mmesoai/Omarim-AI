@@ -1,3 +1,14 @@
+
+"use client"
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { collection }_from 'firebase/firestore';
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,14 +26,74 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Loader2, PlusCircle } from "lucide-react";
+
+
+const storeFormSchema = z.object({
+  name: z.string().min(2, { message: "Store name must be at least 2 characters." }),
+  type: z.enum(["Shopify", "WooCommerce", "Amazon", "eBay"]),
+  apiKey: z.string().min(10, { message: "API Key seems too short." }),
+  apiUrl: z.string().url({ message: "Please enter a valid URL." }),
+});
 
 export default function SettingsPage() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const storesCollectionRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, `users/${user.uid}/stores`);
+  }, [firestore, user]);
+
+  const { data: stores, isLoading: isLoadingStores } = useCollection(storesCollectionRef);
+
+  const storeForm = useForm<z.infer<typeof storeFormSchema>>({
+    resolver: zodResolver(storeFormSchema),
+    defaultValues: {
+      name: "",
+      apiKey: "",
+      apiUrl: "",
+    },
+  });
+
+  function onStoreSubmit(values: z.infer<typeof storeFormSchema>) {
+    if (!storesCollectionRef) return;
+    addDocumentNonBlocking(storesCollectionRef, values);
+    storeForm.reset();
+    setIsDialogOpen(false);
+  }
+
   return (
     <div className="space-y-6">
        <div>
         <h2 className="text-2xl font-headline font-semibold">Settings</h2>
         <p className="text-muted-foreground">
-          Manage your account settings and set e-mail preferences.
+          Manage your account settings and integrations.
         </p>
       </div>
 
@@ -84,34 +155,126 @@ export default function SettingsPage() {
 
         <TabsContent value="integrations">
           <Card>
-            <CardHeader>
-              <CardTitle>Integrations</CardTitle>
-              <CardDescription>
-                Connect your accounts from other services.
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Integrations</CardTitle>
+                <CardDescription>
+                  Connect your accounts from other services.
+                </CardDescription>
+              </div>
+               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                   <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Store
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Add New Store</DialogTitle>
+                    <DialogDescription>
+                      Enter the details for your new store integration.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...storeForm}>
+                    <form onSubmit={storeForm.handleSubmit(onStoreSubmit)} className="space-y-4">
+                       <FormField
+                        control={storeForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Store Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="My Awesome Store" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={storeForm.control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Platform</FormLabel>
+                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a platform" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Shopify">Shopify</SelectItem>
+                                <SelectItem value="WooCommerce">WooCommerce</SelectItem>
+                                <SelectItem value="Amazon">Amazon</SelectItem>
+                                <SelectItem value="eBay">eBay</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={storeForm.control}
+                        name="apiUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>API URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://my-store.myshopify.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={storeForm.control}
+                        name="apiKey"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>API Key</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="shpat_xxxxxxxxxxxx" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter>
+                        <Button type="submit">Connect Store</Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent className="grid gap-4">
-                <div className="flex items-center justify-between rounded-md border p-4">
-                    <p className="font-medium">Shopify</p>
-                    <Button variant="secondary">Connect</Button>
-                </div>
-                <div className="flex items-center justify-between rounded-md border p-4">
-                    <p className="font-medium">WooCommerce</p>
-                    <Button variant="secondary">Connect</Button>
-                </div>
-                <div className="flex items-center justify-between rounded-md border p-4">
+                {isLoadingStores && <Loader2 className="mx-auto h-8 w-8 animate-spin" />}
+                
+                {!isLoadingStores && stores && stores.map((store) => (
+                   <div key={store.id} className="flex items-center justify-between rounded-md border p-4">
+                      <div>
+                        <p className="font-medium">{store.name}</p>
+                        <p className="text-sm text-muted-foreground">{store.type}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-green-500">Connected</p>
+                        <Button variant="outline">Disconnect</Button>
+                      </div>
+                  </div>
+                ))}
+                
+                {!isLoadingStores && (!stores || stores.length === 0) && (
+                  <p className="text-center text-sm text-muted-foreground py-4">No stores connected yet.</p>
+                )}
+
+                 <div className="flex items-center justify-between rounded-md border p-4 opacity-50">
                     <p className="font-medium">SendGrid</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm text-green-500">Connected</p>
-                      <Button variant="outline">Disconnect</Button>
-                    </div>
+                    <Button variant="secondary" disabled>Connect</Button>
                 </div>
-                 <div className="flex items-center justify-between rounded-md border p-4">
+                 <div className="flex items-center justify-between rounded-md border p-4 opacity-50">
                     <p className="font-medium">Clearbit</p>
-                     <div className="flex items-center gap-2">
-                      <p className="text-sm text-green-500">Connected</p>
-                      <Button variant="outline">Disconnect</Button>
-                    </div>
+                    <Button variant="secondary" disabled>Connect</Button>
                 </div>
             </CardContent>
           </Card>
