@@ -61,8 +61,19 @@ const storeFormSchema = z.object({
   apiUrl: z.string().url({ message: "Please enter a valid URL." }),
 });
 
+const genericIntegrationSchema = z.object({
+    apiKey: z.string().min(10, { message: "API Key is required." }),
+});
+
+type IntegrationDialogState = {
+    isOpen: boolean;
+    type: 'store' | 'sendgrid' | 'clearbit';
+}
+
 export default function SettingsPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [storeDialogOpen, setStoreDialogOpen] = useState(false);
+  const [integrationDialog, setIntegrationDialog] = useState<IntegrationDialogState>({ isOpen: false, type: 'store' });
+
   const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
@@ -83,14 +94,18 @@ export default function SettingsPage() {
     },
   });
 
+  const genericForm = useForm<z.infer<typeof genericIntegrationSchema>>({
+    resolver: zodResolver(genericIntegrationSchema),
+    defaultValues: { apiKey: "" },
+  });
+
   useEffect(() => {
     const action = searchParams.get('action');
     const storeType = searchParams.get('storeType');
 
     if (action === 'addStore') {
-      setIsDialogOpen(true);
+      setIntegrationDialog({ isOpen: true, type: 'store' });
       if (storeType && ["Shopify", "WooCommerce", "Amazon", "eBay"].includes(storeType)) {
-        // Capitalize the first letter to match the enum
         const capitalizedStoreType = storeType.charAt(0).toUpperCase() + storeType.slice(1);
         storeForm.setValue('type', capitalizedStoreType as "Shopify" | "WooCommerce" | "Amazon" | "eBay");
       }
@@ -102,8 +117,137 @@ export default function SettingsPage() {
     if (!storesCollectionRef) return;
     addDocumentNonBlocking(storesCollectionRef, values);
     storeForm.reset();
-    setIsDialogOpen(false);
+    setIntegrationDialog({ isOpen: false, type: 'store' });
   }
+  
+  function onGenericSubmit(values: z.infer<typeof genericIntegrationSchema>) {
+    // In a real app, you would save this API key to a secure place.
+    console.log(`Connecting ${integrationDialog.type} with key:`, values.apiKey);
+    genericForm.reset();
+    setIntegrationDialog({ isOpen: false, type: integrationDialog.type });
+  }
+
+  const openIntegrationDialog = (type: 'store' | 'sendgrid' | 'clearbit') => {
+    setIntegrationDialog({ isOpen: true, type });
+  }
+
+  const renderDialogContent = () => {
+    switch (integrationDialog.type) {
+        case 'store':
+            return (
+                <>
+                 <DialogHeader>
+                    <DialogTitle>Add New Store</DialogTitle>
+                    <DialogDescription>
+                      Enter the details for your new store integration.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...storeForm}>
+                    <form onSubmit={storeForm.handleSubmit(onStoreSubmit)} className="space-y-4">
+                       <FormField
+                        control={storeForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Store Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="My Awesome Store" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={storeForm.control}
+                        name="type"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Platform</FormLabel>
+                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a platform" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Shopify">Shopify</SelectItem>
+                                <SelectItem value="WooCommerce">WooCommerce</SelectItem>
+                                <SelectItem value="Amazon">Amazon</SelectItem>
+                                <SelectItem value="eBay">eBay</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={storeForm.control}
+                        name="apiUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>API URL</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://my-store.myshopify.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={storeForm.control}
+                        name="apiKey"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>API Key</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="shpat_xxxxxxxxxxxx" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter>
+                        <Button type="submit">Connect Store</Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </>
+            );
+        case 'sendgrid':
+        case 'clearbit':
+             const title = integrationDialog.type === 'sendgrid' ? 'Connect SendGrid' : 'Connect Clearbit';
+             const description = `Enter your API key to connect your ${integrationDialog.type} account.`;
+            return (
+                <>
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
+                </DialogHeader>
+                <Form {...genericForm}>
+                    <form onSubmit={genericForm.handleSubmit(onGenericSubmit)} className="space-y-4">
+                        <FormField
+                            control={genericForm.control}
+                            name="apiKey"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>API Key</FormLabel>
+                                    <FormControl>
+                                        <Input type="password" placeholder="Enter your API key" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <Button type="submit">Connect</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+                </>
+            );
+    }
+  }
+
 
   return (
     <div className="space-y-6">
@@ -179,97 +323,28 @@ export default function SettingsPage() {
                   Connect your accounts from other services.
                 </CardDescription>
               </div>
-               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                   <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Store
-                  </Button>
-                </DialogTrigger>
+               <Dialog open={integrationDialog.isOpen} onOpenChange={(isOpen) => setIntegrationDialog({ ...integrationDialog, isOpen })}>
                 <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Add New Store</DialogTitle>
-                    <DialogDescription>
-                      Enter the details for your new store integration.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <Form {...storeForm}>
-                    <form onSubmit={storeForm.handleSubmit(onStoreSubmit)} className="space-y-4">
-                       <FormField
-                        control={storeForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Store Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="My Awesome Store" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={storeForm.control}
-                        name="type"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Platform</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a platform" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Shopify">Shopify</SelectItem>
-                                <SelectItem value="WooCommerce">WooCommerce</SelectItem>
-                                <SelectItem value="Amazon">Amazon</SelectItem>
-                                <SelectItem value="eBay">eBay</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={storeForm.control}
-                        name="apiUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>API URL</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://my-store.myshopify.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={storeForm.control}
-                        name="apiKey"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>API Key</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="shpat_xxxxxxxxxxxx" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <DialogFooter>
-                        <Button type="submit">Connect Store</Button>
-                      </DialogFooter>
-                    </form>
-                  </Form>
+                    {renderDialogContent()}
                 </DialogContent>
               </Dialog>
             </CardHeader>
             <CardContent className="grid gap-4">
+                <div className="flex items-center justify-between rounded-md border p-4">
+                    <div>
+                        <p className="font-medium">E-commerce Stores</p>
+                        <p className="text-sm text-muted-foreground">Shopify, WooCommerce, etc.</p>
+                    </div>
+                    <Button onClick={() => openIntegrationDialog('store')}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Store
+                    </Button>
+                </div>
+
                 {isLoadingStores && <Loader2 className="mx-auto h-8 w-8 animate-spin" />}
                 
                 {!isLoadingStores && stores && stores.map((store) => (
-                   <div key={store.id} className="flex items-center justify-between rounded-md border p-4">
+                   <div key={store.id} className="flex items-center justify-between rounded-md border p-4 ml-8">
                       <div>
                         <p className="font-medium">{store.name}</p>
                         <p className="text-sm text-muted-foreground">{store.type}</p>
@@ -285,13 +360,19 @@ export default function SettingsPage() {
                   <p className="text-center text-sm text-muted-foreground py-4">No stores connected yet.</p>
                 )}
 
-                 <div className="flex items-center justify-between rounded-md border p-4 opacity-50">
-                    <p className="font-medium">SendGrid</p>
-                    <Button variant="secondary" disabled>Connect</Button>
+                 <div className="flex items-center justify-between rounded-md border p-4">
+                    <div>
+                        <p className="font-medium">SendGrid</p>
+                        <p className="text-sm text-muted-foreground">Email delivery service</p>
+                    </div>
+                    <Button variant="secondary" onClick={() => openIntegrationDialog('sendgrid')}>Connect</Button>
                 </div>
-                 <div className="flex items-center justify-between rounded-md border p-4 opacity-50">
-                    <p className="font-medium">Clearbit</p>
-                    <Button variant="secondary" disabled>Connect</Button>
+                 <div className="flex items-center justify-between rounded-md border p-4">
+                    <div>
+                        <p className="font-medium">Clearbit</p>
+                        <p className="text-sm text-muted-foreground">Data enrichment platform</p>
+                    </div>
+                    <Button variant="secondary" onClick={() => openIntegrationDialog('clearbit')}>Connect</Button>
                 </div>
             </CardContent>
           </Card>
@@ -300,5 +381,3 @@ export default function SettingsPage() {
     </div>
   )
 }
-
-    

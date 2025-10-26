@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -9,6 +10,7 @@ import {
   FolderKanban,
   Home,
   Inbox,
+  MessageCircle,
   Mic,
   Send,
   Settings,
@@ -23,6 +25,7 @@ import {
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
+  { href: "/dashboard/chat", icon: MessageCircle, label: "Chat" },
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/agent", icon: Sparkles, label: "AI Agent" },
   { href: "/dashboard/leads", icon: FolderKanban, label: "Lead Scrape" },
@@ -42,7 +45,7 @@ export function DashboardNav() {
         <SidebarMenuItem key={item.href} className={item.separate ? "mt-auto" : ""}>
           <SidebarMenuButton
             asChild
-            isActive={pathname === item.href}
+            isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
             tooltip={item.label}
           >
             <Link href={item.href}>
