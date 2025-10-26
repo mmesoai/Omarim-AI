@@ -31,9 +31,9 @@ import { interpretCommand } from "@/ai/flows/interpret-command";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 
-import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/flows/generate-outreach-email";
 import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
 import { executeCampaignAction, type ExecuteCampaignActionOutput } from "@/ai/flows/execute-campaign-action";
+import { answerSelfKnowledgeQuestion, type AnswerSelfKnowledgeOutput } from "@/ai/flows/answer-self-knowledge-question";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,6 @@ const chatFormSchema = z.object({
 });
 
 type AgentResult = 
-  | { type: 'outreach'; data: GenerateOutreachEmailOutput }
   | { type: 'social'; data: GenerateSocialMediaPostOutput }
   | { type: 'campaign'; data: ExecuteCampaignActionOutput };
 
@@ -127,6 +126,10 @@ export default function ChatPage() {
                 agentResult = { type: 'campaign', data: campaignOutput };
                 // Overwrite the initial response with the actual result from the tool
                 responseText = campaignOutput.result; 
+                break;
+            case "answer_self_knowledge_question":
+                const selfKnowledgeOutput = await answerSelfKnowledgeQuestion({ question: prompt });
+                responseText = selfKnowledgeOutput.answer;
                 break;
             default:
                 responseText = "I'm sorry, I'm not sure how to help with that. I can help generate social media posts, run the autonomous agent to find leads, or connect new stores.";
@@ -219,23 +222,6 @@ export default function ChatPage() {
                              <div className="mt-4 pl-12">
                                 <Card className="max-w-xl">
                                     <CardContent className="p-4 space-y-4">
-                                        {message.result.type === 'outreach' && (
-                                            <div className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor={`subject-${message.id}`}>Subject</Label>
-                                                    <Input id={`subject-${message.id}`} readOnly value={message.result.data.subject} />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <Label htmlFor={`body-${message.id}`}>Body</Label>
-                                                    <Textarea
-                                                    id={`body-${message.id}`}
-                                                    readOnly
-                                                    value={message.result.data.body}
-                                                    className="h-48"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
                                         {message.result.type === 'social' && (
                                             <div className="space-y-4">
                                                 <div className="space-y-2">
@@ -293,7 +279,7 @@ export default function ChatPage() {
                   <FormItem className="flex-1">
                     <FormControl>
                       <Input
-                        placeholder="e.g., 'Add new leads to the welcome sequence'"
+                        placeholder="e.g., 'What can you do?'"
                         autoComplete="off"
                         {...field}
                         disabled={isThinking}

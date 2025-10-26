@@ -18,10 +18,8 @@ import { convertSpeechToText } from "@/ai/flows/convert-speech-to-text";
 import { convertTextToSpeech } from "@/ai/flows/convert-text-to-speech";
 import { interpretCommand } from "@/ai/flows/interpret-command";
 import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
-import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/flows/generate-outreach-email";
 
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 type CommandState = 
@@ -33,7 +31,6 @@ type CommandState =
   | 'responding';
 
 type AgentResult = 
-  | { type: 'outreach'; data: GenerateOutreachEmailOutput }
   | { type: 'social'; data: GenerateSocialMediaPostOutput };
 
 export default function VoicePage() {
@@ -141,11 +138,7 @@ export default function VoicePage() {
     setAgentResult(null);
     try {
       let responseText = "";
-      if (action === "generate_outreach_email") {
-        const output = await generateOutreachEmail({ linkedInUrl: prompt });
-        setAgentResult({ type: 'outreach', data: output });
-        responseText = "This is Omarim AI. I have drafted an outreach email for you.";
-      } else if (action === "generate_social_post") {
+      if (action === "generate_social_post") {
         const output = await generateSocialMediaPost({ topic: prompt });
         setAgentResult({ type: 'social', data: output });
         responseText = `This is Omarim AI. I've created a social media post about ${prompt}.`;
@@ -308,23 +301,6 @@ export default function VoicePage() {
                 </div>
             </CardHeader>
             <CardContent>
-            {agentResult.type === 'outreach' && (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="subject">Subject</Label>
-                        <Input id="subject" readOnly value={agentResult.data.subject} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="body">Body</Label>
-                        <Textarea
-                        id="body"
-                        readOnly
-                        value={agentResult.data.body}
-                        className="h-60"
-                        />
-                    </div>
-                </div>
-            )}
             {agentResult.type === 'social' && (
                 <div className="space-y-4">
                     <div className="space-y-2">
