@@ -50,7 +50,7 @@ import * as z from "zod";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="lg:col-span-3 flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
+const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
 const LeadIntelligenceChart = dynamic(() => import('./components/lead-intelligence-chart').then(mod => mod.LeadIntelligenceChart), { ssr: false, loading: () => <div className="h-[150px] w-full flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin"/></div> });
 
 
@@ -234,7 +234,7 @@ export default function DashboardPage() {
 
   return (
     <>
-    <div className="space-y-8">
+    <div className="space-y-6">
       {(isFindingProduct || trendingProduct) && isClient && (
         <audio src="/audio/blip.mp3" autoPlay onLoadedData={() => {}} onError={() => {}} />
       )}
@@ -245,116 +245,91 @@ export default function DashboardPage() {
         </h1>
         <p className="text-sm text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
       </div>
-      
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <RevenueOverview />
-        
-        {/* Control Center */}
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Control Center</CardTitle>
-                <CardDescription>Real-time system monitoring.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center gap-2 text-sm">
-                    <ShieldCheck className="h-4 w-4 text-green-400" />
-                    <span className="text-green-400 font-medium">All Systems Operational</span>
-                </div>
-                {controlCenterStatus.map((system, index) => (
-                    <div key={index}>
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium text-muted-foreground">{system.name}</span>
-                            <span className="text-sm font-bold">{system.progress}%</span>
-                        </div>
-                        <Progress value={system.progress} indicatorClassName="bg-primary" />
-                    </div>
-                ))}
-            </CardContent>
-            <CardFooter>
-                 <Button variant="outline" className="w-full">
-                    <Cpu className="mr-2 h-4 w-4"/>
-                    Run System Check
-                </Button>
-            </CardFooter>
-        </Card>
-      </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {kpiData.map((kpi, index) => (
-          <Card key={index} className="transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-              <kpi.icon className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold">{kpi.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {kpi.change}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-         <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 lg:col-span-2">
-            <CardHeader>
-                <div className="flex items-center gap-4">
-                    <FolderKanban className="h-8 w-8 text-primary" />
-                    <div>
-                        <CardTitle className="text-lg">Lead Intelligence Engine</CardTitle>
-                        <CardDescription>B2B lead enrichment, automated outreach, and pipeline management.</CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                <LeadIntelligenceChart leads={leads} />
-                <div>
-                     <p className="text-2xl font-bold">{leads?.length ?? 0}</p>
-                     <p className="text-xs text-muted-foreground">Active Leads</p>
-                     <Button size="sm" variant="outline" className="mt-4" onClick={() => router.push("/dashboard/leads")}>
-                        Manage <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
-
-        {/* Main Feature Engines */}
-        {engineCards.map((engine, index) => (
-            <Card key={index} className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-                <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <engine.icon className="h-8 w-8 text-primary" />
-                            <CardTitle className="text-lg">{engine.title}</CardTitle>
-                        </div>
-                        {engine.action && (
-                            <Button size="sm" variant="outline" onClick={engine.action} className="whitespace-nowrap">
-                                <PlusCircle className="mr-2 h-4 w-4" /> Connect Store
-                            </Button>
-                        )}
-                    </div>
+        {/* Main Content Column */}
+        <div className="lg:col-span-2 space-y-6">
+           {/* KPI Cards */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {kpiData.map((kpi, index) => (
+              <Card key={index} className="transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+                  <kpi.icon className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="flex-grow">
-                    <p className="text-sm text-muted-foreground">{engine.description}</p>
+                <CardContent>
+                  <div className="text-4xl font-bold">{kpi.value}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {kpi.change}
+                  </p>
                 </CardContent>
-                <CardFooter className="flex justify-between items-end">
-                    <div>
-                        <p className="text-2xl font-bold">{engine.value}</p>
-                        <p className="text-xs text-muted-foreground">{engine.unit}</p>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => router.push(engine.path)}>
-                        Manage <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </CardFooter>
-            </Card>
-        ))}
-      </div>
+              </Card>
+            ))}
+          </div>
 
-       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-         {/* Recent Sales */}
-        <Card className="lg:col-span-5">
+          <RevenueOverview />
+
+           {/* AI Approval Request or Generated Assets */}
+          {isCampaignLoading && (
+              <Card className="flex items-center justify-center p-12">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                  <p className="ml-4 text-muted-foreground">Generating campaign assets...</p>
+              </Card>
+          )}
+
+          {campaignAssets && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Generated Campaign Assets</CardTitle>
+                    <CardDescription>The AI has generated the following assets to market your new product.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-4">
+                        <h3 className="font-semibold text-lg">Social Media Posts</h3>
+                        {campaignAssets.socialPosts.map(post => (
+                            <Card key={post.platform} className="bg-card/50">
+                                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <PlatformIcon platform={post.platform} />
+                                        {post.platform}
+                                    </CardTitle>
+                                    <Button variant="secondary" size="sm">Schedule</Button>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm whitespace-pre-wrap">{post.content}</p>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {post.hashtags.map(tag => <Badge key={tag} variant="outline" className="text-xs">#{tag}</Badge>)}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                    <div className="space-y-6">
+                        <div>
+                            <h3 className="font-semibold text-lg mb-2 flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" /> Marketing Image</h3>
+                            <div className="relative aspect-square w-full rounded-lg overflow-hidden border">
+                              <Image src={campaignAssets.marketingImage.imageUrl} alt={campaignAssets.marketingImage.prompt} fill className="object-cover" />
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2 italic">Prompt: {campaignAssets.marketingImage.prompt}</p>
+                        </div>
+                        <div>
+                            <h3 className="font-semibold text-lg mb-2 flex items-center gap-2"><Video className="h-5 w-5 text-primary" /> Video Concept</h3>
+                            <Card className="bg-card/50">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-base">{campaignAssets.videoConcept.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-muted-foreground">{campaignAssets.videoConcept.sceneDescription}</p>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+          )}
+
+          {/* Recent Sales Activity */}
+           <Card>
             <CardHeader>
                 <CardTitle>Recent E-commerce Activity</CardTitle>
                 <CardDescription>An overview of your latest sales and AI-driven actions.</CardDescription>
@@ -412,9 +387,82 @@ export default function DashboardPage() {
                 </Tabs>
             </CardContent>
         </Card>
-      </div>
+        </div>
 
-      {(isFindingProduct || trendingProduct) && (
+        {/* Right Sidebar Column */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card>
+            <CardHeader>
+                <CardTitle>Control Center</CardTitle>
+                <CardDescription>Real-time system monitoring.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 text-sm">
+                    <ShieldCheck className="h-4 w-4 text-green-400" />
+                    <span className="text-green-400 font-medium">All Systems Operational</span>
+                </div>
+                {controlCenterStatus.map((system, index) => (
+                    <div key={index}>
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-muted-foreground">{system.name}</span>
+                            <span className="text-sm font-bold">{system.progress}%</span>
+                        </div>
+                        <Progress value={system.progress} indicatorClassName="bg-primary" />
+                    </div>
+                ))}
+            </CardContent>
+          </Card>
+          
+          <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <FolderKanban className="h-8 w-8 text-primary" />
+                    <div>
+                        <CardTitle className="text-lg">Lead Intelligence</CardTitle>
+                        <CardDescription>B2B lead enrichment & pipeline.</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow items-center">
+                <div className="h-[150px] w-full">
+                  <LeadIntelligenceChart leads={leads} />
+                </div>
+                 <Button size="sm" variant="outline" className="mt-4 w-full" onClick={() => router.push("/dashboard/leads")}>
+                    Manage Leads <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+            </CardContent>
+          </Card>
+
+          {engineCards.map((engine, index) => (
+            <Card key={index} className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+                <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <engine.icon className="h-8 w-8 text-primary" />
+                            <CardTitle className="text-lg">{engine.title}</CardTitle>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    <p className="text-sm text-muted-foreground">{engine.description}</p>
+                </CardContent>
+                <CardFooter className="flex justify-between items-end">
+                    <div>
+                        <p className="text-2xl font-bold">{engine.value}</p>
+                        <p className="text-xs text-muted-foreground">{engine.unit}</p>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => router.push(engine.path)}>
+                        Manage <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* AI Floating Modals and Buttons */}
+    {(isFindingProduct || trendingProduct) && (
         <div className="fixed bottom-4 right-4 z-50 w-full max-w-md">
             <Card className="border-primary/20 bg-background/80 backdrop-blur-lg">
                 <CardHeader className="flex flex-row items-start justify-between">
@@ -464,64 +512,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {isCampaignLoading && (
-        <div className="flex justify-center py-10">
-            <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-       )}
-
-      {campaignAssets && (
-        <Card>
-            <CardHeader>
-                <CardTitle>Generated Campaign Assets</CardTitle>
-                <CardDescription>The AI has generated the following assets to market your new product.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-4">
-                    <h3 className="font-semibold text-lg">Social Media Posts</h3>
-                    {campaignAssets.socialPosts.map(post => (
-                        <Card key={post.platform} className="bg-card/50">
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                 <CardTitle className="text-base flex items-center gap-2">
-                                    <PlatformIcon platform={post.platform} />
-                                    {post.platform}
-                                 </CardTitle>
-                                <Button variant="secondary" size="sm">Schedule</Button>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm whitespace-pre-wrap">{post.content}</p>
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                    {post.hashtags.map(tag => <Badge key={tag} variant="outline" className="text-xs">#{tag}</Badge>)}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-                <div className="space-y-6">
-                    <div>
-                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" /> Marketing Image</h3>
-                        <div className="relative aspect-square w-full rounded-lg overflow-hidden border">
-                           <Image src={campaignAssets.marketingImage.imageUrl} alt={campaignAssets.marketingImage.prompt} fill className="object-cover" />
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2 italic">Prompt: {campaignAssets.marketingImage.prompt}</p>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2"><Video className="h-5 w-5 text-primary" /> Video Concept</h3>
-                        <Card className="bg-card/50">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-base">{campaignAssets.videoConcept.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-sm text-muted-foreground">{campaignAssets.videoConcept.sceneDescription}</p>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-      )}
-    </div>
-
     <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogTrigger asChild>
             <Button
@@ -565,3 +555,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
