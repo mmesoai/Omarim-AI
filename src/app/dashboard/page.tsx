@@ -240,13 +240,6 @@ export default function DashboardPage() {
                 <CardDescription>B2B lead enrichment, automated outreach, and pipeline management.</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                     <p className="text-2xl font-bold">{leads?.length ?? 0}</p>
-                     <p className="text-xs text-muted-foreground">Active Leads</p>
-                     <Button size="sm" variant="outline" className="mt-4" onClick={() => router.push("/dashboard/leads")}>
-                        Manage <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </div>
                  {leads && leads.length > 0 ? (
                     <div className="h-[150px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -284,6 +277,13 @@ export default function DashboardPage() {
                         <p className="text-xs text-muted-foreground">Your pipeline will appear here.</p>
                     </div>
                 )}
+                 <div>
+                     <p className="text-2xl font-bold">{leads?.length ?? 0}</p>
+                     <p className="text-xs text-muted-foreground">Active Leads</p>
+                     <Button size="sm" variant="outline" className="mt-4" onClick={() => router.push("/dashboard/leads")}>
+                        Manage <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
             </CardContent>
         </Card>
 
