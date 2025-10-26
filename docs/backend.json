@@ -414,67 +414,43 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Collection of user profiles."
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
       },
-      {
-        "path": "/users/{userId}/leads/{leadId}",
-        "definition": {
-          "entityName": "Lead",
-          "schema": {
-            "$ref": "#/backend/entities/Lead"
-          },
-          "description": "Collection of leads owned by a user."
-        }
+      "description": "Collection of user profiles."
+    },
+    "/users/{userId}/leads/{leadId}": {
+      "schema": {
+        "$ref": "#/entities/Lead"
       },
-      {
-        "path": "/users/{userId}/products/{productId}",
-        "definition": {
-          "entityName": "Product",
-          "schema": {
-            "$ref": "#/backend/entities/Product"
-          },
-          "description": "Collection of products owned by a user."
-        }
+      "description": "Collection of leads owned by a user."
+    },
+    "/users/{userId}/products/{productId}": {
+      "schema": {
+        "$ref": "#/entities/Product"
       },
-      {
-        "path": "/users/{userId}/outreachSequences/{outreachSequenceId}",
-        "definition": {
-          "entityName": "OutreachSequence",
-          "schema": {
-            "$ref": "#/backend/entities/OutreachSequence"
-          },
-          "description": "Collection of outreach sequences created by a user."
-        }
+      "description": "Collection of products owned by a user."
+    },
+    "/users/{userId}/outreachSequences/{outreachSequenceId}": {
+      "schema": {
+        "$ref": "#/entities/OutreachSequence"
       },
-      {
-        "path": "/users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}",
-        "definition": {
-          "entityName": "Email",
-          "schema": {
-            "$ref": "#/backend/entities/Email"
-          },
-          "description": "Collection of emails associated with an outreach sequence."
-        }
+      "description": "Collection of outreach sequences created by a user."
+    },
+    "/users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}": {
+      "schema": {
+        "$ref": "#/entities/Email"
       },
-      {
-        "path": "/users/{userId}/stores/{storeId}",
-        "definition": {
-          "entityName": "Store",
-          "schema": {
-            "$ref": "#/backend/entities/Store"
-          },
-          "description": "Collection of stores integrated by a user."
-        }
-      }
-    ]
+      "description": "Collection of emails associated with an outreach sequence."
+    },
+    "/users/{userId}/stores/{storeId}": {
+      "schema": {
+        "$ref": "#/entities/Store"
+      },
+      "description": "Collection of stores integrated by a user."
+    }
   }
 }
+
+    
