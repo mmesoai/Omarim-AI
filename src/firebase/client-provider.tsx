@@ -19,7 +19,7 @@ type FirebaseServices = {
 };
 
 // Singleton promise to ensure Firebase initializes only once
-let firebaseInitializationPromise: Promise<FirebaseServices | null> | null = null;
+let firebaseInitializationPromise: Promise<FirebaseServices> | null = null;
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const [firebaseServices, setFirebaseServices] = useState<FirebaseServices | null>(null);
@@ -27,16 +27,23 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
 
   useEffect(() => {
     if (firebaseInitializationPromise === null) {
-      firebaseInitializationPromise = new Promise((resolve) => {
+      firebaseInitializationPromise = new Promise((resolve, reject) => {
         const services = initializeFirebase();
-        resolve(services);
+        if (services) {
+          resolve(services);
+        } else {
+          // This case should ideally not be hit in the browser.
+          // It's a safeguard.
+          reject(new Error("Firebase initialization failed on the client."));
+        }
       });
     }
 
     firebaseInitializationPromise.then(services => {
-      if (services) {
-        setFirebaseServices(services);
-      }
+      setFirebaseServices(services);
+      setIsLoading(false);
+    }).catch(error => {
+      console.error(error);
       setIsLoading(false);
     });
   }, []); 

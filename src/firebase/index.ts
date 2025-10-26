@@ -11,6 +11,8 @@ let firebaseServices: { firebaseApp: FirebaseApp; auth: Auth; firestore: Firesto
 // It's designed to be idempotent, meaning it will only initialize the app once.
 export function initializeFirebase() {
   if (typeof window === 'undefined') {
+    // On the server, we don't initialize Firebase.
+    // The client-provider will handle this.
     return null;
   }
   
