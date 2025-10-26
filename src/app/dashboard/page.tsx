@@ -38,6 +38,17 @@ import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -76,18 +87,28 @@ const leadStatusColors: { [key: string]: string } = {
   default: 'hsl(var(--muted-foreground))',
 };
 
+const quickActionSchema = z.object({
+  command: z.string().min(1, { message: "Command cannot be empty." }),
+});
+
 
 export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
+  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
 
   const [trendingProduct, setTrendingProduct] = useState<GenerateProductCampaignInput | null>(null);
   const [campaignAssets, setCampaignAssets] = useState<GenerateProductCampaignOutput | null>(null);
   const [isCampaignLoading, setIsCampaignLoading] = useState(false);
   const [isFindingProduct, setIsFindingProduct] = useState(true);
   const [isClient, setIsClient] = useState(false);
+
+  const actionForm = useForm<z.infer<typeof quickActionSchema>>({
+    resolver: zodResolver(quickActionSchema),
+    defaultValues: { command: "" },
+  });
 
   useEffect(() => {
     setIsClient(true);
@@ -159,6 +180,14 @@ export default function DashboardPage() {
         description: "The AI will look for another product opportunity.",
     });
   }
+
+  function onActionSubmit(values: z.infer<typeof quickActionSchema>) {
+    const encodedCommand = encodeURIComponent(values.command);
+    setIsActionDialogOpen(false);
+    actionForm.reset();
+    router.push(`/dashboard/chat?command=${encodedCommand}`);
+  }
+
 
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -558,7 +587,7 @@ export default function DashboardPage() {
       )}
     </div>
 
-    <Dialog>
+    <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogTrigger asChild>
             <Button
               variant="default"
@@ -572,18 +601,27 @@ export default function DashboardPage() {
             <DialogHeader>
                 <DialogTitle>Quick Action</DialogTitle>
                 <DialogDescription>
-                    Issue a command to Omarim AI.
+                    Issue a command to Omarim AI. It will be sent to the main chat interface.
                 </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="command" className="text-right">
-                        Command
-                    </Label>
-                    <Input id="command" placeholder="e.g., 'Generate a social post about AI'" className="col-span-3" />
-                </div>
-            </div>
-            <Button type="submit">Execute</Button>
+            <Form {...actionForm}>
+              <form onSubmit={actionForm.handleSubmit(onActionSubmit)} className="space-y-4">
+                <FormField
+                  control={actionForm.control}
+                  name="command"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Command</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 'Generate a social post about AI'" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="w-full">Execute</Button>
+              </form>
+            </Form>
         </DialogContent>
     </Dialog>
     </>
