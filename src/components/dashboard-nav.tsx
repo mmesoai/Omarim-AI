@@ -14,6 +14,7 @@ import {
   Mic,
   Send,
   Settings,
+  Bot,
 } from "lucide-react"
 
 import {
@@ -25,6 +26,7 @@ import {
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
   { href: "/dashboard/chat", icon: MessageCircle, label: "Chat" },
+  { href: "/dashboard/agent", icon: Bot, label: "Agent" },
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/leads", icon: FolderKanban, label: "Lead Scrape" },
   { href: "/dashboard/outreach", icon: Send, label: "Outreach" },
@@ -56,5 +58,3 @@ export function DashboardNav() {
     </SidebarMenu>
   )
 }
-
-    
