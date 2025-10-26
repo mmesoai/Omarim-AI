@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -65,14 +66,14 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       
-      if (user) {
+      if (user && firestore) {
         const userDocRef = doc(firestore, "users", user.uid);
         const userData = {
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,
         };
-        setDocumentNonBlocking(userDocRef, userData, { merge: true });
+        setDocumentNonBlocking(userDocRef, userData);
       }
     } catch (error) {
       console.error("Error signing up:", error);
