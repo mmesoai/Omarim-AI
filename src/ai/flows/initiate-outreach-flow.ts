@@ -91,11 +91,14 @@ const initiateOutreachFlow = ai.defineFlow(
     }
 
     // Step 3: Send the email using the sendEmail tool
-    const sendResult = await sendEmail({
-      to: lead.email,
-      subject: emailContent.subject,
-      body: emailContent.body,
-    });
+    let sendResult = { success: false, message: 'Failed to send email.' };
+    if (emailContent.subject && emailContent.body) {
+      sendResult = await sendEmail({
+        to: lead.email,
+        subject: emailContent.subject,
+        body: emailContent.body,
+      });
+    }
     
     // Step 4: If email was sent successfully, update the lead status to 'Contacted' in Firestore
     if (sendResult.success) {

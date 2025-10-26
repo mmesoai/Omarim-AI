@@ -94,7 +94,7 @@ export default function DashboardPage() {
     async function getTrendingProduct() {
       setIsFindingProduct(true);
       try {
-        const result = await findTrendingProducts("home office tech");
+        const result = await findTrendingProducts({ category: "home office tech" });
         setTrendingProduct(result);
         setHasProposal(true);
       } catch (error) {
@@ -230,7 +230,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
        {hasProposal && (
-        <audio src="/audio/blip.mp3" autoPlay />
+        <audio src="/audio/blip.mp3" autoPlay onLoadedData={() => {}} onError={() => {}} />
        )}
        <div>
         <h1 className="font-headline tracking-tight">
