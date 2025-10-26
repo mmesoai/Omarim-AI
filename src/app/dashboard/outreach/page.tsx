@@ -1,3 +1,13 @@
+
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useUser, useFirestore, useCollection, addDocumentNonBlocking, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,40 +18,71 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-const sequences = [
-  {
-    title: "New Lead Welcome Sequence",
-    recipients: 523,
-    openRate: 68,
-    replyRate: 12,
-    status: "Active",
-  },
-  {
-    title: "Q4 Promotion",
-    recipients: 1250,
-    openRate: 45,
-    replyRate: 5,
-    status: "Active",
-  },
-  {
-    title: "Cold Outreach - Tech Startups",
-    recipients: 800,
-    openRate: 22,
-    replyRate: 2,
-    status: "Paused",
-  },
-  {
-    title: "Past Customers Re-engagement",
-    recipients: 340,
-    openRate: 75,
-    replyRate: 25,
-    status: "Draft",
-  },
-];
+const sequenceFormSchema = z.object({
+  name: z.string().min(5, { message: "Sequence name must be at least 5 characters." }),
+  description: z.string().optional(),
+});
 
 export default function OutreachPage() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const sequencesCollectionRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, `users/${user.uid}/outreachSequences`);
+  }, [firestore, user]);
+
+  const { data: sequences, isLoading } = useCollection(sequencesCollectionRef);
+
+  const sequenceForm = useForm<z.infer<typeof sequenceFormSchema>>({
+    resolver: zodResolver(sequenceFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  function onSequenceSubmit(values: z.infer<typeof sequenceFormSchema>) {
+    if (!sequencesCollectionRef) return;
+    
+    // In a real app, you'd add more properties here, like the list of leads (leadIds)
+    const newSequence = {
+      name: values.name,
+      description: values.description || "",
+      recipients: 0, // Placeholder
+      openRate: 0,   // Placeholder
+      replyRate: 0,  // Placeholder
+      status: "Draft",
+      leadIds: [], // Placeholder
+    };
+
+    addDocumentNonBlocking(sequencesCollectionRef, newSequence);
+    sequenceForm.reset();
+    setIsDialogOpen(false);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -51,33 +92,89 @@ export default function OutreachPage() {
             Create and manage your automated email campaigns.
           </p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Sequence
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Sequence
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>New Outreach Sequence</DialogTitle>
+              <DialogDescription>
+                Configure a new automated email campaign.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...sequenceForm}>
+              <form onSubmit={sequenceForm.handleSubmit(onSequenceSubmit)} className="space-y-4">
+                <FormField
+                  control={sequenceForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sequence Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., New Lead Welcome" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={sequenceForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="What is this sequence for?" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button type="submit">Create Sequence</Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
 
+      {isLoading && <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />}
+
+      {!isLoading && (!sequences || sequences.length === 0) && (
+        <Card className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold">No sequences yet</h3>
+            <p className="text-muted-foreground">Create your first outreach sequence to get started.</p>
+          </div>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {sequences.map((sequence) => (
-          <Card key={sequence.title} className="flex flex-col">
+        {!isLoading && sequences && sequences.map((sequence) => (
+          <Card key={sequence.id} className="flex flex-col">
             <CardHeader>
-              <CardTitle>{sequence.title}</CardTitle>
-              <CardDescription>{sequence.recipients.toLocaleString()} recipients</CardDescription>
+              <CardTitle>{sequence.name}</CardTitle>
+              <CardDescription>{(sequence.recipients || 0).toLocaleString()} recipients</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow space-y-4">
               <div>
                 <div className="mb-1 flex justify-between text-sm">
                   <span>Open Rate</span>
-                  <span className="font-medium">{sequence.openRate}%</span>
+                  <span className="font-medium">{sequence.openRate || 0}%</span>
                 </div>
-                <Progress value={sequence.openRate} />
+                <Progress value={sequence.openRate || 0} />
               </div>
               <div>
                 <div className="mb-1 flex justify-between text-sm">
                   <span>Reply Rate</span>
-                  <span className="font-medium">{sequence.replyRate}%</span>
+                  <span className="font-medium">{sequence.replyRate || 0}%</span>
                 </div>
-                <Progress value={sequence.replyRate} />
+                <Progress value={sequence.replyRate || 0} />
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
@@ -95,3 +192,4 @@ export default function OutreachPage() {
     </div>
   );
 }
+
