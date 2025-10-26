@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
 import { Mic, Square, Loader2, Volume2, Bot, Badge } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -46,6 +48,7 @@ export default function VoicePage() {
   const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
 
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     return () => {
@@ -145,6 +148,10 @@ export default function VoicePage() {
         const output = await generateSocialMediaPost({ topic: prompt });
         setAgentResult({ type: 'social', data: output });
         responseText = `I've created a social media post about ${prompt}.`;
+      } else if (action === 'add_store') {
+        responseText = `Understood. Taking you to the integrations page to add your ${prompt || 'new'} store.`;
+        router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`);
+        // No need to show an agent result card for this, just navigate.
       } else {
          responseText = "I'm sorry, I did not recognize that command. Please try again.";
       }
@@ -193,7 +200,7 @@ export default function VoicePage() {
 
   const getStatusText = () => {
     switch (commandState) {
-      case 'idle': return 'Click the button and speak a command. e.g., "Create a social media post about AI."';
+      case 'idle': return 'Click the button and speak a command. e.g., "Add my Shopify store."';
       case 'recording': return "Listening...";
       case 'transcribing': return "Transcribing your speech...";
       case 'interpreting': return "Understanding your command...";
@@ -337,3 +344,5 @@ export default function VoicePage() {
     </div>
   );
 }
+
+    

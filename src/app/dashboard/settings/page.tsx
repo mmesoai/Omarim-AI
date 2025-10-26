@@ -1,8 +1,9 @@
 
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -64,6 +65,7 @@ export default function SettingsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
+  const searchParams = useSearchParams();
 
   const storesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -81,6 +83,20 @@ export default function SettingsPage() {
     },
   });
 
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const action = searchParams.get('action');
+    const storeType = searchParams.get('storeType');
+
+    if (action === 'addStore') {
+      setIsDialogOpen(true);
+      if (storeType && ["Shopify", "WooCommerce", "Amazon", "eBay"].includes(storeType)) {
+        storeForm.setValue('type', storeType as "Shopify" | "WooCommerce" | "Amazon" | "eBay");
+      }
+    }
+  }, [searchParams, storeForm]);
+
+
   function onStoreSubmit(values: z.infer<typeof storeFormSchema>) {
     if (!storesCollectionRef) return;
     addDocumentNonBlocking(storesCollectionRef, values);
@@ -97,7 +113,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
+      <Tabs defaultValue={searchParams.get('tab') || "profile"} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
@@ -197,7 +213,7 @@ export default function SettingsPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Platform</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select a platform" />
@@ -283,3 +299,5 @@ export default function SettingsPage() {
     </div>
   )
 }
+
+    
