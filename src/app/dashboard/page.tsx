@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const leadStatusColors: { [key: string]: string } = {
@@ -364,4 +365,5 @@ export default function DashboardPage() {
   );
 }
 
+    
     
