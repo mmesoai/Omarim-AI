@@ -4,12 +4,25 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Bot, Loader2, User, Sparkles, Building, Briefcase, ChevronRight, XCircle, CheckCircle2 } from 'lucide-react';
+import {
+  Bot,
+  Loader2,
+  User,
+  Sparkles,
+  Building,
+  Briefcase,
+  ChevronRight,
+  XCircle,
+  CheckCircle2,
+} from 'lucide-react';
 import {
   autonomousLeadGen,
   type AutonomousLeadGenOutput,
 } from '@/ai/flows/autonomous-lead-gen-flow';
+import { initiateOutreach } from '@/ai/flows/initiate-outreach-flow';
 import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
+import { useUser } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -29,7 +42,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 
 const agentFormSchema = z.object({
@@ -40,13 +52,18 @@ const agentFormSchema = z.object({
 
 export default function AgentPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [outreachState, setOutreachState] = useState<{ [key: string]: 'loading' | 'done' }>({});
   const [agentResponse, setAgentResponse] =
     useState<AutonomousLeadGenOutput | null>(null);
+
+  const { user } = useUser();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof agentFormSchema>>({
     resolver: zodResolver(agentFormSchema),
     defaultValues: {
-      objective: 'Find me 5 local businesses that need a new AI-powered website.',
+      objective:
+        'Find me 5 local businesses that need a new AI-powered website.',
     },
   });
 
@@ -58,13 +75,52 @@ export default function AgentPage() {
       setAgentResponse(response);
     } catch (error) {
       console.error('Autonomous Agent failed:', error);
-      // You can add a toast notification here
+      toast({
+        variant: 'destructive',
+        title: 'Agent Failed',
+        description: 'The autonomous agent encountered an error.',
+      });
     } finally {
       setIsLoading(false);
     }
   }
 
-  const LeadCard = ({ lead }: { lead: QualifiedLead }) => (
+  const handleInitiateOutreach = async (lead: QualifiedLead, index: number) => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Not Authenticated',
+        description: 'You must be logged in to initiate outreach.',
+      });
+      return;
+    }
+    
+    setOutreachState(prev => ({...prev, [index]: 'loading'}));
+    
+    try {
+      const result = await initiateOutreach({ lead, userId: user.uid });
+      toast({
+        title: 'Outreach Initiated',
+        description: `Lead record created for ${lead.name} and email has been generated.`,
+      });
+      setOutreachState(prev => ({...prev, [index]: 'done'}));
+    } catch (error) {
+      console.error('Outreach failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Outreach Failed',
+        description: 'Could not initiate outreach for this lead.',
+      });
+      setOutreachState(prev => ({...prev, [index]: 'done'})); // Reset even on error
+    }
+  };
+
+
+  const LeadCard = ({ lead, index }: { lead: QualifiedLead; index: number }) => {
+    const isProcessing = outreachState[index] === 'loading';
+    const isDone = outreachState[index] === 'done';
+
+    return (
     <Card className="bg-card/50 transition-all hover:bg-card/80 hover:shadow-md">
       <CardHeader>
         <div className="flex items-start justify-between">
@@ -94,13 +150,21 @@ export default function AgentPage() {
         </div>
       </CardContent>
       <CardFooter>
-        <Button className="w-full">
-          <Briefcase className="mr-2 h-4 w-4" />
-          Initiate Outreach
+        <Button
+          className="w-full"
+          onClick={() => handleInitiateOutreach(lead, index)}
+          disabled={isProcessing || isDone}
+        >
+          {isProcessing ? (
+             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+             <Briefcase className="mr-2 h-4 w-4" />
+          )}
+         {isDone ? 'Outreach Initiated' : 'Initiate Outreach'}
         </Button>
       </CardFooter>
     </Card>
-  );
+  )};
 
   return (
     <div className="container mx-auto max-w-5xl space-y-8 py-8">
@@ -164,7 +228,7 @@ export default function AgentPage() {
       )}
 
       {agentResponse && (
-        <Card className="bg-transparent shadow-none border-none">
+        <Card className="border-none bg-transparent shadow-none">
           <CardHeader>
             <div className="flex items-center gap-4">
               <Bot className="h-6 w-6 text-primary" />
@@ -178,7 +242,7 @@ export default function AgentPage() {
             <Separator className="my-4" />
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {agentResponse.qualifiedLeads.map((lead, index) => (
-                <LeadCard key={index} lead={lead as QualifiedLead} />
+                <LeadCard key={index} lead={lead as QualifiedLead} index={index}/>
               ))}
             </div>
           </CardContent>

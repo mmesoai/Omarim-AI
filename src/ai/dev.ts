@@ -10,3 +10,4 @@ import '@/ai/flows/generate-social-post.ts';
 import '@/ai/flows/interpret-command.ts';
 import '@/ai/flows/execute-campaign-action.ts';
 import '@/ai/flows/autonomous-lead-gen-flow.ts';
+import '@/ai/flows/initiate-outreach-flow.ts';
