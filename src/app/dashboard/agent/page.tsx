@@ -1,7 +1,9 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,7 @@ type AgentResult =
 export default function AgentPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AgentResult | null>(null);
+  const searchParams = useSearchParams();
 
   const { toast } = useToast();
 
@@ -60,6 +63,18 @@ export default function AgentPage() {
       prompt: "",
     },
   });
+  
+  useEffect(() => {
+    const agentTypeParam = searchParams.get('agentType');
+    const promptParam = searchParams.get('prompt');
+
+    if (agentTypeParam === 'outreach' && promptParam) {
+      agentForm.setValue('agentType', 'outreach');
+      agentForm.setValue('prompt', promptParam);
+      // Automatically submit the form if parameters are present
+      onSubmit({ agentType: 'outreach', prompt: promptParam });
+    }
+  }, [searchParams, agentForm]);
 
   const agentType = agentForm.watch("agentType");
 
@@ -120,7 +135,7 @@ export default function AgentPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Agent Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select an agent type" />

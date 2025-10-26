@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useUser, useFirestore, useCollection, addDocumentNonBlocking, useMemoFirebase } from "@/firebase";
@@ -19,11 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LeadsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
 
   // IMPORTANT: The path `/users/${user.uid}/leads` is a placeholder.
   // According to backend.json, it should be `/users/{userId}/notionPages/{notionPageId}/leads/{leadId}`
@@ -52,6 +55,13 @@ export default function LeadsPage() {
       notionPageId: "placeholder_page_id", // Placeholder
     };
     addDocumentNonBlocking(leadsCollectionRef, sampleLead);
+  };
+  
+  const handleDraftEmail = (lead: any) => {
+    // This simulates the AI analyzing the lead.
+    // For now, we'll just use a placeholder URL as the generateOutreachEmail flow expects a linkedInUrl.
+    const mockLinkedInUrl = `https://www.linkedin.com/in/${lead.firstName.toLowerCase()}${lead.lastName.toLowerCase()}`;
+    router.push(`/dashboard/agent?agentType=outreach&prompt=${encodeURIComponent(mockLinkedInUrl)}`);
   };
 
   return (
@@ -84,12 +94,13 @@ export default function LeadsPage() {
                 <TableHead>Company</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">
+                  <TableCell colSpan={5} className="text-center">
                     <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                   </TableCell>
                 </TableRow>
@@ -114,11 +125,17 @@ export default function LeadsPage() {
                       {lead.status}
                     </Badge>
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleDraftEmail(lead)}>
+                      <Mail className="h-4 w-4" />
+                      <span className="sr-only">Draft Email</span>
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
               {!isLoading && (!leads || leads.length === 0) && (
                  <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
                     You have no leads yet. Try scraping one!
                   </TableCell>
                 </TableRow>
