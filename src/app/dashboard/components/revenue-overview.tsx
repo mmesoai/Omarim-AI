@@ -11,20 +11,20 @@ import {
 } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 
-const revenueData = [
-  { name: 'Jan', "Website Sales": 4000, "E-Commerce": 2400, "Lead Gen": 1200 },
-  { name: 'Feb', "Website Sales": 3000, "E-Commerce": 1398, "Lead Gen": 1100 },
-  { name: 'Mar', "Website Sales": 5000, "E-Commerce": 6800, "Lead Gen": 1500 },
-  { name: 'Apr', "Website Sales": 4780, "E-Commerce": 3908, "Lead Gen": 1800 },
-  { name: 'May', "Website Sales": 6900, "E-Commerce": 4800, "Lead Gen": 2100 },
-  { name: 'Jun', "Website Sales": 7390, "E-Commerce": 3800, "Lead Gen": 2500 },
-];
-
 export function RevenueOverview() {
     const [isClient, setIsClient] = useState(false);
     useEffect(() => {
         setIsClient(true);
     }, []);
+
+    const revenueData = [
+        { name: 'Jan', "Website Sales": 4000, "E-Commerce": 2400, "Lead Gen": 1200 },
+        { name: 'Feb', "Website Sales": 3000, "E-Commerce": 1398, "Lead Gen": 1100 },
+        { name: 'Mar', "Website Sales": 5000, "E-Commerce": 6800, "Lead Gen": 1500 },
+        { name: 'Apr', "Website Sales": 4780, "E-Commerce": 3908, "Lead Gen": 1800 },
+        { name: 'May', "Website Sales": 6900, "E-Commerce": 4800, "Lead Gen": 2100 },
+        { name: 'Jun', "Website Sales": 7390, "E-Commerce": 3800, "Lead Gen": 2500 },
+    ];
     
     return (
         <Card className="lg:col-span-3">
