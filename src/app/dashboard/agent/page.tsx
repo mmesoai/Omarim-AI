@@ -68,11 +68,12 @@ export default function AgentPage() {
     const agentTypeParam = searchParams.get('agentType');
     const promptParam = searchParams.get('prompt');
 
-    if (agentTypeParam === 'outreach' && promptParam) {
-      agentForm.setValue('agentType', 'outreach');
+    if ((agentTypeParam === 'outreach' || agentTypeParam === 'social') && promptParam) {
+      const type = agentTypeParam as 'outreach' | 'social';
+      agentForm.setValue('agentType', type);
       agentForm.setValue('prompt', promptParam);
       // Automatically submit the form if parameters are present
-      onSubmit({ agentType: 'outreach', prompt: promptParam });
+      onSubmit({ agentType: type, prompt: promptParam });
     }
   }, [searchParams, agentForm]);
 
@@ -255,3 +256,5 @@ export default function AgentPage() {
     </div>
   );
 }
+
+    
