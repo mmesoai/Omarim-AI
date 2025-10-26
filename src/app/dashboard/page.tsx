@@ -35,7 +35,7 @@ import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -328,7 +328,6 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {/* Recent Sales Activity */}
            <Card>
             <CardHeader>
                 <CardTitle>Recent E-commerce Activity</CardTitle>
@@ -457,6 +456,28 @@ export default function DashboardPage() {
                 </CardFooter>
             </Card>
           ))}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {recentActivities.map((activity) => (
+                            <div key={activity.id} className="flex items-center gap-4">
+                                <Avatar className="h-9 w-9">
+                                    <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", activity.color)}>
+                                        <activity.icon className="h-5 w-5 text-background" />
+                                    </div>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <p className="text-sm">{activity.description}</p>
+                                    <p className="text-xs text-muted-foreground">{activity.time}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
         </div>
       </div>
     </div>
@@ -517,7 +538,6 @@ export default function DashboardPage() {
             <Button
               variant="default"
               className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg"
-              onClick={() => setIsActionDialogOpen(true)}
             >
               <Sparkles className="h-8 w-8" />
               <span className="sr-only">Quick Action</span>
