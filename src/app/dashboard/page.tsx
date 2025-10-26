@@ -128,7 +128,6 @@ export default function DashboardPage() {
   ];
 
   const engineCards = [
-    { title: "Lead Intelligence Engine", description: "B2B lead enrichment, automated outreach, and pipeline management.", icon: FolderKanban, value: leads?.length ?? 0, unit: "Active Leads", path: "/dashboard/leads" },
     { title: "E-Commerce Engine", description: "Multi-store arbitrage, product sourcing, and inventory automation.", icon: Building2, value: products?.length ?? 0, unit: "Synced Products", path: "/dashboard/stores", action: () => router.push('/dashboard/settings?tab=integrations&action=addStore') },
     { title: "Content & Outreach Engine", description: "AI-powered content generation and automated email campaigns.", icon: Send, value: sequences?.length ?? 0, unit: "Sequences", path: "/dashboard/outreach" },
   ];
@@ -154,52 +153,33 @@ export default function DashboardPage() {
       
        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
-            <CardHeader>
-                <CardTitle>Lead Status Overview</CardTitle>
-                <CardDescription>A real-time breakdown of your current lead pipeline.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {leads && leads.length > 0 ? (
-                    <div className="h-[350px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                        <Pie
-                            data={leadStatusData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={120}
-                            innerRadius={70}
-                            fill="#8884d8"
-                            dataKey="value"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                            {leadStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
-                            ))}
-                        </Pie>
-                        <Tooltip 
-                            cursor={{fill: 'hsla(var(--muted), 0.5)'}}
-                            contentStyle={{ 
-                            backgroundColor: 'hsl(var(--background))',
-                            borderColor: 'hsl(var(--border))',
-                            borderRadius: 'var(--radius)',
-                        }}/>
-                        <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                    </div>
-                ) : (
-                    <div className="flex h-[350px] w-full flex-col items-center justify-center text-center">
-                    <Users className="h-12 w-12 text-muted-foreground" />
-                    <p className="mt-4 text-lg font-semibold">No Lead Data</p>
-                    <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
-                    <Button variant="secondary" className="mt-4" onClick={() => router.push('/dashboard/leads')}>
-                        Add a Lead
-                    </Button>
-                    </div>
-                )}
-            </CardContent>
+          <CardHeader>
+            <CardTitle>Revenue Overview</CardTitle>
+            <CardDescription>Monthly performance across all business units.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'hsla(var(--muted))' }}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      borderColor: 'hsl(var(--border))',
+                      borderRadius: 'var(--radius)',
+                    }}
+                  />
+                  <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
+                  <Bar dataKey="Website Sales" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="E-Commerce" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Lead Gen" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
         </Card>
         
         {/* Control Center */}
@@ -251,6 +231,62 @@ export default function DashboardPage() {
       </div>
       
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+         <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 lg:col-span-2">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <FolderKanban className="h-8 w-8 text-primary" />
+                    <CardTitle className="text-lg">Lead Intelligence Engine</CardTitle>
+                </div>
+                <CardDescription>B2B lead enrichment, automated outreach, and pipeline management.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                     <p className="text-2xl font-bold">{leads?.length ?? 0}</p>
+                     <p className="text-xs text-muted-foreground">Active Leads</p>
+                     <Button size="sm" variant="outline" className="mt-4" onClick={() => router.push("/dashboard/leads")}>
+                        Manage <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
+                 {leads && leads.length > 0 ? (
+                    <div className="h-[150px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                        <Pie
+                            data={leadStatusData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={60}
+                            innerRadius={30}
+                            fill="#8884d8"
+                            dataKey="value"
+                        >
+                            {leadStatusData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                            ))}
+                        </Pie>
+                        <Tooltip 
+                            cursor={{fill: 'hsla(var(--muted), 0.5)'}}
+                            contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))',
+                            borderColor: 'hsl(var(--border))',
+                            borderRadius: 'var(--radius)',
+                            fontSize: '0.8rem',
+                        }}/>
+                         <Legend iconSize={8} wrapperStyle={{fontSize: '0.7rem', marginLeft: '10px'}} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center text-center bg-muted/50 rounded-lg p-4">
+                        <Users className="h-8 w-8 text-muted-foreground" />
+                        <p className="mt-2 text-sm font-semibold">No Lead Data</p>
+                        <p className="text-xs text-muted-foreground">Your pipeline will appear here.</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+
         {/* Main Feature Engines */}
         {engineCards.map((engine, index) => (
             <Card key={index} className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
@@ -284,37 +320,8 @@ export default function DashboardPage() {
       </div>
 
        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Revenue Overview</CardTitle>
-            <CardDescription>Monthly performance across all business units.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))' }} />
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    cursor={{ fill: 'hsla(var(--muted))' }}
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      borderColor: 'hsl(var(--border))',
-                      borderRadius: 'var(--radius)',
-                    }}
-                  />
-                  <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
-                  <Bar dataKey="Website Sales" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="E-Commerce" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Lead Gen" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
          {/* Recent Sales */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-5">
             <CardHeader>
                 <CardTitle>Recent E-commerce Activity</CardTitle>
                 <CardDescription>An overview of your latest sales and AI-driven actions.</CardDescription>
@@ -376,5 +383,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

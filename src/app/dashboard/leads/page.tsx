@@ -37,23 +37,6 @@ export default function LeadsPage() {
 
   const { data: leads, isLoading } = useCollection(leadsCollectionRef);
 
-  const handleAddSampleLead = () => {
-    if (!leadsCollectionRef) return;
-    
-    const sampleLead = {
-      firstName: "Alex",
-      lastName: "Morgan",
-      company: "Innovate Inc.",
-      domain: "innovate.com",
-      email: `alex.morgan_${Date.now()}@innovate.com`,
-      status: "New",
-    };
-    addDocumentNonBlocking(leadsCollectionRef, sampleLead);
-    toast({
-      title: "New Lead Added",
-      description: "A sample lead has been added to your list.",
-    });
-  };
   
   const handleDraftEmail = (lead: any) => {
     if (!user || !firestore || !lead.id) return;
@@ -79,10 +62,6 @@ export default function LeadsPage() {
             Manage your leads and initiate outreach campaigns.
           </p>
         </div>
-        <Button onClick={handleAddSampleLead} disabled={!user || isLoading}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Sample Lead
-        </Button>
       </div>
 
       <Card>
