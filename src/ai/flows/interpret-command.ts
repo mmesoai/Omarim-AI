@@ -11,12 +11,12 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-export const InterpretCommandInputSchema = z.object({
+const InterpretCommandInputSchema = z.object({
   command: z.string().describe('The natural language command from the user.'),
 });
 export type InterpretCommandInput = z.infer<typeof InterpretCommandInputSchema>;
 
-export const InterpretCommandOutputSchema = z.object({
+const InterpretCommandOutputSchema = z.object({
   action: z
     .enum(['generate_social_post', 'run_autonomous_agent', 'add_store', 'manage_campaign', 'answer_self_knowledge_question', 'unrecognized'])
     .describe('The specific action the user wants to perform.'),
