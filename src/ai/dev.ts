@@ -1,3 +1,4 @@
+
 'use server';
 import { config } from 'dotenv';
 config();
@@ -14,5 +15,6 @@ import '@/ai/flows/initiate-outreach-flow.ts';
 import '@/ai/flows/answer-self-knowledge-question.ts';
 import '@/ai/flows/generate-product-ideas.ts';
 import '@/ai/flows/generate-multiple-social-posts.ts';
+import '@/ai/flows/generate-app-blueprint.ts';
 import '@/ai/tools/send-email';
 import '@/ai/tools/get-omarim-ai-capabilities';
