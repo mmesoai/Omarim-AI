@@ -361,7 +361,11 @@ export default function DashboardPage() {
                             borderRadius: 'var(--radius)',
                             fontSize: '0.8rem',
                         }}/>
-                         <Legend iconSize={8} wrapperStyle={{fontSize: '0.7rem', marginLeft: '10px'}} />
+                         <Legend 
+                            iconSize={8}
+                            wrapperStyle={{fontSize: '0.7rem', marginLeft: '10px'}}
+                            payload={leadStatusData.map(item => ({ value: item.name, type: 'square', color: item.fill }))}
+                         />
                         </PieChart>
                     </ResponsiveContainer>
                 ) : (
@@ -586,5 +590,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
