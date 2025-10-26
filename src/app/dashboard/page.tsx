@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection } from 'firestore';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
@@ -259,11 +259,9 @@ export default function DashboardPage() {
                     }}
                   />
                   <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
-                  {revenueData && <>
                     <Bar dataKey="Website Sales" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="E-Commerce" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="Lead Gen" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                  </>}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -585,3 +583,4 @@ export default function DashboardPage() {
     
 
     
+
