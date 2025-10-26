@@ -3,11 +3,10 @@
 
 import { z } from "zod";
 import { findTrendingProductsFlow } from "@/ai/tools/find-trending-products";
-import { generateProductCampaign as generateProductCampaignFlow } from "@/ai/flows/generate-product-campaign";
+import { generateProductCampaign as generateProductCampaignFlow, type GenerateProductCampaignOutput } from "@/ai/flows/generate-product-campaign";
 import { 
     GenerateProductCampaignInputSchema, 
-    type GenerateProductCampaignInput,
-    type GenerateProductCampaignOutput
+    type GenerateProductCampaignInput
 } from "@/app/schemas";
 
 export type TrendingProduct = GenerateProductCampaignInput;
@@ -18,5 +17,7 @@ export async function findTrendingProducts(category: string): Promise<TrendingPr
 }
 
 export async function generateProductCampaign(input: GenerateProductCampaignInput): Promise<GenerateProductCampaignOutput> {
-    return await generateProductCampaignFlow(input);
+    // We need to validate the input here before passing it to the flow
+    const validatedInput = GenerateProductCampaignInputSchema.parse(input);
+    return await generateProductCampaignFlow(validatedInput);
 }
