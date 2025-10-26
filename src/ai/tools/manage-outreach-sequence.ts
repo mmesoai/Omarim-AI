@@ -1,4 +1,4 @@
-'use server';
+
 /**
  * @fileOverview A Genkit tool for managing outreach sequences in Firestore.
  */

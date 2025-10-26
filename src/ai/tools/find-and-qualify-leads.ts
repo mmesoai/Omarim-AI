@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview A Genkit tool for finding and qualifying leads from various sources.
  * This tool uses a generative model to create plausible, fictional leads in real-time.

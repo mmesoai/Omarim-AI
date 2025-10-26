@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview A Genkit tool for identifying trending products and potential suppliers.
  * This tool uses a generative model to create a plausible, fictional product opportunity.

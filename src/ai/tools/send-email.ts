@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview A Genkit tool for sending emails.
  * This is a simulation and does not actually send emails.

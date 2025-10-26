@@ -1,5 +1,4 @@
 
-'use server';
 /**
  * @fileOverview A Genkit tool that provides a structured overview of the Omarim AI platform's capabilities.
  */
