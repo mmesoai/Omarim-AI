@@ -1,5 +1,14 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { useEffect } from "react"
+import { doc } from "firebase/firestore"
+
 import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,10 +19,75 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useAuth, useUser, useFirestore, setDocumentNonBlocking } from "@/firebase"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+
+const formSchema = z.object({
+  firstName: z.string().min(1, { message: "First name is required." }),
+  lastName: z.string().min(1, { message: "Last name is required." }),
+  email: z.string().email({ message: "Please enter a valid email." }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+})
 
 export default function SignupPage() {
+  const router = useRouter()
+  const auth = useAuth()
+  const firestore = useFirestore()
+  const { user, isUserLoading } = useUser()
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+    },
+  })
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push("/dashboard")
+    }
+  }, [user, isUserLoading, router])
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+      
+      if (user) {
+        const userDocRef = doc(firestore, "users", user.uid);
+        const userData = {
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+        };
+        setDocumentNonBlocking(userDocRef, userData, { merge: true });
+      }
+    } catch (error) {
+      console.error("Error signing up:", error);
+      // You can add a toast notification here to inform the user.
+    }
+  }
+
+  if (isUserLoading || user) {
+    return (
+      <div className="relative flex min-h-screen flex-col items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center">
        <Image
@@ -33,31 +107,75 @@ export default function SignupPage() {
             Enter your information to create an account
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" placeholder="John Doe" />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="m@example.com" />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" />
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full" asChild>
-            <Link href="/dashboard">Create Account</Link>
-          </Button>
-          <div className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="underline hover:text-primary">
-              Login
-            </Link>
-          </div>
-        </CardFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <CardContent className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="m@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+              <Button className="w-full" type="submit">Create Account</Button>
+              <div className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link href="/login" className="underline hover:text-primary">
+                  Login
+                </Link>
+              </div>
+            </CardFooter>
+          </form>
+        </Form>
       </Card>
     </div>
   )

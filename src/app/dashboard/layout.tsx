@@ -1,5 +1,9 @@
+"use client"
+
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,12 +27,41 @@ import {
 import { Search } from "lucide-react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { Icons } from "@/components/icons";
+import { useAuth, useUser, useFirestore, useDoc } from "@/firebase";
+import { signOut } from "firebase/auth";
+import { doc } from "firebase/firestore";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
+
+  const userDocRef = user ? doc(firestore, "users", user.uid) : null;
+  const { data: userData } = useDoc(userDocRef);
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push("/login");
+    }
+  }, [user, isUserLoading, router]);
+
+  const handleLogout = () => {
+    signOut(auth);
+    router.push("/login");
+  };
+
+  const userInitial = userData ? userData.firstName.charAt(0).toUpperCase() : "";
+  const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
+
+  if (isUserLoading || !user) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
+
   return (
     <SidebarProvider>
       <Sidebar side="left" variant="sidebar" collapsible="icon">
@@ -51,11 +84,11 @@ export default function DashboardLayout({
                 className="h-12 w-full justify-start gap-2 px-2 group-data-[collapsible=icon]:size-12 group-data-[collapsible=icon]:justify-center"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://picsum.photos/seed/user/100/100" alt="User" />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarImage src={user?.photoURL || ""} alt={userName} />
+                  <AvatarFallback>{userInitial}</AvatarFallback>
                 </Avatar>
                 <span className="group-data-[collapsible=icon]:hidden">
-                  User
+                  {userName}
                 </span>
               </Button>
             </DropdownMenuTrigger>
@@ -67,8 +100,8 @@ export default function DashboardLayout({
               </DropdownMenuItem>
               <DropdownMenuItem>Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/login">Logout</Link>
+              <DropdownMenuItem onClick={handleLogout}>
+                Logout
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -103,8 +136,8 @@ export default function DashboardLayout({
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="https://picsum.photos/seed/user/100/100" alt="User" />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarImage src={user?.photoURL || ""} alt={userName} />
+                      <AvatarFallback>{userInitial}</AvatarFallback>
                     </Avatar>
                     <span className="sr-only">Toggle user menu</span>
                   </Button>
@@ -117,8 +150,8 @@ export default function DashboardLayout({
                   </DropdownMenuItem>
                   <DropdownMenuItem>Support</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/login">Logout</Link>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

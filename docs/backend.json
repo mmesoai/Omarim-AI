@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Lead": {
@@ -401,10 +402,6 @@
       "type": "object",
       "description": "Represents a user of the application.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
         "email": {
           "type": "string",
           "description": "Email address of the user.",
@@ -420,7 +417,6 @@
         }
       },
       "required": [
-        "id",
         "email",
         "firstName",
         "lastName"
