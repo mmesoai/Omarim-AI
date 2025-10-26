@@ -173,9 +173,9 @@ export default function DashboardPage() {
                     }}
                   />
                   <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
-                  <Bar dataKey="Website Sales" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="E-Commerce" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Lead Gen" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Website Sales" fill="#87ceeb" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="E-Commerce" fill="#d8b4fe" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Lead Gen" fill="#90ee90" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -235,11 +235,13 @@ export default function DashboardPage() {
             <CardHeader>
                 <div className="flex items-center gap-4">
                     <FolderKanban className="h-8 w-8 text-primary" />
-                    <CardTitle className="text-lg">Lead Intelligence Engine</CardTitle>
+                    <div>
+                        <CardTitle className="text-lg">Lead Intelligence Engine</CardTitle>
+                        <CardDescription>B2B lead enrichment, automated outreach, and pipeline management.</CardDescription>
+                    </div>
                 </div>
-                <CardDescription>B2B lead enrichment, automated outreach, and pipeline management.</CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                  {leads && leads.length > 0 ? (
                     <div className="h-[150px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -271,7 +273,7 @@ export default function DashboardPage() {
                     </ResponsiveContainer>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-center justify-center text-center bg-muted/50 rounded-lg p-4">
+                    <div className="flex flex-col items-center justify-center text-center bg-muted/50 rounded-lg p-4 h-full">
                         <Users className="h-8 w-8 text-muted-foreground" />
                         <p className="mt-2 text-sm font-semibold">No Lead Data</p>
                         <p className="text-xs text-muted-foreground">Your pipeline will appear here.</p>
