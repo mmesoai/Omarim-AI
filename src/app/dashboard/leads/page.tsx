@@ -1,3 +1,7 @@
+"use client"
+
+import { useUser, useFirestore, useCollection, addDocumentNonBlocking, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,19 +19,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle } from "lucide-react";
-
-const leads = [
-  { name: "John Doe", company: "Innovate Inc.", email: "john.d@innovate.com", status: "Contacted" },
-  { name: "Jane Smith", company: "Solutions Corp.", email: "jane.s@solutions.co", status: "New" },
-  { name: "Peter Jones", company: "TechForward", email: "peter.j@techforward.io", status: "Replied" },
-  { name: "Mary Johnson", company: "Data-Driven LLC", email: "mary@datadriven.com", status: "Interested" },
-  { name: "David Williams", company: "CloudNine", email: "d.williams@cloudnine.net", status: "New" },
-  { name: "Sarah Brown", company: "QuantumLeap", email: "s.brown@quantumleap.ai", status: "Not Interested" },
-  { name: "Michael Davis", company: "NextGen Systems", email: "m.davis@nextgen.sys", status: "Contacted" },
-];
+import { PlusCircle, Loader2 } from "lucide-react";
 
 export default function LeadsPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  // IMPORTANT: The path `/users/${user.uid}/leads` is a placeholder.
+  // According to backend.json, it should be `/users/{userId}/notionPages/{notionPageId}/leads/{leadId}`
+  // For simplicity in this step, we will use a top-level `leads` sub-collection.
+  // We will need to address the full path when Notion integration is built.
+  const leadsCollectionRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(firestore, `users/${user.uid}/leads`);
+  }, [firestore, user]);
+
+  const { data: leads, isLoading } = useCollection(leadsCollectionRef);
+
+  const handleScrapeNewLead = () => {
+    if (!leadsCollectionRef) return;
+    
+    // This is a placeholder for a real scraping mechanism.
+    // It adds a sample lead to the user's collection.
+    const sampleLead = {
+      name: "New Lead",
+      company: "AutoCorp",
+      email: `lead_${Date.now()}@autocorp.com`,
+      status: "New",
+    };
+    addDocumentNonBlocking(leadsCollectionRef, sampleLead);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -37,7 +59,7 @@ export default function LeadsPage() {
             Manage and scrape new leads to fill your pipeline.
           </p>
         </div>
-        <Button>
+        <Button onClick={handleScrapeNewLead} disabled={!user}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Scrape New Leads
         </Button>
@@ -45,9 +67,9 @@ export default function LeadsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Leads</CardTitle>
+          <CardTitle>Your Leads</CardTitle>
           <CardDescription>
-            A list of recently scraped leads.
+            A real-time list of your scraped leads.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -61,8 +83,15 @@ export default function LeadsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {leads.map((lead) => (
-                <TableRow key={lead.email}>
+              {isLoading && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
+                  </TableCell>
+                </TableRow>
+              )}
+              {!isLoading && leads && leads.map((lead) => (
+                <TableRow key={lead.id}>
                   <TableCell className="font-medium">{lead.name}</TableCell>
                   <TableCell>{lead.company}</TableCell>
                   <TableCell>{lead.email}</TableCell>
@@ -83,6 +112,13 @@ export default function LeadsPage() {
                   </TableCell>
                 </TableRow>
               ))}
+              {!isLoading && (!leads || leads.length === 0) && (
+                 <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    You have no leads yet. Try scraping some!
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
