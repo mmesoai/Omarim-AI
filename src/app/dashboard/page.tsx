@@ -131,7 +131,7 @@ export default function DashboardPage() {
             <span>Omarim AI</span>
             <span className="text-2xl font-semibold text-muted-foreground"> Intelligent Warehouse</span>
         </h1>
-        <p className="text-sm text-primary">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
+        <p className="text-sm text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
       </div>
 
       {/* KPI Cards */}
@@ -324,5 +324,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
