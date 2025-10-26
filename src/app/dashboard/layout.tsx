@@ -25,7 +25,7 @@ import {
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Bell } from "lucide-react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { Icons } from "@/components/icons";
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -66,7 +66,7 @@ export default function DashboardLayout({
 
   if (isUserLoading || isUserDataLoading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center">
+      <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     ); 
@@ -80,10 +80,10 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <Sidebar side="left" variant="sidebar" collapsible="icon">
-        <SidebarHeader className="h-16 items-center justify-center p-4">
+        <SidebarHeader className="h-16 flex items-center justify-center p-4">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <Icons.logo className="size-6 text-sidebar-primary" />
-            <span className="font-headline text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+            <Icons.logo className="size-7 text-sidebar-primary" />
+            <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
               Omarim AI
             </span>
           </Link>
@@ -96,15 +96,16 @@ export default function DashboardLayout({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="h-12 w-full justify-start gap-2 px-2 group-data-[collapsible=icon]:size-12 group-data-[collapsible=icon]:justify-center"
+                className="h-12 w-full justify-start gap-3 px-3 group-data-[collapsible=icon]:size-12 group-data-[collapsible=icon]:justify-center"
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user?.photoURL || ""} alt={userName} />
                   <AvatarFallback>{userInitial}</AvatarFallback>
                 </Avatar>
-                <span className="group-data-[collapsible=icon]:hidden">
-                  {userName}
-                </span>
+                <div className="text-left group-data-[collapsible=icon]:hidden">
+                  <p className="text-sm font-medium">{userName}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start">
@@ -124,29 +125,23 @@ export default function DashboardLayout({
       </Sidebar>
       <SidebarInset>
         <div className="relative isolate flex h-full min-h-svh flex-col">
-          <Image
-            src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop"
-            alt="Futuristic background"
-            fill
-            className="-z-10 object-cover opacity-20"
-            data-ai-hint="abstract space"
-          />
-          <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-white/10 bg-transparent px-4 md:px-6">
+          <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm md:px-6">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="md:hidden" />
-              <h1 className="font-headline text-lg font-semibold md:text-xl">
-                Dashboard
-              </h1>
-            </div>
-            <div className="flex items-center gap-4">
               <div className="relative w-full max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search..."
-                  className="w-full rounded-lg bg-white/5 pl-8 text-foreground"
+                  placeholder="Search features..."
+                  className="w-full rounded-lg bg-background pl-8 text-foreground"
                 />
               </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Bell className="h-5 w-5" />
+                <span className="sr-only">Notifications</span>
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">

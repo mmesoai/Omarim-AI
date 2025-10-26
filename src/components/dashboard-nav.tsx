@@ -4,8 +4,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
-  BarChart2,
-  BotMessageSquare,
+  Bot,
   Building2,
   FolderKanban,
   Home,
@@ -14,47 +13,77 @@ import {
   Mic,
   Send,
   Settings,
-  Bot,
+  BotMessageSquare
 } from "lucide-react"
 
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarGroupLabel,
+  SidebarSeparator
 } from "@/components/ui/sidebar"
 
-const navItems = [
+const mainNav = [
   { href: "/dashboard", icon: Home, label: "Dashboard" },
-  { href: "/dashboard/chat", icon: MessageCircle, label: "Chat" },
-  { href: "/dashboard/agent", icon: Bot, label: "Agent" },
+  { href: "/dashboard/chat", icon: MessageCircle, label: "Omarim Chat" },
+];
+
+const featureNav = [
+  { href: "/dashboard/agent", icon: Bot, label: "Autonomous Agent" },
+  { href: "/dashboard/leads", icon: FolderKanban, label: "Lead Intelligence" },
+  { href: "/dashboard/outreach", icon: Send, label: "Outreach Engine" },
+  { href: "/dashboard/stores", icon: Building2, label: "E-Commerce" },
+];
+
+const secondaryNav = [
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
-  { href: "/dashboard/leads", icon: FolderKanban, label: "Lead Scrape" },
-  { href: "/dashboard/outreach", icon: Send, label: "Outreach" },
-  { href: "/dashboard/new-site", icon: BotMessageSquare, label: "Intake Form" },
-  { href: "/dashboard/stores", icon: Building2, label: "Product Sourcing" },
   { href: "/dashboard/voice", icon: Mic, label: "Voice Tools" },
-  { href: "/dashboard/settings", icon: Settings, label: "Settings", separate: true },
-]
+  { href: "/dashboard/new-site", icon: BotMessageSquare, label: "Intake Form" },
+];
+
 
 export function DashboardNav() {
   const pathname = usePathname()
 
+  const buildNav = (items: typeof mainNav) => (
+     items.map((item) => (
+      <SidebarMenuItem key={item.href}>
+        <SidebarMenuButton
+          asChild
+          isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
+          tooltip={item.label}
+        >
+          <Link href={item.href}>
+            <item.icon />
+            <span>{item.label}</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    ))
+  );
+
   return (
     <SidebarMenu>
-      {navItems.map((item) => (
-        <SidebarMenuItem key={item.href} className={item.separate ? "mt-auto" : ""}>
-          <SidebarMenuButton
-            asChild
-            isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
-            tooltip={item.label}
-          >
-            <Link href={item.href}>
-              <item.icon />
-              <span>{item.label}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
+      {buildNav(mainNav)}
+      <SidebarSeparator />
+      <SidebarGroupLabel>Features</SidebarGroupLabel>
+      {buildNav(featureNav)}
+      <SidebarSeparator />
+      <SidebarGroupLabel>Tools</SidebarGroupLabel>
+      {buildNav(secondaryNav)}
+      <SidebarMenuItem className="mt-auto">
+        <SidebarMenuButton
+          asChild
+          isActive={pathname.startsWith("/dashboard/settings")}
+          tooltip="Settings"
+        >
+          <Link href="/dashboard/settings">
+            <Settings />
+            <span>Settings</span>
+          </Link>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
     </SidebarMenu>
   )
 }
