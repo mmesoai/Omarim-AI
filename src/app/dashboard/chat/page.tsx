@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,19 +26,32 @@ import {
 } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Icons } from "@/components/icons";
-import { Bot, Send, User } from "lucide-react";
+import { Bot, User } from "lucide-react";
 import { interpretCommand } from "@/ai/flows/interpret-command";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
+
+import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/flows/generate-outreach-email";
+import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+
 
 const chatFormSchema = z.object({
   message: z.string().min(1, { message: "Message cannot be empty." }),
 });
 
+type AgentResult = 
+  | { type: 'outreach'; data: GenerateOutreachEmailOutput }
+  | { type: 'social'; data: GenerateSocialMediaPostOutput };
+
 type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  result?: AgentResult;
 };
 
 export default function ChatPage() {
@@ -46,6 +59,7 @@ export default function ChatPage() {
   const [isThinking, setIsThinking] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -64,7 +78,6 @@ export default function ChatPage() {
   });
 
   useEffect(() => {
-    // Scroll to the bottom when messages change
     if (scrollAreaRef.current) {
         const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
         if (viewport) {
@@ -74,7 +87,6 @@ export default function ChatPage() {
   }, [messages]);
 
   useEffect(() => {
-    // Initial welcome message from the assistant
     setMessages([
       {
         id: "init",
@@ -84,36 +96,48 @@ export default function ChatPage() {
     ]);
   }, [userName]);
 
-  const handleAiResponse = (action: string, prompt: string) => {
+  const handleAiResponse = async (action: string, prompt: string) => {
      let responseText = "";
-     let navigationPath: string | null = null;
+     let agentResult: AgentResult | undefined = undefined;
 
-     switch (action) {
-        case "generate_social_post":
-            responseText = `Understood. I will generate a social media post about "${prompt}".`;
-            navigationPath = `/dashboard/agent?agentType=social&prompt=${encodeURIComponent(prompt)}`;
-            break;
-        case "generate_outreach_email":
-            responseText = `Got it. I will draft a personalized outreach email for the LinkedIn profile: ${prompt}.`;
-            navigationPath = `/dashboard/agent?agentType=outreach&prompt=${encodeURIComponent(prompt)}`;
-            break;
-        case "add_store":
-             responseText = `Perfect. Let's connect your ${prompt || 'new'} store. I'll take you to the right place.`;
-             navigationPath = `/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`;
-             break;
-        default:
-            responseText = "I'm sorry, I'm not sure how to help with that. I can help generate social media posts, draft outreach emails from LinkedIn profiles, or connect new stores.";
-            break;
+     try {
+        switch (action) {
+            case "generate_social_post":
+                responseText = `Understood. Here is a draft for a social media post about "${prompt}".`;
+                const socialOutput = await generateSocialMediaPost({ topic: prompt });
+                agentResult = { type: 'social', data: socialOutput };
+                break;
+            case "generate_outreach_email":
+                 if (!z.string().url().safeParse(prompt).success) {
+                    responseText = "It looks like you want to draft an outreach email, but please provide a valid LinkedIn URL.";
+                    break;
+                }
+                responseText = `Got it. Here is a personalized outreach email based on the LinkedIn profile: ${prompt}.`;
+                const outreachOutput = await generateOutreachEmail({ linkedInUrl: prompt });
+                agentResult = { type: 'outreach', data: outreachOutput };
+                break;
+            case "add_store":
+                responseText = `Perfect. Let's connect your ${prompt || 'new'} store. I'll take you to the right place.`;
+                 setTimeout(() => router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`), 1500);
+                 break;
+            default:
+                responseText = "I'm sorry, I'm not sure how to help with that. I can help generate social media posts, draft outreach emails from LinkedIn profiles, or connect new stores.";
+                break;
+        }
+     } catch (error) {
+        console.error("AI action failed:", error);
+        responseText = "I'm sorry, I encountered an error while trying to complete that task. Please try again.";
+        toast({
+            variant: "destructive",
+            title: "AI Action Failed",
+            description: "There was a problem executing the AI-powered action.",
+        });
      }
 
      setMessages((prev) => [
         ...prev,
-        { id: String(Date.now()), role: "assistant", content: responseText },
+        { id: String(Date.now()), role: "assistant", content: responseText, result: agentResult },
      ]);
-
-     if (navigationPath) {
-        setTimeout(() => router.push(navigationPath!), 1500);
-     }
   }
 
   async function onSubmit(values: z.infer<typeof chatFormSchema>) {
@@ -128,7 +152,7 @@ export default function ChatPage() {
 
     try {
       const result = await interpretCommand({ command: values.message });
-      handleAiResponse(result.action, result.prompt);
+      await handleAiResponse(result.action, result.prompt);
     } catch (error) {
       console.error("AI interpretation failed:", error);
       const errorMessage: Message = {
@@ -153,35 +177,82 @@ export default function ChatPage() {
             <ScrollArea className="h-full" ref={scrollAreaRef}>
                 <div className="p-6 space-y-6">
                 {messages.map((message) => (
-                    <div
-                    key={message.id}
-                    className={`flex items-start gap-4 ${
-                        message.role === "user" ? "justify-end" : ""
-                    }`}
-                    >
-                    {message.role === "assistant" && (
-                        <Avatar className="h-9 w-9 border">
-                        <div className="flex h-full w-full items-center justify-center bg-primary/10">
-                            <Icons.logo className="h-5 w-5 text-primary" />
-                        </div>
-                        </Avatar>
-                    )}
-                    <div
-                        className={`max-w-md rounded-lg px-4 py-3 text-sm ${
-                        message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
+                    <div key={message.id}>
+                        <div
+                        className={`flex items-start gap-4 ${
+                            message.role === "user" ? "justify-end" : ""
                         }`}
-                    >
-                        <p>{message.content}</p>
-                    </div>
-                    {message.role === "user" && (
-                        <Avatar className="h-9 w-9 border">
-                        <AvatarFallback>
-                            <User className="h-5 w-5" />
-                        </AvatarFallback>
-                        </Avatar>
-                    )}
+                        >
+                        {message.role === "assistant" && (
+                            <Avatar className="h-9 w-9 border">
+                            <div className="flex h-full w-full items-center justify-center bg-primary/10">
+                                <Icons.logo className="h-5 w-5 text-primary" />
+                            </div>
+                            </Avatar>
+                        )}
+                        <div
+                            className={`max-w-xl rounded-lg px-4 py-3 text-sm ${
+                            message.role === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted"
+                            }`}
+                        >
+                            <p>{message.content}</p>
+                        </div>
+                        {message.role === "user" && (
+                            <Avatar className="h-9 w-9 border">
+                            <AvatarFallback>
+                                <User className="h-5 w-5" />
+                            </AvatarFallback>
+                            </Avatar>
+                        )}
+                        </div>
+                        {message.result && (
+                             <div className="mt-4 pl-12">
+                                <Card className="max-w-xl">
+                                    <CardContent className="p-4 space-y-4">
+                                        {message.result.type === 'outreach' && (
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor={`subject-${message.id}`}>Subject</Label>
+                                                    <Input id={`subject-${message.id}`} readOnly value={message.result.data.subject} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor={`body-${message.id}`}>Body</Label>
+                                                    <Textarea
+                                                    id={`body-${message.id}`}
+                                                    readOnly
+                                                    value={message.result.data.body}
+                                                    className="h-48"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                        {message.result.type === 'social' && (
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor={`post-content-${message.id}`}>Post Content</Label>
+                                                    <Textarea
+                                                        id={`post-content-${message.id}`}
+                                                        readOnly
+                                                        value={message.result.data.postContent}
+                                                        className="h-32"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Hashtags</Label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                    {message.result.data.hashtags.map((tag, index) => (
+                                                        <Badge key={index} variant="secondary">{tag}</Badge>
+                                                    ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        )}
                     </div>
                 ))}
                  {isThinking && (
@@ -225,7 +296,7 @@ export default function ChatPage() {
                 )}
               />
               <Button type="submit" size="icon" disabled={isThinking}>
-                <Send className="h-4 w-4" />
+                <Icons.logo className="h-4 w-4" />
                 <span className="sr-only">Send</span>
               </Button>
             </form>
