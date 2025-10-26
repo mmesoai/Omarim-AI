@@ -1,179 +1,179 @@
-/**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for most data,
- *              allowing users to only access and modify data they explicitly own.
- *
- * Data Structure:
- * - /users/{userId}: User profile information.
- * - /users/{userId}/leads/{leadId}: Leads owned by a specific user.
- * - /users/{userId}/products/{productId}: Products owned by a specific user.
- * - /users/{userId}/outreachSequences/{outreachSequenceId}: Outreach sequences created by a user.
- * - /users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}: Emails within an outreach sequence owned by a user.
- * - /users/{userId}/stores/{storeId}: Stores connected by a user.
- *
- * Key Security Decisions:
- * - Users can only create, read, update, and delete their own user document.
- * - Users can only manage leads, products, outreach sequences, emails, and stores under their own user ID.
- * - Listing of user documents is disallowed to protect user privacy.
- * - Data validation is relaxed in this prototyping phase, focusing on authorization.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile documents.
+     * @description Secure user profiles, allowing only the owner to read and write their own profile.
      * @path /users/{userId}
-     * @allow (create) - User with ID 'user123' can create their own profile.
-     *          Request data must have id == user123
-     * @allow (get) - User with ID 'user123' can read their own profile.
-     * @allow (update) - User with ID 'user123' can update their own profile.
-     * @allow (delete) - User with ID 'user123' can delete their own profile.
-     * @deny (create) - User with ID 'user123' cannot create a profile with a different ID 'user456'.
-     * @deny (get) - User with ID 'user123' cannot read another user's profile 'user456'.
-     * @deny (update) - User with ID 'user123' cannot update another user's profile 'user456'.
-     * @deny (delete) - User with ID 'user123' cannot delete another user's profile 'user456'.
-     * @principle Enforces document ownership for all operations on user profiles.
+     * @allow (create) - Authenticated user 'user_abc' can create their profile if request.auth.uid == userId
+     * @allow (get, update, delete) - Authenticated user 'user_abc' can read, update, or delete their profile if request.auth.uid == userId
+     * @deny (create) - Authenticated user 'user_xyz' cannot create a profile for 'user_abc' if request.auth.uid != userId
+     * @deny (get, update, delete) - Authenticated user 'user_xyz' cannot read, update, or delete 'user_abc' profile if request.auth.uid != userId
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-      allow get: if isOwner(userId);
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.email is string && request.resource.data.firstName is string && request.resource.data.lastName is string;
-      allow update: if isOwner(userId) && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to leads owned by a user.
+     * @description Secure leads collection, allowing only the owner to manage their own leads.
      * @path /users/{userId}/leads/{leadId}
-     * @allow (create) - User 'user123' can create a lead under their ID.
-     * @allow (get) - User 'user123' can read a lead under their ID.
-     * @allow (list) - User 'user123' can list leads under their ID.
-     * @allow (update) - User 'user123' can update a lead under their ID.
-     * @allow (delete) - User 'user123' can delete a lead under their ID.
-     * @deny (create) - User 'user123' cannot create a lead under another user's ID 'user456'.
-     * @deny (get) - User 'user123' cannot read a lead under another user's ID 'user456'.
-     * @deny (list) - User 'user123' cannot list leads under another user's ID 'user456'.
-     * @deny (update) - User 'user123' cannot update a lead under another user's ID 'user456'.
-     * @deny (delete) - User 'user123' cannot delete a lead under another user's ID 'user456'.
-     * @principle Enforces document ownership for all operations on leads.
+     * @allow (create) - Authenticated user 'user_abc' can create a lead under their ID if request.auth.uid == userId
+     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete leads under their ID if request.auth.uid == userId
+     * @deny (create) - Authenticated user 'user_xyz' cannot create a lead under 'user_abc' ID if request.auth.uid != userId
+     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete leads under 'user_abc' ID if request.auth.uid != userId
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/leads/{leadId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.email is string && request.resource.data.firstName is string && request.resource.data.lastName is string && request.resource.data.company is string && request.resource.data.domain is string && request.resource.data.status is string;
-      allow update: if isOwner(userId) && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to products owned by a user.
+     * @description Secure products collection, allowing only the owner to manage their own products.
      * @path /users/{userId}/products/{productId}
-     * @allow (create) - User 'user123' can create a product under their ID.
-     * @allow (get) - User 'user123' can read a product under their ID.
-     * @allow (list) - User 'user123' can list products under their ID.
-     * @allow (update) - User 'user123' can update a product under their ID.
-     * @allow (delete) - User 'user123' can delete a product under their ID.
-     * @deny (create) - User 'user123' cannot create a product under another user's ID 'user456'.
-     * @deny (get) - User 'user123' cannot read a product under another user's ID 'user456'.
-     * @deny (list) - User 'user123' cannot list products under another user's ID 'user456'.
-     * @deny (update) - User 'user123' cannot update a product under another user's ID 'user456'.
-     * @deny (delete) - User 'user123' cannot delete a product under another user's ID 'user456'.
-     * @principle Enforces document ownership for all operations on products.
+     * @allow (create) - Authenticated user 'user_abc' can create a product under their ID if request.auth.uid == userId
+     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete products under their ID if request.auth.uid == userId
+     * @deny (create) - Authenticated user 'user_xyz' cannot create a product under 'user_abc' ID if request.auth.uid != userId
+     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete products under 'user_abc' ID if request.auth.uid != userId
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/products/{productId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.name is string && request.resource.data.description is string && request.resource.data.price is number && request.resource.data.quantity is number && request.resource.data.imageId is string && request.resource.data.source is string;
-      allow update: if isOwner(userId) && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to outreach sequences created by a user.
+     * @description Secure outreach sequences collection, allowing only the owner to manage their own sequences.
      * @path /users/{userId}/outreachSequences/{outreachSequenceId}
-     * @allow (create) - User 'user123' can create an outreach sequence under their ID.
-     * @allow (get) - User 'user123' can read an outreach sequence under their ID.
-     * @allow (list) - User 'user123' can list outreach sequences under their ID.
-     * @allow (update) - User 'user123' can update an outreach sequence under their ID.
-     * @allow (delete) - User 'user123' can delete an outreach sequence under their ID.
-     * @deny (create) - User 'user123' cannot create an outreach sequence under another user's ID 'user456'.
-     * @deny (get) - User 'user123' cannot read an outreach sequence under another user's ID 'user456'.
-     * @deny (list) - User 'user123' cannot list outreach sequences under another user's ID 'user456'.
-     * @deny (update) - User 'user123' cannot update an outreach sequence under another user's ID 'user456'.
-     * @deny (delete) - User 'user123' cannot delete an outreach sequence under another user's ID 'user456'.
-     * @principle Enforces document ownership for all operations on outreach sequences.
+     * @allow (create) - Authenticated user 'user_abc' can create an outreach sequence under their ID if request.auth.uid == userId
+     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete outreach sequences under their ID if request.auth.uid == userId
+     * @deny (create) - Authenticated user 'user_xyz' cannot create an outreach sequence under 'user_abc' ID if request.auth.uid != userId
+     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete outreach sequences under 'user_abc' ID if request.auth.uid != userId
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/outreachSequences/{outreachSequenceId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.name is string && request.resource.data.description is string && request.resource.data.leadIds is list;
-      allow update: if isOwner(userId) && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to emails associated with a user's outreach sequence.
+     * @description Secure emails collection, allowing only the owner to manage emails within their outreach sequences.
      * @path /users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}
-     * @allow (create) - User 'user123' can create an email under their outreach sequence.
-     * @allow (get) - User 'user123' can read an email under their outreach sequence.
-     * @allow (list) - User 'user123' can list emails under their outreach sequence.
-     * @allow (update) - User 'user123' can update an email under their outreach sequence.
-     * @allow (delete) - User 'user123' can delete an email under their outreach sequence.
-     * @deny (create) - User 'user123' cannot create an email under another user's ID 'user456'.
-     * @deny (get) - User 'user123' cannot read an email under another user's ID 'user456'.
-     * @deny (list) - User 'user123' cannot list emails under another user's ID 'user456'.
-     * @deny (update) - User 'user123' cannot update an email under another user's ID 'user456'.
-     * @deny (delete) - User 'user123' cannot delete an email under another user's ID 'user456'.
-     * @principle Enforces document ownership for all operations on emails within outreach sequences.
+     * @allow (create) - Authenticated user 'user_abc' can create an email under their outreach sequence if request.auth.uid == userId
+     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete emails under their outreach sequence if request.auth.uid == userId
+     * @deny (create) - Authenticated user 'user_xyz' cannot create an email under 'user_abc' outreach sequence if request.auth.uid != userId
+     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete emails under 'user_abc' outreach sequence if request.auth.uid != userId
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.outreachSequenceId is string && request.resource.data.leadId is string && request.resource.data.subject is string && request.resource.data.body is string && request.resource.data.sentAt is string;
-      allow update: if isOwner(userId) && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to stores integrated by a user.
+     * @description Secure stores collection, allowing only the owner to manage their own stores.
      * @path /users/{userId}/stores/{storeId}
-     * @allow (create) - User 'user123' can create a store under their ID.
-     * @allow (get) - User 'user123' can read a store under their ID.
-     * @allow (list) - User 'user123' can list stores under their ID.
-     * @allow (update) - User 'user123' can update a store under their ID.
-     * @allow (delete) - User 'user123' can delete a store under their ID.
-     * @deny (create) - User 'user123' cannot create a store under another user's ID 'user456'.
-     * @deny (get) - User 'user123' cannot read a store under another user's ID 'user456'.
-     * @deny (list) - User 'user123' cannot list stores under another user's ID 'user456'.
-     * @deny (update) - User 'user123' cannot update a store under another user's ID 'user456'.
-     * @deny (delete) - User 'user123' cannot delete a store under another user's ID 'user456'.
-     * @principle Enforces document ownership for all operations on stores.
+     * @allow (create) - Authenticated user 'user_abc' can create a store under their ID if request.auth.uid == userId
+     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete stores under their ID if request.auth.uid == userId
+     * @deny (create) - Authenticated user 'user_xyz' cannot create a store under 'user_abc' ID if request.auth.uid != userId
+     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete stores under 'user_abc' ID if request.auth.uid != userId
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/stores/{storeId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.name is string && request.resource.data.type is string && request.resource.data.apiUrl is string && request.resource.data.apiKey is string;
-      allow update: if isOwner(userId) && resource != null;
-      allow delete: if isOwner(userId) && resource != null;
+
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isExistingOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
     }
   }
 }
