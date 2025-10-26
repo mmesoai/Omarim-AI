@@ -18,3 +18,4 @@ import '@/ai/flows/generate-multiple-social-posts.ts';
 import '@/ai/flows/generate-app-blueprint.ts';
 import '@/ai/tools/send-email';
 import '@/ai/tools/get-omarim-ai-capabilities';
+import '@/ai/tools/find-trending-products';
