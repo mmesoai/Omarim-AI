@@ -30,7 +30,7 @@ export default function LeadsPage() {
   // For simplicity in this step, we will use a top-level `leads` sub-collection.
   // We will need to address the full path when Notion integration is built.
   const leadsCollectionRef = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !firestore) return null;
     // For now, we'll use a simplified path. We can update this later.
     return collection(firestore, `users/${user.uid}/leads`);
   }, [firestore, user]);
