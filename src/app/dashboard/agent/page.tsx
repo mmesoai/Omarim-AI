@@ -149,6 +149,12 @@ export default function AgentPage() {
         </Form>
       </Card>
 
+      {isLoading && (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
+
       {agentResponse && (
         <Card className="bg-transparent shadow-none border-none">
           <CardHeader>
