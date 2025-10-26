@@ -1,10 +1,16 @@
 
 'use server';
 /**
- * @fileOverview A mock email sending service.
- * In a real application, this would integrate with a third-party email provider
- * like SendGrid, Mailgun, or AWS SES.
+ * @fileOverview An email sending service using SendGrid.
+ * It reads the API key and 'from' email from environment variables.
  */
+
+import sgMail from '@sendgrid/mail';
+
+// Set the API key from environment variables when the server starts.
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
 interface EmailParams {
   to: string;
@@ -13,21 +19,39 @@ interface EmailParams {
 }
 
 /**
- * Simulates sending an email.
+ * Sends an email using SendGrid.
  * @param {EmailParams} params - The email parameters.
- * @returns {Promise<{success: boolean, message: string}>} - The result of the simulated operation.
+ * @returns {Promise<{success: boolean, message: string}>} - The result of the operation.
  */
 export async function sendEmail(params: EmailParams): Promise<{ success: boolean; message: string }> {
   const { to, subject, body } = params;
-
-  // Simulate a network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  // In a real scenario, you would handle potential errors from the email provider.
-  // For this simulation, we'll always assume success.
-  if (!to || !subject || !body) {
-     return { success: false, message: 'Email failed to send due to missing parameters.' };
+  
+  // Check if the service is configured.
+  if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
+    console.error("SendGrid API Key or From Email not configured in environment variables.");
+    // In production, you might want a more user-friendly message.
+    // For the developer, this simulation is more informative.
+    return { 
+        success: false, 
+        message: 'Email service is not configured. Simulating success for development.' 
+    };
   }
+  
+  const msg = {
+    to: to,
+    from: process.env.SENDGRID_FROM_EMAIL, // Use the verified sender email from .env
+    subject: subject,
+    html: body, // SendGrid uses `html` for the body
+  };
 
-  return { success: true, message: `Email successfully sent to ${to}` };
+  try {
+    await sgMail.send(msg);
+    return { success: true, message: `Email successfully sent to ${to}` };
+  } catch (error: any) {
+    console.error('SendGrid Error:', error.response?.body || error);
+    return {
+      success: false,
+      message: `Failed to send email: ${error.message || 'An unknown error occurred'}`,
+    };
+  }
 }
