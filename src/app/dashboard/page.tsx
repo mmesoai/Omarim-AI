@@ -127,8 +127,11 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">Omarim AI Intelligent Warehouse</h1>
-        <p className="text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
+        <h1 className="text-3xl font-bold font-headline tracking-tight">
+            <span>Omarim AI</span>
+            <span className="text-2xl font-semibold text-muted-foreground"> Intelligent Warehouse</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
       </div>
 
       {/* KPI Cards */}
@@ -321,3 +324,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
