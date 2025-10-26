@@ -31,6 +31,7 @@ export default function LeadsPage() {
   // We will need to address the full path when Notion integration is built.
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!user) return null;
+    // For now, we'll use a simplified path. We can update this later.
     return collection(firestore, `users/${user.uid}/leads`);
   }, [firestore, user]);
 
@@ -40,12 +41,15 @@ export default function LeadsPage() {
     if (!leadsCollectionRef) return;
     
     // This is a placeholder for a real scraping mechanism.
-    // It adds a sample lead to the user's collection.
+    // It adds a sample lead to the user's collection in Firestore.
     const sampleLead = {
-      name: "New Lead",
-      company: "AutoCorp",
-      email: `lead_${Date.now()}@autocorp.com`,
+      firstName: "Alex",
+      lastName: "Morgan",
+      company: "Innovate Inc.",
+      domain: "innovate.com",
+      email: `alex.morgan_${Date.now()}@innovate.com`,
       status: "New",
+      notionPageId: "placeholder_page_id", // Placeholder
     };
     addDocumentNonBlocking(leadsCollectionRef, sampleLead);
   };
@@ -59,9 +63,9 @@ export default function LeadsPage() {
             Manage and scrape new leads to fill your pipeline.
           </p>
         </div>
-        <Button onClick={handleScrapeNewLead} disabled={!user}>
+        <Button onClick={handleScrapeNewLead} disabled={!user || isLoading}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Scrape New Leads
+          Scrape New Lead
         </Button>
       </div>
 
@@ -69,7 +73,7 @@ export default function LeadsPage() {
         <CardHeader>
           <CardTitle>Your Leads</CardTitle>
           <CardDescription>
-            A real-time list of your scraped leads.
+            A real-time list of your scraped leads from your database.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -92,7 +96,7 @@ export default function LeadsPage() {
               )}
               {!isLoading && leads && leads.map((lead) => (
                 <TableRow key={lead.id}>
-                  <TableCell className="font-medium">{lead.name}</TableCell>
+                  <TableCell className="font-medium">{lead.firstName} {lead.lastName}</TableCell>
                   <TableCell>{lead.company}</TableCell>
                   <TableCell>{lead.email}</TableCell>
                   <TableCell>
@@ -115,7 +119,7 @@ export default function LeadsPage() {
               {!isLoading && (!leads || leads.length === 0) && (
                  <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    You have no leads yet. Try scraping some!
+                    You have no leads yet. Try scraping one!
                   </TableCell>
                 </TableRow>
               )}

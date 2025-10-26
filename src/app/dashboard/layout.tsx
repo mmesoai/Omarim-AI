@@ -24,10 +24,10 @@ import {
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { Icons } from "@/components/icons";
-import { useAuth, useUser, useFirestore, useDoc } from "@/firebase";
+import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
 
@@ -41,8 +41,12 @@ export default function DashboardLayout({
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
 
-  const userDocRef = user ? doc(firestore, "users", user.uid) : null;
-  const { data: userData } = useDoc(userDocRef);
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, "users", user.uid);
+  }, [user, firestore]);
+
+  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -51,15 +55,25 @@ export default function DashboardLayout({
   }, [user, isUserLoading, router]);
 
   const handleLogout = () => {
-    signOut(auth);
-    router.push("/login");
+    signOut(auth).then(() => {
+      router.push("/login");
+    });
   };
 
   const userInitial = userData ? userData.firstName.charAt(0).toUpperCase() : "";
   const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
 
-  if (isUserLoading || !user) {
-    return <div>Loading...</div>; // Or a loading spinner
+  if (isUserLoading || isUserDataLoading) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    ); 
+  }
+  
+  if (!user) {
+    // This can happen briefly while redirecting
+    return null;
   }
 
   return (
