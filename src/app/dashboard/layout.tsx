@@ -22,9 +22,6 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarTrigger,
-  SidebarInset,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { Search, Loader2, Bell, PanelLeft } from "lucide-react";
 import { DashboardNav } from "@/components/dashboard-nav";
@@ -34,10 +31,17 @@ import { signOut } from "firebase/auth";
 import { doc } from "firebase/firestore";
 
 const Header = () => {
-    const { toggleSidebar } = useSidebar();
     const { user } = useUser();
-    const { data: userData } = useDoc(useMemoFirebase(() => user ? doc(useFirestore(), "users", user.uid) : null, [user]));
-    const handleLogout = () => { signOut(useAuth()) };
+    const firestore = useFirestore(); // Call hook unconditionally
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, "users", user.uid);
+    }, [user, firestore]);
+
+    const { data: userData } = useDoc(userDocRef);
+    const auth = useAuth();
+    const handleLogout = () => { signOut(auth) };
 
     const userInitial = userData ? userData.firstName.charAt(0).toUpperCase() : "";
     const userName = userData ? `${userData.firstName} ${userData.lastName}` : "User";
@@ -45,15 +49,6 @@ const Header = () => {
     return (
         <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm md:px-6">
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={toggleSidebar}
-              >
-                <PanelLeft />
-                <span className="sr-only">Toggle Sidebar</span>
-              </Button>
               <div className="relative hidden w-full max-w-sm md:block">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -188,14 +183,12 @@ export default function DashboardLayout({
           </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
-        <div className="relative isolate flex h-full min-h-svh flex-col">
-          <Header />
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            {children}
-          </main>
+      <main className="flex-1 overflow-auto">
+        <Header />
+        <div className="p-4 md:p-6">
+          {children}
         </div>
-      </SidebarInset>
+      </main>
     </SidebarProvider>
   );
 }
