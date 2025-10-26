@@ -60,6 +60,7 @@ export default function VoicePage() {
   const handleStartRecording = async () => {
     setTranscription("");
     setAgentResult(null);
+    setCommandState('recording');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
@@ -76,7 +77,6 @@ export default function VoicePage() {
       };
 
       mediaRecorderRef.current.start();
-      setCommandState('recording');
     } catch (err) {
       console.error("Error accessing microphone:", err);
       toast({
@@ -84,12 +84,14 @@ export default function VoicePage() {
         description: "Could not access the microphone. Please check your browser permissions.",
         variant: "destructive",
       });
+      setCommandState('idle');
     }
   };
 
   const handleStopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop();
+      setCommandState('transcribing');
     }
   };
 
@@ -103,7 +105,6 @@ export default function VoicePage() {
   }
 
   const handleTranscription = async (audioBlob: Blob) => {
-    setCommandState('transcribing');
     setTranscription("");
     try {
       const audioDataUri = await blobToDataURL(audioBlob);
@@ -146,13 +147,14 @@ export default function VoicePage() {
       } else if (action === 'add_store') {
         responseText = `This is Omarim AI. Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
         router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`);
-        handleSpeak(responseText);
+        await handleSpeak(responseText);
         setCommandState('idle'); 
         return; 
       } else {
          responseText = "This is Omarim AI. I'm sorry, I did not recognize that command. Please try again.";
       }
-      handleSpeak(responseText);
+      await handleSpeak(responseText);
+      setCommandState('idle');
     } catch (error) {
        console.error("Execution failed:", error);
        toast({ title: "Action Failed", description: "There was an error performing the action.", variant: "destructive" });
@@ -180,9 +182,7 @@ export default function VoicePage() {
         variant: "destructive",
       });
     } finally {
-      if(isCommandResponse) {
-        setCommandState('idle');
-      } else {
+      if(!isCommandResponse) {
         setIsSpeaking(false);
       }
     }

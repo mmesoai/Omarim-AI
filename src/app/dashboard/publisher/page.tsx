@@ -39,6 +39,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 const publisherFormSchema = z.object({
   topicOrContent: z
@@ -147,11 +148,10 @@ export default function PublisherPage() {
                         YouTube URL (Optional)
                     </FormLabel>
                     <FormControl>
-                      <Textarea
+                      <Input
                         placeholder="e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                         {...field}
                         disabled={isLoading}
-                        className="min-h-[50px]"
                       />
                     </FormControl>
                     <FormMessage />

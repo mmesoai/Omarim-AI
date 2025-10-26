@@ -52,8 +52,6 @@ export const findAndQualifyLeads = ai.defineTool(
     outputSchema: z.array(QualifiedLeadSchema),
   },
   async (input) => {
-    console.log('Tool `findAndQualifyLeads` called with:', input);
-
     const { output } = await leadGenerationPrompt(input);
     
     if (!output?.leads) {

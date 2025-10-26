@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit tool for sending emails.
@@ -27,11 +28,6 @@ export const sendEmail = ai.defineTool(
     outputSchema: SendEmailOutputSchema,
   },
   async (input) => {
-    console.log('Tool `sendEmail` called with:', {
-        to: input.to,
-        subject: input.subject,
-    });
-
     try {
       // In a real application, this would use a service like SendGrid, AWS SES, etc.
       // We are using a simulated service for this example.

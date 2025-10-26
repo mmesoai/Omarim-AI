@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A mock email sending service.
@@ -18,13 +19,6 @@ interface EmailParams {
  */
 export async function sendEmail(params: EmailParams): Promise<{ success: boolean; message: string }> {
   const { to, subject, body } = params;
-
-  console.log('--- SIMULATING EMAIL SEND ---');
-  console.log(`Recipient: ${to}`);
-  console.log(`Subject: ${subject}`);
-  console.log('Body:');
-  console.log(body);
-  console.log('-----------------------------');
 
   // Simulate a network delay
   await new Promise(resolve => setTimeout(resolve, 500));

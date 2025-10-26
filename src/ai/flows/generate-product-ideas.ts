@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow to generate new product ideas based on a given topic.
@@ -18,7 +19,7 @@ export type GenerateProductIdeasInput = z.infer<typeof GenerateProductIdeasInput
 
 const ProductIdeaSchema = z.object({
     name: z.string().describe('The name of the product.'),
-    description: z.string().describe('A brief, compelling description of the product.'),
+    description: z.string().describe('A brief, compelling, and creative description of the product that highlights its unique value.'),
     price: z.number().describe('A suggested retail price for the product.'),
     imageId: z.string().describe(`The ID of a suitable placeholder image from the provided list. Must be one of: ${PlaceHolderImages.map(p => p.id).join(', ')}`),
 });
@@ -40,7 +41,7 @@ const generateProductIdeasPrompt = ai.definePrompt({
     output: { schema: GenerateProductIdeasOutputSchema },
     prompt: `You are an expert product manager and e-commerce strategist.
 Your task is to generate 4 creative and plausible product ideas based on a given topic.
-For each product idea, you must provide a name, a short description, a suggested price, and select the most fitting image ID from the provided list.
+For each product idea, you must provide a name, a short, creative description that stands out, a suggested price, and select the most fitting image ID from the provided list.
 
 Available Image IDs:
 ${PlaceHolderImages.map(p => `- ${p.id}: ${p.description}`).join('\n')}
