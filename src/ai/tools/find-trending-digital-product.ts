@@ -6,6 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export const TrendingDigitalProductSchema = z.object({
   productName: z.string().describe("The name of the trending digital product."),
@@ -20,6 +21,7 @@ const trendingDigitalProductPrompt = ai.definePrompt({
   name: 'trendingDigitalProductPrompt',
   input: { schema: z.undefined() },
   output: { schema: TrendingDigitalProductSchema },
+  model: googleAI('gemini-pro'),
   prompt: `You are a digital marketing expert and trend analyst. Your task is to identify a single, highly plausible, trending digital product idea that could be created and sold online.
 
 The product should be one of the following types: eBook, Notion Template, Video Course, or a simple Software Tool.

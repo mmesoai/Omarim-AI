@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export const InterpretCommandInputSchema = z.object({
   command: z.string().describe('The natural language command from the user.'),
@@ -33,6 +34,7 @@ const interpretCommandPrompt = ai.definePrompt({
   name: 'interpretCommandPrompt',
   input: { schema: InterpretCommandInputSchema },
   output: { schema: InterpretCommandOutputSchema },
+  model: googleAI('gemini-pro'),
   prompt: `You are an AI assistant that interprets user commands for the Omarim AI platform.
 Your task is to understand the user's command and determine the appropriate action and the prompt/subject for that action.
 

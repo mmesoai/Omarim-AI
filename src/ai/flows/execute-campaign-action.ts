@@ -8,6 +8,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { manageOutreachSequence } from '@/ai/tools/manage-outreach-sequence';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const ExecuteCampaignActionInputSchema = z.object({
   command: z.string().describe('The natural language command for the campaign action, e.g., "Add new leads to the welcome sequence."'),
@@ -29,6 +30,7 @@ const executeCampaignActionPrompt = ai.definePrompt({
   input: { schema: ExecuteCampaignActionInputSchema },
   output: { schema: ExecuteCampaignActionOutputSchema },
   tools: [manageOutreachSequence],
+  model: googleAI('gemini-pro'),
   system: `You are an AI assistant that manages marketing campaigns.
 You will be given a command from a user and a userId.
 Your task is to use the available tools to execute the command.

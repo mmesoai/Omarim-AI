@@ -7,6 +7,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const TrendingProductSchema = z.object({
     productName: z.string().describe("The name of the trending product."),
@@ -30,6 +31,7 @@ const trendingProductPrompt = ai.definePrompt({
   name: 'trendingProductPrompt',
   input: { schema: TrendingProductInputSchema },
   output: { schema: TrendingProductSchema },
+  model: googleAI('gemini-pro'),
   prompt: `You are an expert e-commerce analyst with a keen eye for viral products.
 Your task is to identify a single, plausible, trending product within the given category: "{{{category}}}".
 

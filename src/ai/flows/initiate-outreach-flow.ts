@@ -8,6 +8,7 @@ import { z } from 'genkit';
 import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
 import { saveLead } from '@/services/firestore-service';
 import { sendEmail } from '@/ai/tools/send-email';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const InitiateOutreachInputSchema = z.object({
   lead: findAndQualifyLeads.outputSchema.element, // A single qualified lead
@@ -43,6 +44,7 @@ const generateEmailPrompt = ai.definePrompt({
       body: z.string(),
     }),
   },
+  model: googleAI('gemini-pro'),
   prompt: `You are an expert sales development representative for a company called Omarim AI.
 Your task is to generate a compelling and personalized outreach email to a qualified lead.
 

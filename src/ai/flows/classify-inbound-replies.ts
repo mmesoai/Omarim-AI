@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const ClassifyInboundReplyInputSchema = z.object({
   emailBody: z.string().describe('The body of the inbound email reply.'),
@@ -30,6 +31,7 @@ const classifyInboundReplyPrompt = ai.definePrompt({
   name: 'classifyInboundReplyPrompt',
   input: {schema: ClassifyInboundReplyInputSchema},
   output: {schema: ClassifyInboundReplyOutputSchema},
+  model: googleAI('gemini-pro'),
   prompt: `You are an AI assistant that classifies inbound email replies based on their content.\n\nAnalyze the following email body and determine its sentiment, category, and relevant tags.\n\nEmail Body: {{{emailBody}}}\n\nSentiment (positive, negative, neutral):\nCategory (question, complaint, feedback, etc.):\nTags (urgent, billing, support, etc.):\n\nRespond in a JSON format.`,
 });
 

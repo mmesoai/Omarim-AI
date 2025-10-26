@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const ConvertSpeechToTextInputSchema = z.object({
   audioDataUri: z
@@ -33,6 +34,7 @@ const convertSpeechToTextPrompt = ai.definePrompt({
   name: 'convertSpeechToTextPrompt',
   input: {schema: ConvertSpeechToTextInputSchema},
   output: {schema: ConvertSpeechToTextOutputSchema},
+  model: googleAI('gemini-pro'),
   prompt: `Transcribe the following audio: {{media url=audioDataUri}}`,
 });
 

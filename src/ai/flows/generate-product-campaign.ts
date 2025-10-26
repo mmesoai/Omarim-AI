@@ -14,6 +14,7 @@ import {
   GenerateProductCampaignInputSchema,
   type GenerateProductCampaignInput,
 } from '@/app/schemas';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 const SocialPostSchema = z.object({
@@ -45,6 +46,7 @@ const generateProductCampaignPrompt = ai.definePrompt({
     name: 'generateProductCampaignPrompt',
     input: { schema: GenerateProductCampaignInputSchema },
     output: { schema: GenerateProductCampaignOutputSchema },
+    model: googleAI('gemini-pro'),
     prompt: `You are a world-class marketing director for a cutting-edge e-commerce brand.
 Your task is to generate a complete set of marketing assets for a new, trending product.
 

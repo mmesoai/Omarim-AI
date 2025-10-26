@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateOutreachEmailInputSchema = z.object({
   linkedInUrl: z.string().url().describe('The URL of the LinkedIn profile to scrape.'),
@@ -29,6 +30,7 @@ const generateOutreachEmailPrompt = ai.definePrompt({
   name: 'generateOutreachEmailPrompt',
   input: { schema: GenerateOutreachEmailInputSchema },
   output: { schema: GenerateOutreachEmailOutputSchema },
+  model: googleAI('gemini-pro'),
   prompt: `You are an expert sales development representative.
 You will be given a LinkedIn profile URL. Your task is to generate a compelling and personalized outreach email to pitch Omarim AI's services.
 

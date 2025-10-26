@@ -6,6 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const QualifiedLeadSchema = z.object({
     company: z.string().describe("The name of the lead's company."),
@@ -28,6 +29,7 @@ const leadGenerationPrompt = ai.definePrompt({
   name: 'leadGenerationPrompt',
   input: { schema: LeadGenerationInputSchema },
   output: { schema: z.object({ leads: z.array(QualifiedLeadSchema) }) },
+  model: googleAI('gemini-pro'),
   prompt: `You are an expert business development researcher. Your task is to generate a list of {{{count}}} plausible, yet fictional, business leads that match the following query: "{{{leadQuery}}}".
 
 For each lead, you must:

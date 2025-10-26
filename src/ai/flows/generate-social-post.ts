@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateSocialMediaPostInputSchema = z.object({
   topic: z.string().describe('The topic or product to generate a social media post about.'),
@@ -29,6 +30,7 @@ const generateSocialMediaPostPrompt = ai.definePrompt({
   name: 'generateSocialMediaPostPrompt',
   input: { schema: GenerateSocialMediaPostInputSchema },
   output: { schema: GenerateSocialMediaPostOutputSchema },
+  model: googleAI('gemini-pro'),
   prompt: `You are an expert social media manager.
 Your task is to generate a short, engaging, and unique awareness post for social media platforms based on the provided topic.
 

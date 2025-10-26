@@ -6,6 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateAppBlueprintInputSchema = z.object({
   appDescription: z.string().describe('A description of the application idea, including its purpose and primary goal.'),
@@ -54,6 +55,7 @@ const generateAppBlueprintPrompt = ai.definePrompt({
     name: 'generateAppBlueprintPrompt',
     input: { schema: GenerateAppBlueprintInputSchema },
     output: { schema: GenerateAppBlueprintOutputSchema },
+    model: googleAI('gemini-pro'),
     system: `You are an expert software architect and product strategist.
 Your task is to take a user's app idea and generate a comprehensive technical blueprint.
 Based on the user's description, you must generate a creative app name and tagline.

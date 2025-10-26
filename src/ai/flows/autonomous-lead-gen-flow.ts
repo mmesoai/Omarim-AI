@@ -7,6 +7,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
 import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const AutonomousLeadGenInputSchema = z.object({
   objective: z.string().describe('The high-level objective for the lead generation task. e.g., "Find 5 local businesses that need a new website."'),
@@ -28,6 +29,7 @@ const autonomousLeadGenPrompt = ai.definePrompt({
   input: { schema: AutonomousLeadGenInputSchema },
   output: { schema: z.object({ qualifiedLeads: z.array(findAndQualifyLeads.inputSchema) }) },
   tools: [findAndQualifyLeads],
+  model: googleAI('gemini-pro'),
   system: `You are an autonomous business development agent.
 Your goal is to find and qualify leads based on a high-level objective.
 Use the findAndQualifyLeads tool to achieve this.

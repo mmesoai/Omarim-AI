@@ -10,6 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateMultipleSocialPostsInputSchema = z.object({
   topicOrContent: z.string().describe('The topic or long-form content to be repurposed into social media posts.'),
@@ -38,6 +39,7 @@ const generateMultipleSocialPostsPrompt = ai.definePrompt({
     name: 'generateMultipleSocialPostsPrompt',
     input: { schema: GenerateMultipleSocialPostsInputSchema },
     output: { schema: GenerateMultipleSocialPostsOutputSchema },
+    model: googleAI('gemini-pro'),
     prompt: `You are an expert social media strategist. Your task is to take the following input and repurpose it into three distinct social media posts, one for each of the following platforms: Twitter, LinkedIn, and Facebook.
 
 The input may be a general topic, a piece of content, a YouTube URL, or a combination.

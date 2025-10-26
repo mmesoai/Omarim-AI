@@ -7,6 +7,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import type { TrendingDigitalProduct } from './find-trending-digital-product';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export const GeneratedProductContentSchema = z.object({
     title: z.string().describe("The final title of the digital product."),
@@ -22,6 +23,7 @@ const generateDigitalProductPrompt = ai.definePrompt({
   name: 'generateDigitalProductPrompt',
   input: { schema: GenerateDigitalProductInputSchema },
   output: { schema: GeneratedProductContentSchema },
+  model: googleAI('gemini-pro'),
   prompt: `You are an expert content creator and product developer.
 Your task is to generate the actual content for the following digital product idea.
 

@@ -11,6 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const GenerateProductIdeasInputSchema = z.object({
   topic: z.string().describe('The topic or category for which to generate product ideas.'),
@@ -39,6 +40,7 @@ const generateProductIdeasPrompt = ai.definePrompt({
     name: 'generateProductIdeasPrompt',
     input: { schema: GenerateProductIdeasInputSchema },
     output: { schema: GenerateProductIdeasOutputSchema },
+    model: googleAI('gemini-pro'),
     prompt: `You are an expert product manager and e-commerce strategist.
 Your task is to generate 4 creative and plausible product ideas based on a given topic.
 For each product idea, you must provide a name, a short, creative description that stands out, a suggested price, and select the most fitting image ID from the provided list.

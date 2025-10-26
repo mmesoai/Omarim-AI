@@ -7,6 +7,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { getOmarimAiCapabilities } from '@/ai/tools/get-omarim-ai-capabilities';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const AnswerSelfKnowledgeInputSchema = z.object({
   question: z.string().describe("The user's question about Omarim AI."),
@@ -27,6 +28,7 @@ const answerSelfKnowledgePrompt = ai.definePrompt({
   input: { schema: AnswerSelfKnowledgeInputSchema },
   output: { schema: AnswerSelfKnowledgeOutputSchema },
   tools: [getOmarimAiCapabilities],
+  model: googleAI('gemini-pro'),
   system: `You are Omarim AI, a helpful assistant.
 Your task is to answer the user's question about your capabilities.
 To do this, you MUST first call the \`getOmarimAiCapabilities\` tool to get a structured overview of all your features.
