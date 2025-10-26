@@ -1,81 +1,203 @@
 
-"use client"
+'use client';
 
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Loader2 } from "lucide-react";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2, Users, ShoppingBag, Send, PlusCircle, List, Activity } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+const leadStatusColors = {
+  New: '#3b82f6', // blue-500
+  Contacted: '#f97316', // orange-500
+  Interested: '#22c55e', // green-500
+  Replied: '#eab308', // yellow-500
+  'Not Interested': '#ef4444', // red-500
+  default: '#6b7280', // gray-500
+};
 
 export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
+
+  const leadsCollectionRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, `users/${user.uid}/leads`);
+  }, [firestore, user]);
 
   const productsCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return collection(firestore, `users/${user.uid}/products`);
   }, [firestore, user]);
 
-  const { data: products, isLoading } = useCollection(productsCollectionRef);
+  const sequencesCollectionRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, `users/${user.uid}/outreachSequences`);
+  }, [firestore, user]);
 
-  // Derive data for the chart, handling the null/empty case
-  const chartData = products && products.length > 0 ? products : [];
+  const { data: leads, isLoading: isLoadingLeads } = useCollection(leadsCollectionRef);
+  const { data: products, isLoading: isLoadingProducts } = useCollection(productsCollectionRef);
+  const { data: sequences, isLoading: isLoadingSequences } = useCollection(sequencesCollectionRef);
+
+  const leadStatusData = useMemo(() => {
+    if (!leads) return [];
+    const statusCounts = leads.reduce((acc, lead) => {
+      const status = lead.status || 'Unknown';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return Object.entries(statusCounts).map(([name, value]) => ({ 
+        name, 
+        value,
+        fill: leadStatusColors[name as keyof typeof leadStatusColors] || leadStatusColors.default
+    }));
+  }, [leads]);
+  
+  const isLoading = isLoadingLeads || isLoadingProducts || isLoadingSequences;
+
+  const kpiData = [
+    { title: 'Total Leads', value: leads?.length ?? 0, icon: Users },
+    { title: 'Synced Products', value: products?.length ?? 0, icon: ShoppingBag },
+    { title: 'Outreach Sequences', value: sequences?.length ?? 0, icon: Send },
+  ];
+
+  const recentActivities = [
+    { icon: Activity, text: "AI agent identified 5 new leads.", time: "10m ago" },
+    { icon: Send, text: "Outreach email sent to 'Innovate Inc.'", time: "1h ago" },
+    { icon: PlusCircle, text: "You added a new product 'Smart Watch'.", time: "3h ago" },
+    { icon: Users, text: "Lead 'Alex Morgan' status changed to 'Contacted'.", time: "yesterday" },
+  ];
+
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Inventory Overview</CardTitle>
-          <CardDescription>A real-time look at your product quantities across all sources.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading && (
-            <div className="flex h-80 w-full items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      {/* KPI Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {kpiData.map((kpi, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+              <kpi.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{kpi.value}</div>
+              <p className="text-xs text-muted-foreground">
+                Real-time data from your integrations
+              </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+         <Button variant="outline" size="lg" className="h-20" onClick={() => router.push('/dashboard/leads')}>
+            <PlusCircle className="mr-4 h-6 w-6" />
+            <div className="text-left">
+                <p className="font-semibold">Add New Lead</p>
+                <p className="font-normal text-muted-foreground">Manually add a lead to your pipeline.</p>
             </div>
-          )}
-          {!isLoading && chartData.length > 0 && (
-            <div className="h-80 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--background))',
-                      borderColor: 'hsl(var(--border))'
-                    }}
-                   />
-                  <Legend />
-                  <Bar dataKey="quantity" fill="hsl(var(--primary))" name="Stock Quantity" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="price" fill="hsl(var(--accent))" name="Price" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+         </Button>
+         <Button variant="outline" size="lg" className="h-20" onClick={() => router.push('/dashboard/outreach')}>
+            <Send className="mr-4 h-6 w-6" />
+             <div className="text-left">
+                <p className="font-semibold">Create Sequence</p>
+                <p className="font-normal text-muted-foreground">Start a new email outreach campaign.</p>
             </div>
-          )}
-           {!isLoading && chartData.length === 0 && (
-            <div className="flex h-80 w-full flex-col items-center justify-center text-center">
-              <p className="text-lg font-semibold">No Product Data Available</p>
-              <p className="text-muted-foreground">Add products in the 'Product Sourcing' page to see your inventory chart.</p>
+         </Button>
+         <Button variant="outline" size="lg" className="h-20" onClick={() => router.push('/dashboard/settings?tab=integrations')}>
+            <ShoppingBag className="mr-4 h-6 w-6" />
+             <div className="text-left">
+                <p className="font-semibold">Connect a Store</p>
+                <p className="font-normal text-muted-foreground">Sync products from Shopify, etc.</p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+         </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        {/* Lead Status Chart */}
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Lead Status Overview</CardTitle>
+            <CardDescription>A breakdown of your current lead pipeline.</CardDescription>
+          </CardHeader>
+          <CardContent>
+             {leads && leads.length > 0 ? (
+                <div className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                    <Pie
+                        data={leadStatusData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                        {leadStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))',
+                        borderColor: 'hsl(var(--border))'
+                    }}/>
+                    <Legend />
+                    </PieChart>
+                </ResponsiveContainer>
+                </div>
+            ) : (
+                <div className="flex h-80 w-full flex-col items-center justify-center text-center">
+                <p className="text-lg font-semibold">No Lead Data</p>
+                <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
+                </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>A log of recent system and AI actions.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                    {recentActivities.map((activity, index) => (
+                        <div key={index} className="flex items-start gap-4">
+                            <div className="rounded-full bg-muted p-2">
+                                <activity.icon className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-sm">{activity.text}</p>
+                                <p className="text-xs text-muted-foreground">{activity.time}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+      </div>
     </div>
-  )
+  );
 }

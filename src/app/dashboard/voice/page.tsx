@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Volume2, Bot, Send as UIBadge } from "lucide-react";
+import { Mic, Square, Loader2, Volume2, Bot, Send as UIBadge, BrainCircuit, Waves } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +18,7 @@ import { convertSpeechToText } from "@/ai/flows/convert-speech-to-text";
 import { convertTextToSpeech } from "@/ai/flows/convert-text-to-speech";
 import { interpretCommand } from "@/ai/flows/interpret-command";
 import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
+import { cn } from "@/lib/utils";
 
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -145,11 +146,9 @@ export default function VoicePage() {
       } else if (action === 'add_store') {
         responseText = `This is Omarim AI. Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
         router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`);
-        // For navigation, we don't need to show an agent result card or keep the state busy.
-        // We just say what we're doing and then do it.
         handleSpeak(responseText);
-        setCommandState('idle'); // Reset state after navigation is initiated
-        return; // Exit early
+        setCommandState('idle'); 
+        return; 
       } else {
          responseText = "This is Omarim AI. I'm sorry, I did not recognize that command. Please try again.";
       }
@@ -196,19 +195,20 @@ export default function VoicePage() {
     }
   }, [ttsAudioUrl]);
 
-  const getStatusText = () => {
+  const getStatusInfo = () => {
     switch (commandState) {
-      case 'idle': return 'I am Omarim AI. Click the button and speak a command.';
-      case 'recording': return "Listening...";
-      case 'transcribing': return "Transcribing your speech...";
-      case 'interpreting': return "Understanding your command...";
-      case 'executing': return "Working on your request...";
-      case 'responding': return "Finalizing response...";
-      default: return "Ready for your command.";
+      case 'idle': return { icon: BrainCircuit, text: 'Ready for your command.' };
+      case 'recording': return { icon: Waves, text: 'Listening...' };
+      case 'transcribing': return { icon: Loader2, text: 'Transcribing your speech...', spin: true };
+      case 'interpreting': return { icon: Loader2, text: 'Understanding your command...', spin: true };
+      case 'executing': return { icon: Loader2, text: 'Working on your request...', spin: true };
+      case 'responding': return { icon: Loader2, text: 'Finalizing response...', spin: true };
+      default: return { icon: BrainCircuit, text: 'I am Omarim AI. Click the button and speak a command.' };
     }
   }
 
   const isProcessing = commandState !== 'idle' && commandState !== 'recording';
+  const { icon: StatusIcon, text: statusText, spin: isSpinning } = getStatusInfo();
 
   return (
     <div className="space-y-6">
@@ -229,29 +229,29 @@ export default function VoicePage() {
               <CardDescription>Speak your commands to Omarim AI.</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <div className="flex justify-center">
-              <Button
-                size="lg"
-                onClick={commandState === 'recording' ? handleStopRecording : handleStartRecording}
-                className={`rounded-full w-24 h-24 ${commandState === 'recording' ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                disabled={isProcessing}
-              >
-                {isProcessing ? <Loader2 size={32} className="animate-spin" /> : (commandState === 'recording' ? <Square size={32} /> : <Mic size={32} />) }
-              </Button>
+          <CardContent className="flex flex-col items-center justify-center space-y-4 text-center h-[300px]">
+            <Button
+              size="lg"
+              onClick={commandState === 'recording' ? handleStopRecording : handleStartRecording}
+              className={cn(
+                'rounded-full w-24 h-24 transition-all duration-300',
+                commandState === 'recording' ? 'bg-red-500 hover:bg-red-600 animate-pulse' : 'bg-primary hover:bg-primary/90',
+                isProcessing && 'bg-muted-foreground'
+              )}
+              disabled={isProcessing}
+            >
+              {isProcessing ? <Loader2 size={32} className="animate-spin" /> : (commandState === 'recording' ? <Square size={32} /> : <Mic size={32} />) }
+            </Button>
+            
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <StatusIcon className={cn('h-4 w-4', isSpinning && 'animate-spin')} />
+              <span>{statusText}</span>
             </div>
-            <p className="text-sm text-muted-foreground min-h-[40px] flex items-center justify-center px-4">
-              {getStatusText()}
-            </p>
+
             {transcription && (
-               <div className="text-left space-y-2 pt-4">
+               <div className="w-full text-left space-y-2 pt-4">
                   <Label>Your Command</Label>
-                  <Textarea
-                    id="transcription"
-                    value={transcription}
-                    readOnly
-                    className="italic text-muted-foreground"
-                  />
+                  <p className="text-sm italic text-foreground p-2 bg-muted rounded-md">{transcription}</p>
               </div>
             )}
           </CardContent>
