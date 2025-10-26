@@ -14,7 +14,6 @@ import {
   Send,
   Settings,
   BotMessageSquare,
-  ChevronDown
 } from "lucide-react"
 
 import {
@@ -31,7 +30,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { cn } from "@/lib/utils"
 
 
 const mainNav = [
@@ -76,7 +74,7 @@ export function DashboardNav() {
   const NavAccordion = ({ title, items }: { title: string, items: typeof featureNav }) => (
     <Accordion type="single" collapsible className="w-full" defaultValue={items.some(item => pathname.startsWith(item.href)) ? title : undefined}>
       <AccordionItem value={title} className="border-none">
-        <AccordionTrigger className="py-2 px-3 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md group-data-[collapsible=icon]:hidden">
+        <AccordionTrigger className="py-2 px-3 text-xs font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md group-data-[collapsible=icon]:hidden">
            {title}
         </AccordionTrigger>
         <AccordionContent className="pb-0 pl-4 group-data-[collapsible=icon]:hidden">
