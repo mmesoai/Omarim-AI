@@ -13,7 +13,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, ShoppingBag, Send, Activity, ShieldCheck, Cpu, Bot, ChevronRight, FolderKanban, Building2, Mic, PlusCircle, DollarSign, List, Bell } from 'lucide-react';
+import { Loader2, Users, ShoppingBag, Send, Activity, ShieldCheck, Cpu, Bot, ChevronRight, FolderKanban, Building2, Mic, PlusCircle, DollarSign, List } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import { Progress } from "@/components/ui/progress";
@@ -26,8 +26,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from '@/lib/utils';
 
 
 const leadStatusColors: { [key: string]: string } = {
@@ -56,12 +57,19 @@ const recentSales = [
     { id: 5, customer: "Sophia Johnson", email: "sophia.johnson@email.com", amount: "$999.00", product: "Laptop", source: "WooCommerce" },
 ];
 
+const sourceColors: { [key: string]: string } = {
+  Shopify: "border-transparent bg-green-500/20 text-green-700",
+  WooCommerce: "border-transparent bg-purple-500/20 text-purple-700",
+  Amazon: "border-transparent bg-orange-500/20 text-orange-700",
+};
+
+
 const recentActivities = [
-    { id: 1, icon: List, description: "AI Agent added 5 new leads from 'Local Businesses' campaign.", time: "2m ago" },
-    { id: 2, icon: Send, description: "Outreach email sent to 'alex.morgan@innovate.com'.", time: "15m ago" },
-    { id: 3, icon: DollarSign, description: "New sale of $199.99 from WooCommerce store.", time: "1h ago" },
-    { id: 4, icon: Users, description: "Lead 'John Doe' status changed to 'Interested'.", time: "3h ago" },
-    { id: 5, icon: Building2, description: "Successfully connected new Shopify store 'My Awesome Store'.", time: "1d ago" },
+    { id: 1, icon: List, description: "AI Agent added 5 new leads from 'Local Businesses' campaign.", time: "2m ago", color: "text-blue-400" },
+    { id: 2, icon: Send, description: "Outreach email sent to 'alex.morgan@innovate.com'.", time: "15m ago", color: "text-yellow-400" },
+    { id: 3, icon: DollarSign, description: "New sale of $199.99 from WooCommerce store.", time: "1h ago", color: "text-green-400" },
+    { id: 4, icon: Users, description: "Lead 'John Doe' status changed to 'Interested'.", time: "3h ago", color: "text-teal-400" },
+    { id: 5, icon: Building2, description: "Successfully connected new Shopify store 'My Awesome Store'.", time: "1d ago", color: "text-pink-400" },
 ];
 
 export default function DashboardPage() {
@@ -202,7 +210,7 @@ export default function DashboardPage() {
             <CardDescription>Monthly performance across all business units.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80 w-full">
+            <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
@@ -225,14 +233,76 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+         {/* Recent Sales */}
         <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Recent E-commerce Activity</CardTitle>
+                <CardDescription>An overview of your latest sales and AI-driven actions.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Tabs defaultValue="sales">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="sales">Recent Sales</TabsTrigger>
+                        <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="sales" className="pt-4">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Source</TableHead>
+                                    <TableHead className="text-right">Amount</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {recentSales.map((sale) => (
+                                    <TableRow key={sale.id}>
+                                        <TableCell>
+                                            <div className="font-medium">{sale.customer}</div>
+                                            <div className="text-sm text-muted-foreground">{sale.email}</div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={cn("text-xs", sourceColors[sale.source] || "")}>
+                                                {sale.source}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">{sale.amount}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TabsContent>
+                     <TabsContent value="activity">
+                        <div className="space-y-4 pt-4">
+                            {recentActivities.map((activity) => (
+                                <div key={activity.id} className="flex items-center gap-4">
+                                    <Avatar className="h-9 w-9">
+                                        <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", activity.color)}>
+                                            <activity.icon className="h-5 w-5 text-background" />
+                                        </div>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <p className="text-sm">{activity.description}</p>
+                                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <Card className="lg:col-span-3">
             <CardHeader>
                 <CardTitle>Lead Status Overview</CardTitle>
                 <CardDescription>A real-time breakdown of your current lead pipeline.</CardDescription>
             </CardHeader>
             <CardContent>
                 {leads && leads.length > 0 ? (
-                    <div className="h-80 w-full">
+                    <div className="h-[350px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                         <Pie
@@ -240,7 +310,8 @@ export default function DashboardPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            outerRadius={100}
+                            outerRadius={120}
+                            innerRadius={70}
                             fill="#8884d8"
                             dataKey="value"
                             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -261,7 +332,7 @@ export default function DashboardPage() {
                     </ResponsiveContainer>
                     </div>
                 ) : (
-                    <div className="flex h-80 w-full flex-col items-center justify-center text-center">
+                    <div className="flex h-[350px] w-full flex-col items-center justify-center text-center">
                     <Users className="h-12 w-12 text-muted-foreground" />
                     <p className="mt-4 text-lg font-semibold">No Lead Data</p>
                     <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
@@ -272,9 +343,6 @@ export default function DashboardPage() {
                 )}
             </CardContent>
         </Card>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         
         {/* Control Center */}
         <Card className="lg:col-span-2">
@@ -304,66 +372,9 @@ export default function DashboardPage() {
                 </Button>
             </CardFooter>
         </Card>
-
-        {/* Recent Sales */}
-        <Card className="lg:col-span-3">
-            <CardHeader>
-                <CardTitle>Recent E-commerce Activity</CardTitle>
-                <CardDescription>An overview of your latest sales and AI-driven actions.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Tabs defaultValue="sales">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="sales">Recent Sales</TabsTrigger>
-                        <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="sales">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Customer</TableHead>
-                                    <TableHead>Product</TableHead>
-                                    <TableHead className="text-right">Amount</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {recentSales.map((sale) => (
-                                    <TableRow key={sale.id}>
-                                        <TableCell>
-                                            <div className="font-medium">{sale.customer}</div>
-                                            <div className="text-sm text-muted-foreground">{sale.email}</div>
-                                        </TableCell>
-                                        <TableCell>{sale.product}</TableCell>
-                                        <TableCell className="text-right">{sale.amount}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TabsContent>
-                     <TabsContent value="activity">
-                        <div className="space-y-4 pt-4">
-                            {recentActivities.map((activity) => (
-                                <div key={activity.id} className="flex items-center gap-4">
-                                    <Avatar className="h-9 w-9">
-                                        <div className="flex h-full w-full items-center justify-center rounded-full bg-muted">
-                                            <activity.icon className="h-5 w-5 text-muted-foreground" />
-                                        </div>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                        <p className="text-sm">{activity.description}</p>
-                                        <p className="text-xs text-muted-foreground">{activity.time}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </TabsContent>
-                </Tabs>
-            </CardContent>
-        </Card>
       </div>
     </div>
   );
 }
 
-    
     
