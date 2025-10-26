@@ -109,14 +109,9 @@ export default function ChatPage() {
                 const socialOutput = await generateSocialMediaPost({ topic: prompt });
                 agentResult = { type: 'social', data: socialOutput };
                 break;
-            case "generate_outreach_email":
-                 if (!z.string().url().safeParse(prompt).success) {
-                    responseText = "It looks like you want to draft an outreach email, but please provide a valid LinkedIn URL.";
-                    break;
-                }
-                responseText = `Got it. Here is a personalized outreach email based on the LinkedIn profile: ${prompt}.`;
-                const outreachOutput = await generateOutreachEmail({ linkedInUrl: prompt });
-                agentResult = { type: 'outreach', data: outreachOutput };
+            case "run_autonomous_agent":
+                responseText = `Got it. I'll get to work on that objective. I'm navigating you to the Autonomous Agent page where you can see the results.`;
+                setTimeout(() => router.push(`/dashboard/agent?objective=${encodeURIComponent(prompt)}`), 1500);
                 break;
             case "add_store":
                 responseText = `Perfect. Let's connect your ${prompt || 'new'} store. I'll take you to the right place.`;
@@ -134,7 +129,7 @@ export default function ChatPage() {
                 responseText = campaignOutput.result; 
                 break;
             default:
-                responseText = "I'm sorry, I'm not sure how to help with that. I can help generate social media posts, draft outreach emails from LinkedIn profiles, or connect new stores.";
+                responseText = "I'm sorry, I'm not sure how to help with that. I can help generate social media posts, run the autonomous agent to find leads, or connect new stores.";
                 break;
         }
      } catch (error) {

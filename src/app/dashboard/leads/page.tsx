@@ -47,40 +47,41 @@ export default function LeadsPage() {
       domain: "innovate.com",
       email: `alex.morgan_${Date.now()}@innovate.com`,
       status: "New",
-      notionPageId: "placeholder_page_id",
     };
     addDocumentNonBlocking(leadsCollectionRef, sampleLead);
+    toast({
+      title: "New Lead Added",
+      description: "A sample lead has been added to your list.",
+    });
   };
   
   const handleDraftEmail = (lead: any) => {
     if (!user || !firestore || !lead.id) return;
     
-    // Update the lead's status to 'Contacted' in a non-blocking way
     const leadDocRef = doc(firestore, `users/${user.uid}/leads`, lead.id);
     updateDocumentNonBlocking(leadDocRef, { status: 'Contacted' });
 
     toast({
       title: "Status Updated",
-      description: `${lead.firstName} ${lead.lastName} has been marked as 'Contacted'.`,
+      description: `${lead.firstName} ${lead.lastName} has been marked as 'Contacted'. The Autonomous Agent is drafting an email.`,
     });
     
-    // Redirect to the agent page to draft the email
-    const mockLinkedInUrl = `https://www.linkedin.com/in/${lead.firstName.toLowerCase()}${lead.lastName.toLowerCase()}`;
-    router.push(`/dashboard/agent?agentType=outreach&prompt=${encodeURIComponent(mockLinkedInUrl)}`);
+    const objective = `Draft a personalized outreach email to ${lead.firstName} ${lead.lastName}, the CEO of ${lead.company}, about their need for a new AI-powered website.`;
+    router.push(`/dashboard/agent?objective=${encodeURIComponent(objective)}`);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-headline font-semibold">Lead Scrape</h2>
+          <h2 className="text-2xl font-headline font-semibold">Lead Management</h2>
           <p className="text-muted-foreground">
-            Manage and scrape new leads to fill your pipeline.
+            Manage your leads and initiate outreach campaigns.
           </p>
         </div>
         <Button onClick={handleScrapeNewLead} disabled={!user || isLoading}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          Scrape New Lead
+          Add Sample Lead
         </Button>
       </div>
 
@@ -88,7 +89,7 @@ export default function LeadsPage() {
         <CardHeader>
           <CardTitle>Your Leads</CardTitle>
           <CardDescription>
-            A real-time list of your scraped leads from your database.
+            A real-time list of your leads from your database.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -133,7 +134,7 @@ export default function LeadsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDraftEmail(lead)}>
+                    <Button variant="ghost" size="icon" onClick={() => handleDraftEmail(lead)} disabled={lead.status === 'Contacted'}>
                       <Mail className="h-4 w-4" />
                       <span className="sr-only">Draft Email</span>
                     </Button>
@@ -143,7 +144,7 @@ export default function LeadsPage() {
               {!isLoading && (!leads || leads.length === 0) && (
                  <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    You have no leads yet. Try scraping one!
+                    You have no leads yet. Try adding a sample lead.
                   </TableCell>
                 </TableRow>
               )}
