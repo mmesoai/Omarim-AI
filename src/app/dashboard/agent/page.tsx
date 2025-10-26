@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Bot, Loader2, User, Sparkles, Building, Briefcase, ChevronRight } from 'lucide-react';
+import { Bot, Loader2, User, Sparkles, Building, Briefcase, ChevronRight, XCircle, CheckCircle2 } from 'lucide-react';
 import {
   autonomousLeadGen,
   type AutonomousLeadGenOutput,
@@ -79,6 +79,14 @@ export default function AgentPage() {
         <div className="flex items-center text-sm text-muted-foreground">
           <Building className="mr-2 h-4 w-4" />
           <span>{lead.industry}</span>
+        </div>
+        <div className="flex items-center text-sm text-muted-foreground">
+          {lead.hasWebsite ? (
+            <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
+          ) : (
+            <XCircle className="mr-2 h-4 w-4 text-red-500" />
+          )}
+          <span>{lead.hasWebsite ? 'Has Website' : 'No Website'}</span>
         </div>
         <div className="flex items-start text-sm">
           <Sparkles className="mr-2 mt-1 h-4 w-4 flex-shrink-0 text-primary" />
