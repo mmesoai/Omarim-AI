@@ -104,9 +104,9 @@ export default function LeadsPage() {
                       lead.status === "Not Interested" ? "destructive" : "outline"
                     }
                     className={
-                      lead.status === "Interested" ? 'bg-green-500/80 hover:bg-green-500' :
-                      lead.status === "Contacted" ? 'bg-blue-500/80 hover:bg-blue-500' :
-                      lead.status === "Replied" ? 'bg-yellow-500/80 hover:bg-yellow-500' : ''
+                      lead.status === "Interested" ? 'bg-green-500 hover:bg-green-500/90' :
+                      lead.status === "Contacted" ? 'bg-blue-500 hover:bg-blue-500/90' :
+                      lead.status === "Replied" ? 'bg-yellow-500 hover:bg-yellow-500/90 text-black' : ''
                     }
                     >
                       {lead.status}
@@ -134,5 +134,3 @@ export default function LeadsPage() {
     </div>
   );
 }
-
-    
