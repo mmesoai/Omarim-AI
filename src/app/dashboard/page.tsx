@@ -3,7 +3,7 @@
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
@@ -37,6 +37,15 @@ const leadStatusColors: { [key: string]: string } = {
   'Not Interested': 'var(--chart-5)',
   default: 'hsl(var(--muted-foreground))',
 };
+
+const revenueData = [
+  { name: 'Jan', "Website Sales": 4000, "E-Commerce": 2400, "Lead Gen": 1200 },
+  { name: 'Feb', "Website Sales": 3000, "E-Commerce": 1398, "Lead Gen": 1100 },
+  { name: 'Mar', "Website Sales": 5000, "E-Commerce": 6800, "Lead Gen": 1500 },
+  { name: 'Apr', "Website Sales": 4780, "E-Commerce": 3908, "Lead Gen": 1800 },
+  { name: 'May', "Website Sales": 6900, "E-Commerce": 4800, "Lead Gen": 2100 },
+  { name: 'Jun', "Website Sales": 7390, "E-Commerce": 3800, "Lead Gen": 2500 },
+];
 
 const recentSales = [
     { id: 1, customer: "Olivia Martin", email: "olivia.martin@email.com", amount: "$42.50", product: "Smart Watch", source: "Shopify" },
@@ -126,9 +135,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold font-headline tracking-tight">
-            <span>Omarim AI</span>
+       <div>
+        <h1 className="font-headline tracking-tight">
+            <span className="text-3xl font-bold">Omarim AI</span>
             <span className="text-2xl font-semibold text-muted-foreground"> Intelligent Warehouse</span>
         </h1>
         <p className="text-sm text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
@@ -185,57 +194,87 @@ export default function DashboardPage() {
         ))}
       </div>
 
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        {/* Lead Status Chart */}
+       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Lead Status Overview</CardTitle>
-            <CardDescription>A real-time breakdown of your current lead pipeline.</CardDescription>
+            <CardTitle>Revenue Overview</CardTitle>
+            <CardDescription>Monthly performance across all business units.</CardDescription>
           </CardHeader>
           <CardContent>
-             {leads && leads.length > 0 ? (
-                <div className="h-80 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                          data={leadStatusData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={110}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                          {leadStatusData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
-                          ))}
-                      </Pie>
-                      <Tooltip 
-                          cursor={{fill: 'hsla(var(--muted), 0.5)'}}
-                          contentStyle={{ 
-                          backgroundColor: 'hsl(var(--background))',
-                          borderColor: 'hsl(var(--border))',
-                          borderRadius: 'var(--radius)',
-                      }}/>
-                      <Legend iconSize={10} />
-                    </PieChart>
-                </ResponsiveContainer>
-                </div>
-            ) : (
-                <div className="flex h-80 w-full flex-col items-center justify-center text-center">
-                  <Users className="h-12 w-12 text-muted-foreground" />
-                  <p className="mt-4 text-lg font-semibold">No Lead Data</p>
-                  <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
-                  <Button variant="secondary" className="mt-4" onClick={() => router.push('/dashboard/leads')}>
-                    Add a Lead
-                  </Button>
-                </div>
-            )}
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: 'hsla(var(--muted))' }}
+                    contentStyle={{
+                      backgroundColor: 'hsl(var(--background))',
+                      borderColor: 'hsl(var(--border))',
+                      borderRadius: 'var(--radius)',
+                    }}
+                  />
+                  <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
+                  <Bar dataKey="Website Sales" fill="var(--chart-3)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="E-Commerce" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Lead Gen" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Lead Status Overview</CardTitle>
+                <CardDescription>A real-time breakdown of your current lead pipeline.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {leads && leads.length > 0 ? (
+                    <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                        <Pie
+                            data={leadStatusData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                            {leadStatusData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                            ))}
+                        </Pie>
+                        <Tooltip 
+                            cursor={{fill: 'hsla(var(--muted), 0.5)'}}
+                            contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))',
+                            borderColor: 'hsl(var(--border))',
+                            borderRadius: 'var(--radius)',
+                        }}/>
+                        <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    </div>
+                ) : (
+                    <div className="flex h-80 w-full flex-col items-center justify-center text-center">
+                    <Users className="h-12 w-12 text-muted-foreground" />
+                    <p className="mt-4 text-lg font-semibold">No Lead Data</p>
+                    <p className="text-muted-foreground">Add leads to see your pipeline overview.</p>
+                    <Button variant="secondary" className="mt-4" onClick={() => router.push('/dashboard/leads')}>
+                        Add a Lead
+                    </Button>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+      </div>
 
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        
         {/* Control Center */}
         <Card className="lg:col-span-2">
             <CardHeader>
@@ -264,63 +303,65 @@ export default function DashboardPage() {
                 </Button>
             </CardFooter>
         </Card>
-      </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Sales */}
-        <Card>
+        <Card className="lg:col-span-3">
             <CardHeader>
-                <CardTitle>Recent Sales</CardTitle>
-                <CardDescription>An overview of your latest e-commerce transactions.</CardDescription>
+                <CardTitle>Recent E-commerce Activity</CardTitle>
+                <CardDescription>An overview of your latest sales and AI-driven actions.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Customer</TableHead>
-                            <TableHead>Product</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {recentSales.map((sale) => (
-                            <TableRow key={sale.id}>
-                                <TableCell>
-                                    <div className="font-medium">{sale.customer}</div>
-                                    <div className="text-sm text-muted-foreground">{sale.email}</div>
-                                </TableCell>
-                                <TableCell>{sale.product}</TableCell>
-                                <TableCell className="text-right">{sale.amount}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-            <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>A log of recent system and AI-driven actions.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-center gap-4">
-                        <Avatar className="h-9 w-9">
-                            <div className="flex h-full w-full items-center justify-center rounded-full bg-muted">
-                                <activity.icon className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                        </Avatar>
-                        <div className="flex-1">
-                            <p className="text-sm">{activity.description}</p>
-                            <p className="text-xs text-muted-foreground">{activity.time}</p>
+                <Tabs defaultValue="sales">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="sales">Recent Sales</TabsTrigger>
+                        <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="sales">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Product</TableHead>
+                                    <TableHead className="text-right">Amount</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {recentSales.map((sale) => (
+                                    <TableRow key={sale.id}>
+                                        <TableCell>
+                                            <div className="font-medium">{sale.customer}</div>
+                                            <div className="text-sm text-muted-foreground">{sale.email}</div>
+                                        </TableCell>
+                                        <TableCell>{sale.product}</TableCell>
+                                        <TableCell className="text-right">{sale.amount}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TabsContent>
+                     <TabsContent value="activity">
+                        <div className="space-y-4 pt-4">
+                            {recentActivities.map((activity) => (
+                                <div key={activity.id} className="flex items-center gap-4">
+                                    <Avatar className="h-9 w-9">
+                                        <div className="flex h-full w-full items-center justify-center rounded-full bg-muted">
+                                            <activity.icon className="h-5 w-5 text-muted-foreground" />
+                                        </div>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <p className="text-sm">{activity.description}</p>
+                                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                ))}
+                    </TabsContent>
+                </Tabs>
             </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+
+    
