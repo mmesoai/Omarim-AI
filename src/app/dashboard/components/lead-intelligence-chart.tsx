@@ -35,10 +35,12 @@ export function LeadIntelligenceChart({ leads }: { leads: any[] | null }) {
         }));
     }, [leads]);
     
+    // First, gate the rendering to only happen on the client
     if (!isClient) {
         return <div className="h-[150px] w-full flex items-center justify-center"><Users className="h-8 w-8 text-muted-foreground" /></div>;
     }
 
+    // After confirming we are on the client, check for data
     if (!leads || leads.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center text-center bg-muted/50 rounded-lg p-4 h-full">
@@ -49,6 +51,7 @@ export function LeadIntelligenceChart({ leads }: { leads: any[] | null }) {
         )
     }
 
+    // Only render the chart if we are on the client AND have data
     return (
         <ResponsiveContainer width="100%" height="100%">
             <PieChart>
