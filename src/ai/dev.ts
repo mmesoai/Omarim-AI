@@ -8,3 +8,4 @@ import '@/ai/flows/convert-text-to-speech.ts';
 import '@/ai/flows/generate-outreach-email.ts';
 import '@/ai/flows/generate-social-post.ts';
 import '@/ai/flows/interpret-command.ts';
+import '@/ai/flows/execute-campaign-action.ts';

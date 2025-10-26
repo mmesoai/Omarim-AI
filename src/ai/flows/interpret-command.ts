@@ -17,9 +17,9 @@ export type InterpretCommandInput = z.infer<typeof InterpretCommandInputSchema>;
 
 export const InterpretCommandOutputSchema = z.object({
   action: z
-    .enum(['generate_social_post', 'generate_outreach_email', 'add_store', 'unrecognized'])
+    .enum(['generate_social_post', 'generate_outreach_email', 'add_store', 'manage_campaign', 'unrecognized'])
     .describe('The specific action the user wants to perform.'),
-  prompt: z.string().describe('The subject or prompt for the action. For outreach emails, this should be a LinkedIn URL if provided. For social posts, this is the topic. For adding a store, this could be the type of store (e.g., Shopify).'),
+  prompt: z.string().describe('The subject or prompt for the action. For outreach emails, this should be a LinkedIn URL if provided. For social posts, this is the topic. For adding a store, this could be the type of store (e.g., Shopify). For campaign management, this is the original user command.'),
 });
 export type InterpretCommandOutput = z.infer<typeof InterpretCommandOutputSchema>;
 
@@ -40,12 +40,14 @@ The available actions are:
 - 'generate_social_post': For when the user wants to create a social media post about a topic.
 - 'generate_outreach_email': For when the user wants to create a personalized email based on a LinkedIn profile URL.
 - 'add_store': For when the user wants to connect a new e-commerce store, like Shopify or WooCommerce.
+- 'manage_campaign': For commands related to managing outreach sequences, such as adding leads to a campaign.
 - 'unrecognized': If the command does not match any of the above actions.
 
-Analyze the following command and determine the action and the prompt. 
+Analyze the following command and determine the action and the prompt.
 - For 'generate_social_post', the prompt is the topic.
 - For 'generate_outreach_email', the prompt is the LinkedIn URL.
 - For 'add_store', the prompt should be the platform type if mentioned (e.g., "Shopify", "WooCommerce"). If not mentioned, the prompt can be empty.
+- For 'manage_campaign', the prompt should be the user's original command text.
 
 Command: {{{command}}}
 
