@@ -249,8 +249,8 @@ export default function DashboardPage() {
             <CardDescription>Monthly performance across all business units.</CardDescription>
           </CardHeader>
           <CardContent>
-            {isClient && revenueData && (
-              <div className="h-[350px] w-full">
+            <div className="h-[350px] w-full">
+              {isClient && revenueData && (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={revenueData} barSize={20}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
@@ -270,8 +270,8 @@ export default function DashboardPage() {
                     <Bar dataKey="Lead Gen" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-            )}
+              )}
+            </div>
           </CardContent>
         </Card>
         
@@ -335,8 +335,8 @@ export default function DashboardPage() {
                 </div>
             </CardHeader>
             <CardContent className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                 {isClient && leads && leads.length > 0 ? (
-                    <div className="h-[150px] w-full">
+                <div className="h-[150px] w-full">
+                {isClient && leads && leads.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                         <Pie
@@ -364,7 +364,6 @@ export default function DashboardPage() {
                          <Legend iconSize={8} wrapperStyle={{fontSize: '0.7rem', marginLeft: '10px'}} />
                         </PieChart>
                     </ResponsiveContainer>
-                    </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center text-center bg-muted/50 rounded-lg p-4 h-full">
                         <Users className="h-8 w-8 text-muted-foreground" />
@@ -372,6 +371,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-muted-foreground">Your pipeline will appear here.</p>
                     </div>
                 )}
+                </div>
                  <div>
                      <p className="text-2xl font-bold">{leads?.length ?? 0}</p>
                      <p className="text-xs text-muted-foreground">Active Leads</p>
@@ -586,3 +586,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
