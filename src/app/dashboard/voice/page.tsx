@@ -63,7 +63,11 @@ export default function VoicePage() {
     setCommandState('recording');
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      
+      const supportedTypes = ['audio/wav', 'audio/webm', 'audio/ogg'];
+      const mimeType = supportedTypes.find(type => MediaRecorder.isTypeSupported(type)) || 'audio/webm';
+
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType });
       audioChunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event) => {
@@ -71,7 +75,7 @@ export default function VoicePage() {
       };
 
       mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         handleTranscription(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
@@ -106,19 +110,24 @@ export default function VoicePage() {
 
   const handleTranscription = async (audioBlob: Blob) => {
     setTranscription("");
+    if (audioBlob.size === 0) {
+      toast({ title: "Transcription Failed", description: "No audio was recorded. Please try again.", variant: "destructive" });
+      setCommandState('idle');
+      return;
+    }
     try {
       const audioDataUri = await blobToDataURL(audioBlob);
       const result = await convertSpeechToText({ audioDataUri });
       setTranscription(result.transcription);
-      if (result.transcription) {
+      if (result.transcription && result.transcription.trim() !== '') {
         handleInterpretation(result.transcription);
       } else {
-        toast({ title: "Transcription Failed", description: "The audio was unclear. Please try again.", variant: "destructive" });
+        toast({ title: "Transcription Failed", description: "The audio was unclear or silent. Please try again.", variant: "destructive" });
         setCommandState('idle');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Transcription failed:", error);
-      toast({ title: "Transcription Failed", description: "Could not transcribe the audio.", variant: "destructive" });
+      toast({ title: "Transcription Failed", description: error.message || "Could not transcribe the audio.", variant: "destructive" });
       setCommandState('idle');
     }
   };
@@ -328,5 +337,7 @@ export default function VoicePage() {
     </div>
   );
 }
+
+    
 
     
