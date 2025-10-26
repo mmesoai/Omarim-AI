@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 const sequenceFormSchema = z.object({
   name: z.string().min(5, { message: "Sequence name must be at least 5 characters." }),
@@ -48,6 +49,7 @@ export default function OutreachPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const sequencesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -67,18 +69,21 @@ export default function OutreachPage() {
   function onSequenceSubmit(values: z.infer<typeof sequenceFormSchema>) {
     if (!sequencesCollectionRef) return;
     
-    // In a real app, you'd add more properties here, like the list of leads (leadIds)
     const newSequence = {
       name: values.name,
       description: values.description || "",
-      recipients: 0, // Placeholder
-      openRate: 0,   // Placeholder
-      replyRate: 0,  // Placeholder
+      recipients: 0,
+      openRate: 0,
+      replyRate: 0,
       status: "Draft",
-      leadIds: [], // Placeholder
+      leadIds: [],
     };
 
     addDocumentNonBlocking(sequencesCollectionRef, newSequence);
+    toast({
+      title: "Sequence Created",
+      description: `The "${values.name}" sequence has been created as a draft.`,
+    });
     sequenceForm.reset();
     setIsDialogOpen(false);
   }
@@ -192,3 +197,5 @@ export default function OutreachPage() {
     </div>
   );
 }
+
+    

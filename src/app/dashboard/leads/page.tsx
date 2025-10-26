@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useUser, useFirestore, useCollection, addDocumentNonBlocking, updateDocumentNonBlocking, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useCollection, updateDocumentNonBlocking, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle, Loader2, Mail } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
@@ -123,7 +123,7 @@ export default function LeadsPage() {
               {!isLoading && (!leads || leads.length === 0) && (
                  <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                    You have no leads yet. Try adding a sample lead.
+                    You have no leads yet. Let the autonomous agent find some for you.
                   </TableCell>
                 </TableRow>
               )}
@@ -134,3 +134,5 @@ export default function LeadsPage() {
     </div>
   );
 }
+
+    

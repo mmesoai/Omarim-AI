@@ -146,7 +146,7 @@ export default function DashboardPage() {
        <div>
         <h1 className="font-headline tracking-tight">
             <span className="text-3xl font-bold">Omarim AI</span>
-            <span className="text-2xl font-semibold text-muted-foreground"> Intelligent Warehouse</span>
+            <span className="text-xl font-semibold text-muted-foreground"> Intelligent Warehouse</span>
         </h1>
         <p className="text-sm text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
       </div>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData}>
+                <BarChart data={revenueData} barSize={20}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
                   <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))' }} />
                   <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
@@ -173,9 +173,9 @@ export default function DashboardPage() {
                     }}
                   />
                   <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
-                  <Bar dataKey="Website Sales" fill="#87ceeb" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="E-Commerce" fill="#d8b4fe" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Lead Gen" fill="#90ee90" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Website Sales" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="E-Commerce" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Lead Gen" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -385,3 +385,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
