@@ -1,33 +1,77 @@
+
+"use client"
+
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { DollarSign, Inbox, Users, Send } from "lucide-react"
-
-const stats = [
-  { title: "Total Revenue", value: "$45,231.89", change: "+20.1% from last month", icon: DollarSign },
-  { title: "Leads Scraped", value: "+2350", change: "+180.1% from last month", icon: Users },
-  { title: "Replies Processed", value: "+12,234", change: "+19% from last month", icon: Inbox },
-  { title: "Outreach Sent", value: "+573", change: "+2% from last month", icon: Send },
-];
+import { Loader2 } from "lucide-react";
 
 export default function DashboardPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const productsCollectionRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return collection(firestore, `users/${user.uid}/products`);
+  }, [firestore, user]);
+
+  const { data: products, isLoading } = useCollection(productsCollectionRef);
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => (
-        <Card key={stat.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-            <stat.icon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stat.value}</div>
-            <p className="text-xs text-muted-foreground">{stat.change}</p>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Inventory Overview</CardTitle>
+          <CardDescription>A real-time look at your product quantities across all sources.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading && (
+            <div className="flex h-80 w-full items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {!isLoading && products && products.length > 0 && (
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={products}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--background))',
+                      borderColor: 'hsl(var(--border))'
+                    }}
+                   />
+                  <Legend />
+                  <Bar dataKey="quantity" fill="hsl(var(--primary))" name="Stock Quantity" />
+                  <Bar dataKey="price" fill="hsl(var(--accent))" name="Price" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+           {!isLoading && (!products || products.length === 0) && (
+            <div className="flex h-80 w-full items-center justify-center">
+              <p className="text-muted-foreground">No product data available. Add products in the 'Product Sourcing' page to see the chart.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
