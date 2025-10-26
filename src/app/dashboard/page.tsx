@@ -12,7 +12,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Users, ShoppingBag, Send, Activity, ShieldCheck, Cpu, Bot, ChevronRight, FolderKanban, Building2, Mic, PlusCircle, DollarSign, List, CheckCircle, TrendingUp, UserCheck, Sparkles, Mail, Twitter, Linkedin, Facebook, Video, ImageIcon, X } from 'lucide-react';
+import { Loader2, Users, ShoppingBag, Send, Activity, ShieldCheck, Cpu, Bot, ChevronRight, FolderKanban, Building2, Mic, PlusCircle, DollarSign, List, CheckCircle, TrendingUp, UserCheck, Sparkles, Mail, Twitter, Linkedin, Facebook, Video, ImageIcon, X, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
 import { Progress } from "@/components/ui/progress";
@@ -92,7 +92,7 @@ export default function DashboardPage() {
   const [trendingProduct, setTrendingProduct] = useState<GenerateProductCampaignInput | null>(null);
   const [campaignAssets, setCampaignAssets] = useState<GenerateProductCampaignOutput | null>(null);
   const [isCampaignLoading, setIsCampaignLoading] = useState(false);
-  const [isFindingProduct, setIsFindingProduct] = useState(true);
+  const [isFindingProduct, setIsFindingProduct] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   const actionForm = useForm<z.infer<typeof quickActionSchema>>({
@@ -209,11 +209,6 @@ export default function DashboardPage() {
       { name: "Data Sync", status: "Operational", icon: Cpu, progress: 100 },
       { name: "Voice Interface", status: "Operational", icon: Mic, progress: 100 },
       { name: "Security", status: "Enabled", icon: ShieldCheck, progress: 100 },
-  ];
-
-  const engineCards = [
-    { title: "E-Commerce Engine", description: "Multi-store arbitrage, product sourcing, and inventory automation.", icon: Building2, value: products?.length ?? 0, unit: "Synced Products", path: "/dashboard/stores", action: () => router.push('/dashboard/settings?tab=integrations&action=addStore') },
-    { title: "Content & Outreach Engine", description: "AI-powered content generation and automated email campaigns.", icon: Send, value: sequences?.length ?? 0, unit: "Sequences", path: "/dashboard/outreach" },
   ];
 
   const PlatformIcon = ({ platform }: { platform: string }) => {
@@ -434,51 +429,27 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {engineCards.map((engine, index) => (
-            <Card key={index} className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-                <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <engine.icon className="h-8 w-8 text-primary" />
-                            <CardTitle className="text-lg">{engine.title}</CardTitle>
-                        </div>
+          <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+            <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Zap className="h-8 w-8 text-primary" />
+                        <CardTitle className="text-lg">Outbound Engine</CardTitle>
                     </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                    <p className="text-sm text-muted-foreground">{engine.description}</p>
-                </CardContent>
-                <CardFooter className="flex justify-between items-end">
-                    <div>
-                        <p className="text-2xl font-bold">{engine.value}</p>
-                        <p className="text-xs text-muted-foreground">{engine.unit}</p>
-                    </div>
-                    <Button size="sm" variant="outline" onClick={() => router.push(engine.path)}>
-                        Manage <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </CardFooter>
-            </Card>
-          ))}
-          <Card>
-              <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  <div className="space-y-4">
-                      {recentActivities.map((activity) => (
-                          <div key={activity.id} className="flex items-center gap-4">
-                              <Avatar className="h-9 w-9">
-                                  <div className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", activity.color)}>
-                                      <activity.icon className="h-5 w-5 text-background" />
-                                  </div>
-                              </Avatar>
-                              <div className="flex-1">
-                                  <p className="text-sm">{activity.description}</p>
-                                  <p className="text-xs text-muted-foreground">{activity.time}</p>
-                              </div>
-                          </div>
-                      ))}
-                  </div>
-              </CardContent>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+                <p className="text-sm text-muted-foreground">Autonomous lead generation, product sourcing, and outreach campaigns.</p>
+            </CardContent>
+            <CardFooter className="flex justify-between items-end">
+                 <div>
+                    <p className="text-2xl font-bold">{(leads?.length ?? 0) + (products?.length ?? 0)}</p>
+                    <p className="text-xs text-muted-foreground">Opportunities</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => router.push('/dashboard/agent')}>
+                    Launch Agent <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+            </CardFooter>
           </Card>
           
           <Card className="border-primary/20 bg-background/80 backdrop-blur-lg">
@@ -574,3 +545,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
