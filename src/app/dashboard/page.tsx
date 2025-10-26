@@ -32,7 +32,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
 import { findTrendingProducts, generateProductCampaign } from '@/app/actions';
-import type { TrendingProduct, GenerateProductCampaignOutput } from "@/ai/tools/find-trending-products";
+import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from "@/app/schemas";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 
@@ -84,11 +84,10 @@ export default function DashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const [trendingProduct, setTrendingProduct] = useState<TrendingProduct | null>(null);
+  const [trendingProduct, setTrendingProduct] = useState<GenerateProductCampaignInput | null>(null);
   const [campaignAssets, setCampaignAssets] = useState<GenerateProductCampaignOutput | null>(null);
   const [isCampaignLoading, setIsCampaignLoading] = useState(false);
   const [isFindingProduct, setIsFindingProduct] = useState(true);
-  const [hasProposal, setHasProposal] = useState(false);
 
   useEffect(() => {
     async function getTrendingProduct() {
@@ -96,7 +95,6 @@ export default function DashboardPage() {
       try {
         const result = await findTrendingProducts("home office tech");
         setTrendingProduct(result);
-        setHasProposal(true);
       } catch (error) {
         console.error("Failed to find trending products:", error);
       } finally {
@@ -116,7 +114,7 @@ export default function DashboardPage() {
 
     setIsCampaignLoading(true);
     setCampaignAssets(null);
-    setHasProposal(false);
+    setTrendingProduct(null); // This will hide the proposal box
     toast({ title: "Approval Received", description: "AI is now generating campaign assets. This may take a moment..." });
     
     try {
@@ -152,7 +150,6 @@ export default function DashboardPage() {
 
   function handleReject() {
     setTrendingProduct(null);
-    setHasProposal(false);
     toast({
         title: "Proposal Rejected",
         description: "The AI will look for another product opportunity.",
@@ -229,7 +226,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-       {hasProposal && (
+       {trendingProduct && (
         <audio src="/audio/blip.mp3" autoPlay onLoadedData={() => {}} onError={() => {}} />
        )}
        <div>
