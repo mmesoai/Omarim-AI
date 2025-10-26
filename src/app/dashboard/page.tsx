@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firestore';
+import { collection } from 'firebase/firestore';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
@@ -226,10 +226,10 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-       {(isFindingProduct || trendingProduct) && (
+      {(isFindingProduct || trendingProduct) && (
         <audio src="/audio/blip.mp3" autoPlay onLoadedData={() => {}} onError={() => {}} />
-       )}
-       <div>
+      )}
+      <div>
         <h1 className="font-headline tracking-tight">
             <span className="text-3xl font-bold">Omarim AI</span>
             <span className="text-xl font-semibold text-muted-foreground"> Intelligent Warehouse</span>
@@ -237,34 +237,36 @@ export default function DashboardPage() {
         <p className="text-sm text-muted-foreground">Unified multi-business automation platform - Website Factory, E-Commerce Engine & Lead Intelligence in one place.</p>
       </div>
       
-       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Revenue Overview</CardTitle>
             <CardDescription>Monthly performance across all business units.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData} barSize={20}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
-                  <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))' }} />
-                  <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    cursor={{ fill: 'hsla(var(--muted))' }}
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--background))',
-                      borderColor: 'hsl(var(--border))',
-                      borderRadius: 'var(--radius)',
-                    }}
-                  />
-                  <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
+            {revenueData && (
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData} barSize={20}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                    <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))' }} />
+                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      cursor={{ fill: 'hsla(var(--muted))' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        borderColor: 'hsl(var(--border))',
+                        borderRadius: 'var(--radius)',
+                      }}
+                    />
+                    <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
                     <Bar dataKey="Website Sales" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="E-Commerce" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="Lead Gen" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </CardContent>
         </Card>
         
@@ -579,8 +581,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    
-
