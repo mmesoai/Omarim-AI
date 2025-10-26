@@ -94,7 +94,7 @@ export default function DashboardPage() {
     async function getTrendingProduct() {
       setIsFindingProduct(true);
       try {
-        const result = await findTrendingProducts({ category: "home office tech" });
+        const result = await findTrendingProducts("home office tech");
         setTrendingProduct(result);
         setHasProposal(true);
       } catch (error) {
@@ -601,3 +601,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
