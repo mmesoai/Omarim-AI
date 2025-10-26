@@ -102,7 +102,7 @@ export default function DashboardLayout({
     return doc(firestore, "users", user.uid);
   }, [user, firestore]);
 
-  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+  const { data: userData } = useDoc(userDocRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -114,19 +114,12 @@ export default function DashboardLayout({
     signOut(auth);
   };
   
-  const isLoading = isUserLoading || (user && isUserDataLoading);
-
-  if (isLoading) {
+  if (isUserLoading || !user) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     ); 
-  }
-  
-  if (!user) {
-    // This can happen briefly while redirecting, or if not logged in.
-    return null;
   }
 
   const userInitial = userData?.firstName ? userData.firstName.charAt(0).toUpperCase() : "";

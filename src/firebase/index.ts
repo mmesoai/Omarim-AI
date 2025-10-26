@@ -1,9 +1,9 @@
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 
 // A memoized object to hold the Firebase services.
 let firebaseServices: { firebaseApp: FirebaseApp; auth: Auth; firestore: Firestore } | null = null;
@@ -11,6 +11,10 @@ let firebaseServices: { firebaseApp: FirebaseApp; auth: Auth; firestore: Firesto
 // This function initializes Firebase and returns the services.
 // It's designed to be idempotent, meaning it will only initialize the app once.
 export function initializeFirebase() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  
   if (firebaseServices) {
     return firebaseServices;
   }
