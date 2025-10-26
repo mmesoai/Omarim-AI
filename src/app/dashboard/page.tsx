@@ -31,8 +31,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
-import { findTrendingProducts, type TrendingProduct } from "@/ai/tools/find-trending-products";
-import { generateProductCampaign, type GenerateProductCampaignOutput } from "@/ai/flows/generate-product-campaign";
+import { findTrendingProducts, type TrendingProduct, type GenerateProductCampaignOutput } from "@/ai/tools/find-trending-products";
+import { generateProductCampaign } from "@/ai/flows/generate-product-campaign";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
 
