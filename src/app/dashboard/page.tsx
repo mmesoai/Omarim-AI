@@ -226,7 +226,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-       {trendingProduct && !isCampaignLoading && (
+       {(isFindingProduct || trendingProduct) && (
         <audio src="/audio/blip.mp3" autoPlay onLoadedData={() => {}} onError={() => {}} />
        )}
        <div>
@@ -259,9 +259,11 @@ export default function DashboardPage() {
                     }}
                   />
                   <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
-                  <Bar dataKey="Website Sales" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="E-Commerce" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Lead Gen" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                  {revenueData && <>
+                    <Bar dataKey="Website Sales" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="E-Commerce" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Lead Gen" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                  </>}
                 </BarChart>
               </ResponsiveContainer>
             </div>
