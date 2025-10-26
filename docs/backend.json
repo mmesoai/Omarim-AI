@@ -1,0 +1,653 @@
+{
+  "entities": {
+    "Lead": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Lead",
+      "type": "object",
+      "description": "Represents a lead scraped from various sources.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Lead entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the lead.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the lead."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the lead."
+        },
+        "company": {
+          "type": "string",
+          "description": "Company name of the lead."
+        },
+        "domain": {
+          "type": "string",
+          "description": "Domain name of the lead's company."
+        },
+        "notionPageId": {
+          "type": "string",
+          "description": "Reference to NotionPage. (Relationship: NotionPage 1:N Lead)"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "company",
+        "domain",
+        "notionPageId"
+      ]
+    },
+    "NotionPage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "NotionPage",
+      "type": "object",
+      "description": "Represents a Notion page where lead data is stored.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the NotionPage entity."
+        },
+        "pageUrl": {
+          "type": "string",
+          "description": "URL of the Notion page."
+        },
+        "databaseId": {
+          "type": "string",
+          "description": "ID of the Notion database."
+        }
+      },
+      "required": [
+        "id",
+        "pageUrl",
+        "databaseId"
+      ]
+    },
+    "OutreachSequence": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OutreachSequence",
+      "type": "object",
+      "description": "Represents an email outreach sequence.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OutreachSequence entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the outreach sequence."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the outreach sequence."
+        },
+        "leadIds": {
+          "type": "array",
+          "description": "References to Leads. (Relationship: OutreachSequence N:N Lead)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "leadIds"
+      ]
+    },
+    "Email": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Email",
+      "type": "object",
+      "description": "Represents an email sent as part of an outreach sequence.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Email entity."
+        },
+        "outreachSequenceId": {
+          "type": "string",
+          "description": "Reference to OutreachSequence. (Relationship: OutreachSequence 1:N Email)"
+        },
+        "leadId": {
+          "type": "string",
+          "description": "Reference to Lead. (Relationship: Lead 1:N Email)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Subject line of the email."
+        },
+        "body": {
+          "type": "string",
+          "description": "Body of the email."
+        },
+        "sentAt": {
+          "type": "string",
+          "description": "Timestamp when the email was sent.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "outreachSequenceId",
+        "leadId",
+        "subject",
+        "body",
+        "sentAt"
+      ]
+    },
+    "InboundReply": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InboundReply",
+      "type": "object",
+      "description": "Represents an inbound email reply.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the InboundReply entity."
+        },
+        "emailId": {
+          "type": "string",
+          "description": "Reference to Email. (Relationship: Email 1:N InboundReply)"
+        },
+        "receivedAt": {
+          "type": "string",
+          "description": "Timestamp when the reply was received.",
+          "format": "date-time"
+        },
+        "body": {
+          "type": "string",
+          "description": "Body of the reply email."
+        },
+        "sentiment": {
+          "type": "string",
+          "description": "Sentiment of the reply (e.g., positive, negative, neutral)."
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags associated with the reply.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "emailId",
+        "receivedAt",
+        "body",
+        "sentiment",
+        "tags"
+      ]
+    },
+    "DomainCheck": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DomainCheck",
+      "type": "object",
+      "description": "Represents the result of a domain check.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the DomainCheck entity."
+        },
+        "domain": {
+          "type": "string",
+          "description": "The domain being checked."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the domain (e.g., available, registered)."
+        },
+        "options": {
+          "type": "array",
+          "description": "Alternative domain options.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "domain",
+        "status",
+        "options"
+      ]
+    },
+    "Payment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Payment",
+      "type": "object",
+      "description": "Represents a payment transaction.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Payment entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Payment)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount of the payment."
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency of the payment."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "Payment method used (e.g., Stripe, PayPal)."
+        },
+        "transactionId": {
+          "type": "string",
+          "description": "Transaction ID from the payment gateway."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the payment (e.g., pending, completed, failed)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the payment was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "amount",
+        "currency",
+        "paymentMethod",
+        "transactionId",
+        "status",
+        "createdAt"
+      ]
+    },
+    "Provisioning": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Provisioning",
+      "type": "object",
+      "description": "Represents the provisioning of a service after payment.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Provisioning entity."
+        },
+        "paymentId": {
+          "type": "string",
+          "description": "Reference to Payment. (Relationship: Payment 1:N Provisioning)"
+        },
+        "serviceType": {
+          "type": "string",
+          "description": "Type of service being provisioned."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the provisioning (e.g., pending, completed, failed)."
+        },
+        "details": {
+          "type": "string",
+          "description": "Details about the provisioning process."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the provisioning was initiated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "paymentId",
+        "serviceType",
+        "status",
+        "details",
+        "createdAt"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a product listed on a store.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity."
+        },
+        "storeId": {
+          "type": "string",
+          "description": "Reference to Store. (Relationship: Store 1:N Product)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the product."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the product."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price of the product."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Available quantity of the product."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the product image.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "storeId",
+        "name",
+        "description",
+        "price",
+        "quantity",
+        "imageUrl"
+      ]
+    },
+    "Store": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Store",
+      "type": "object",
+      "description": "Represents a store integrated with the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Store entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the store."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type of store (e.g., Shopify, WooCommerce, Amazon, eBay)."
+        },
+        "apiUrl": {
+          "type": "string",
+          "description": "API URL of the store."
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "API Key for the store."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type",
+        "apiUrl",
+        "apiKey"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the user.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "First name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Last name of the user."
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Collection of user profiles.  Root level is used to store public user profile information.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/notionPages/{notionPageId}",
+        "definition": {
+          "entityName": "NotionPage",
+          "schema": {
+            "$ref": "#/backend/entities/NotionPage"
+          },
+          "description": "Collection of Notion pages owned by a user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "notionPageId",
+              "description": "The unique identifier of the Notion page."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/notionPages/{notionPageId}/leads/{leadId}",
+        "definition": {
+          "entityName": "Lead",
+          "schema": {
+            "$ref": "#/backend/entities/Lead"
+          },
+          "description": "Collection of leads associated with a Notion page owned by a user. Includes denormalized 'notionPageId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "notionPageId",
+              "description": "The unique identifier of the Notion page."
+            },
+            {
+              "name": "leadId",
+              "description": "The unique identifier of the lead."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/outreachSequences/{outreachSequenceId}",
+        "definition": {
+          "entityName": "OutreachSequence",
+          "schema": {
+            "$ref": "#/backend/entities/OutreachSequence"
+          },
+          "description": "Collection of outreach sequences created by a user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "outreachSequenceId",
+              "description": "The unique identifier of the outreach sequence."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}",
+        "definition": {
+          "entityName": "Email",
+          "schema": {
+            "$ref": "#/backend/entities/Email"
+          },
+          "description": "Collection of emails associated with an outreach sequence owned by a user. Includes denormalized 'outreachSequenceId' and 'leadId' for authorization independence and efficient querying.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "outreachSequenceId",
+              "description": "The unique identifier of the outreach sequence."
+            },
+            {
+              "name": "emailId",
+              "description": "The unique identifier of the email."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/emails/{emailId}/inboundReplies/{inboundReplyId}",
+        "definition": {
+          "entityName": "InboundReply",
+          "schema": {
+            "$ref": "#/backend/entities/InboundReply"
+          },
+          "description": "Collection of inbound replies associated with a specific email. Public Read.",
+          "params": [
+            {
+              "name": "emailId",
+              "description": "The unique identifier of the email."
+            },
+            {
+              "name": "inboundReplyId",
+              "description": "The unique identifier of the inbound reply."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/domainChecks/{domainCheckId}",
+        "definition": {
+          "entityName": "DomainCheck",
+          "schema": {
+            "$ref": "#/backend/entities/DomainCheck"
+          },
+          "description": "Collection of domain check results. Public Read.",
+          "params": [
+            {
+              "name": "domainCheckId",
+              "description": "The unique identifier of the domain check."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/payments/{paymentId}",
+        "definition": {
+          "entityName": "Payment",
+          "schema": {
+            "$ref": "#/backend/entities/Payment"
+          },
+          "description": "Collection of payments made by a user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "paymentId",
+              "description": "The unique identifier of the payment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/provisioning/{provisioningId}",
+        "definition": {
+          "entityName": "Provisioning",
+          "schema": {
+            "$ref": "#/backend/entities/Provisioning"
+          },
+          "description": "Collection of provisioning records.  Contains sensitive information, limited admin access.",
+          "params": [
+            {
+              "name": "provisioningId",
+              "description": "The unique identifier of the provisioning record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/stores/{storeId}",
+        "definition": {
+          "entityName": "Store",
+          "schema": {
+            "$ref": "#/backend/entities/Store"
+          },
+          "description": "Collection of store integrations. Limited to Admin access.",
+          "params": [
+            {
+              "name": "storeId",
+              "description": "The unique identifier of the store."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/stores/{storeId}/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Collection of products belonging to a store. Limited to Admin Access",
+          "params": [
+            {
+              "name": "storeId",
+              "description": "The unique identifier of the store."
+            },
+            {
+              "name": "productId",
+              "description": "The unique identifier of the product."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the core features of the Omarim-AI application, focusing on lead management, outreach sequences, domain checks, payments, and store integrations. It emphasizes authorization independence and clear access control using denormalization and structural segregation. Each collection is designed to have a homogeneous security posture, simplifying security rules and ensuring data integrity.\n\n*   **Authorization Independence:** Access control is managed without hierarchical `get()` calls in security rules. For example, access to leads within a NotionPage is controlled by denormalizing NotionPage membership information into the Lead documents.\n*   **Structural Segregation:** Data with different access requirements are stored in separate collections. User-owned data resides under `/users/{userId}`. Collaborative data uses membership maps.\n*   **QAPs (Queryability and Protection):** Secure `list` operations are supported by segregating data and using path-based ownership where applicable. For instance, each user owns their OutreachSequences in `/users/{userId}/outreachSequences/{outreachSequenceId}` enabling easy filtering by user.\n*   **Invariants:** Ownership is enforced through path-based access and denormalized data.\n\nSpecifically, the following denormalization strategies are used:\n\n*   **Leads:** Each Lead document contains a `notionPageId`, establishing a relationship between Leads and NotionPages. There is also a User ID for ownership.\n*   **Emails:** Emails include `outreachSequenceId` and `leadId` for easy querying and association with specific outreach sequences and leads.\n\nThe Membership Map pattern is not used in this design, as the entities are owned by a single user, not collaboratively by multiple users."
+  }
+}
