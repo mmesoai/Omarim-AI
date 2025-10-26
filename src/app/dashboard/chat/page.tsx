@@ -33,6 +33,7 @@ import { doc } from "firebase/firestore";
 
 import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/flows/generate-outreach-email";
 import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
+import { executeCampaignAction, type ExecuteCampaignActionOutput } from "@/ai/flows/execute-campaign-action";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +46,8 @@ const chatFormSchema = z.object({
 
 type AgentResult = 
   | { type: 'outreach'; data: GenerateOutreachEmailOutput }
-  | { type: 'social'; data: GenerateSocialMediaPostOutput };
+  | { type: 'social'; data: GenerateSocialMediaPostOutput }
+  | { type: 'campaign'; data: ExecuteCampaignActionOutput };
 
 type Message = {
   id: string;
@@ -96,7 +98,7 @@ export default function ChatPage() {
     ]);
   }, [userName]);
 
-  const handleAiResponse = async (action: string, prompt: string) => {
+  const handleAiResponse = async (action: string, prompt: string, command: string) => {
      let responseText = "";
      let agentResult: AgentResult | undefined = undefined;
 
@@ -120,6 +122,17 @@ export default function ChatPage() {
                 responseText = `Perfect. Let's connect your ${prompt || 'new'} store. I'll take you to the right place.`;
                  setTimeout(() => router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`), 1500);
                  break;
+            case "manage_campaign":
+                if (!user) {
+                  responseText = "I'm sorry, I can't manage campaigns without knowing who you are. Please ensure you are logged in.";
+                  break;
+                }
+                responseText = `Right away. I will execute the command: "${command}".`;
+                const campaignOutput = await executeCampaignAction({ command, userId: user.uid });
+                agentResult = { type: 'campaign', data: campaignOutput };
+                // Overwrite the initial response with the actual result from the tool
+                responseText = campaignOutput.result; 
+                break;
             default:
                 responseText = "I'm sorry, I'm not sure how to help with that. I can help generate social media posts, draft outreach emails from LinkedIn profiles, or connect new stores.";
                 break;
@@ -152,7 +165,7 @@ export default function ChatPage() {
 
     try {
       const result = await interpretCommand({ command: values.message });
-      await handleAiResponse(result.action, result.prompt);
+      await handleAiResponse(result.action, result.prompt, values.message);
     } catch (error) {
       console.error("AI interpretation failed:", error);
       const errorMessage: Message = {
@@ -207,7 +220,7 @@ export default function ChatPage() {
                             </Avatar>
                         )}
                         </div>
-                        {message.result && (
+                        {message.result && ! (message.result.type === 'campaign') && (
                              <div className="mt-4 pl-12">
                                 <Card className="max-w-xl">
                                     <CardContent className="p-4 space-y-4">
@@ -285,7 +298,7 @@ export default function ChatPage() {
                   <FormItem className="flex-1">
                     <FormControl>
                       <Input
-                        placeholder="e.g., 'Draft a social media post about our new smart watch'"
+                        placeholder="e.g., 'Add new leads to the welcome sequence'"
                         autoComplete="off"
                         {...field}
                         disabled={isThinking}
@@ -306,5 +319,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
