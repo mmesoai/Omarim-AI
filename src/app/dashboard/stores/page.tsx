@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge"
 import {
@@ -16,6 +16,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from "@/components/ui/card"
 import {
   Dialog,
@@ -37,10 +38,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlaceHolderImages } from "@/lib/placeholder-images"
-import { Loader2, PlusCircle, Sparkles, Bot, TrendingUp, UserCheck, ShoppingCart, Mail } from "lucide-react";
+import { Loader2, PlusCircle, Sparkles, Bot, TrendingUp, UserCheck, ShoppingCart, Mail, Twitter, Linkedin, Facebook, Video, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateProductIdeas, type GenerateProductIdeasOutput } from "@/ai/flows/generate-product-ideas";
 import { findTrendingProducts, type TrendingProduct } from "@/ai/tools/find-trending-products";
+import { generateProductCampaign, type GenerateProductCampaignOutput } from "@/ai/flows/generate-product-campaign";
 import { Separator } from "@/components/ui/separator";
 
 const sourceColors: { [key: string]: string } = {
@@ -64,7 +66,8 @@ export default function StoresPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedProducts, setGeneratedProducts] = useState<GenerateProductIdeasOutput['products'] | null>(null);
   const [trendingProduct, setTrendingProduct] = useState<TrendingProduct | null>(null);
-
+  const [campaignAssets, setCampaignAssets] = useState<GenerateProductCampaignOutput | null>(null);
+  const [isCampaignLoading, setIsCampaignLoading] = useState(false);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -94,10 +97,11 @@ export default function StoresPage() {
   async function onIdeaSubmit(values: z.infer<typeof ideaFormSchema>) {
     setIsGenerating(true);
     setGeneratedProducts(null);
+    setTrendingProduct(null);
+    setCampaignAssets(null);
     try {
       const result = await generateProductIdeas({ topic: values.topic });
       setGeneratedProducts(result.products);
-      setTrendingProduct(null); // Clear other results
     } catch (error) {
       console.error("Failed to generate product ideas:", error);
       toast({
@@ -115,10 +119,11 @@ export default function StoresPage() {
   async function onTrendingSubmit(values: z.infer<typeof trendingFormSchema>) {
     setIsGenerating(true);
     setTrendingProduct(null);
+    setGeneratedProducts(null);
+    setCampaignAssets(null);
     try {
       const result = await findTrendingProducts({ category: values.category });
       setTrendingProduct(result);
-      setGeneratedProducts(null); // Clear other results
     } catch (error) {
       console.error("Failed to find trending products:", error);
       toast({
@@ -132,6 +137,59 @@ export default function StoresPage() {
       trendingForm.reset();
     }
   }
+
+  async function handleApproveAndLaunch() {
+    if (!trendingProduct || !productsCollectionRef) return;
+
+    setIsCampaignLoading(true);
+    setCampaignAssets(null);
+    toast({ title: "Approval Received", description: "AI is now generating campaign assets. This may take a moment..." });
+    
+    try {
+      // 1. Generate campaign assets
+      const campaignResult = await generateProductCampaign(trendingProduct);
+      setCampaignAssets(campaignResult);
+
+      // 2. Add product to Firestore
+      const newProduct = {
+        name: trendingProduct.productName,
+        description: trendingProduct.description,
+        price: trendingProduct.estimatedSalePrice,
+        quantity: 100, // Default quantity
+        imageId: "product" + (Math.floor(Math.random() * 8) + 1), // Assign a random placeholder image ID
+        source: "AI Sourced",
+      };
+      addDocumentNonBlocking(productsCollectionRef, newProduct);
+      
+      toast({
+        title: "Campaign Launched!",
+        description: `${trendingProduct.productName} has been added to your products and marketing assets have been generated.`,
+      });
+
+    } catch (error) {
+       console.error("Failed to launch campaign:", error);
+       toast({
+        variant: "destructive",
+        title: "Campaign Launch Failed",
+        description: "There was an error generating the marketing assets.",
+      });
+    } finally {
+        setIsCampaignLoading(false);
+    }
+  }
+  
+  const PlatformIcon = ({ platform }: { platform: string }) => {
+  switch (platform.toLowerCase()) {
+    case 'twitter':
+      return <Twitter className="h-5 w-5 text-sky-500" />;
+    case 'linkedin':
+      return <Linkedin className="h-5 w-5 text-blue-700" />;
+    case 'facebook':
+      return <Facebook className="h-5 w-5 text-blue-800" />;
+    default:
+      return <Bot className="h-5 w-5" />;
+  }
+};
 
 
   return (
@@ -283,7 +341,7 @@ export default function StoresPage() {
               <Bot className="h-6 w-6 text-primary" />
               <div>
                 <CardTitle>Autonomous Sourcing Report</CardTitle>
-                <CardDescription>AI analysis of a trending product opportunity.</CardDescription>
+                <CardDescription>AI analysis of a trending product opportunity. Review and approve to launch a campaign.</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -321,14 +379,74 @@ export default function StoresPage() {
             </div>
             <Separator />
             <div>
-                <h4 className="font-semibold text-foreground flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary"/> Marketing Angle</h4>
+                <h4 className="font-semibold text-foreground flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary"/> AI-Generated Marketing Angle</h4>
                 <p className="mt-2 text-sm text-muted-foreground">{trendingProduct.marketingAngle}</p>
-                <div className="mt-4 flex gap-2">
-                    <Button><PlusCircle className="mr-2 h-4 w-4"/> Add Product & Promote</Button>
-                    <Button variant="secondary">Launch Campaign</Button>
-                </div>
             </div>
           </CardContent>
+          <CardFooter className="flex gap-2">
+             <Button onClick={handleApproveAndLaunch} disabled={isCampaignLoading || !!campaignAssets}>
+                {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4" />}
+                {!!campaignAssets ? "Campaign Launched" : "Approve & Launch Campaign"}
+             </Button>
+             <Button variant="ghost" onClick={() => setTrendingProduct(null)}>Reject</Button>
+          </CardFooter>
+        </Card>
+      )}
+
+      {isCampaignLoading && (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      )}
+
+      {campaignAssets && (
+        <Card>
+            <CardHeader>
+                <CardTitle>Generated Campaign Assets</CardTitle>
+                <CardDescription>The AI has generated the following assets to market your new product.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-4">
+                    <h3 className="font-semibold text-lg">Social Media Posts</h3>
+                    {campaignAssets.socialPosts.map(post => (
+                        <Card key={post.platform} className="bg-card/50">
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                 <CardTitle className="text-base flex items-center gap-2">
+                                    <PlatformIcon platform={post.platform} />
+                                    {post.platform}
+                                 </CardTitle>
+                                <Button variant="secondary" size="sm">Schedule</Button>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm whitespace-pre-wrap">{post.content}</p>
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                    {post.hashtags.map(tag => <Badge key={tag} variant="outline" className="text-xs">#{tag}</Badge>)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+                <div className="space-y-6">
+                    <div>
+                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" /> Marketing Image</h3>
+                        <div className="relative aspect-square w-full rounded-lg overflow-hidden border">
+                           <Image src={campaignAssets.marketingImage.imageUrl} alt={campaignAssets.marketingImage.prompt} fill className="object-cover" />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2 italic">Prompt: {campaignAssets.marketingImage.prompt}</p>
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2"><Video className="h-5 w-5 text-primary" /> Video Concept</h3>
+                        <Card className="bg-card/50">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-base">{campaignAssets.videoConcept.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-muted-foreground">{campaignAssets.videoConcept.sceneDescription}</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </CardContent>
         </Card>
       )}
 
