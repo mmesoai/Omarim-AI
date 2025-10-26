@@ -3,7 +3,7 @@
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
   Card,
   CardContent,
@@ -35,25 +35,10 @@ import { findTrendingProducts, generateProductCampaign } from '@/app/actions';
 import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from "@/app/schemas";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 
+const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="lg:col-span-3 flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
 
-const leadStatusColors: { [key: string]: string } = {
-  New: 'hsl(var(--chart-1))',
-  Contacted: 'hsl(var(--chart-2))',
-  Interested: 'hsl(var(--chart-3))',
-  Replied: 'hsl(var(--chart-4))',
-  'Not Interested': 'hsl(var(--chart-5))',
-  default: 'hsl(var(--muted-foreground))',
-};
-
-const revenueData = [
-  { name: 'Jan', "Website Sales": 4000, "E-Commerce": 2400, "Lead Gen": 1200 },
-  { name: 'Feb', "Website Sales": 3000, "E-Commerce": 1398, "Lead Gen": 1100 },
-  { name: 'Mar', "Website Sales": 5000, "E-Commerce": 6800, "Lead Gen": 1500 },
-  { name: 'Apr', "Website Sales": 4780, "E-Commerce": 3908, "Lead Gen": 1800 },
-  { name: 'May', "Website Sales": 6900, "E-Commerce": 4800, "Lead Gen": 2100 },
-  { name: 'Jun', "Website Sales": 7390, "E-Commerce": 3800, "Lead Gen": 2500 },
-];
 
 const recentSales = [
     { id: 1, customer: "Olivia Martin", email: "olivia.martin@email.com", amount: "$42.50", product: "Smart Watch", source: "Shopify" },
@@ -77,6 +62,16 @@ const recentActivities = [
     { id: 4, icon: Users, description: "Lead 'John Doe' status changed to 'Interested'.", time: "3h ago", color: "text-teal-400" },
     { id: 5, icon: Building2, description: "Successfully connected new Shopify store 'My Awesome Store'.", time: "1d ago", color: "text-pink-400" },
 ];
+
+const leadStatusColors: { [key: string]: string } = {
+  New: 'hsl(var(--chart-1))',
+  Contacted: 'hsl(var(--chart-2))',
+  Interested: 'hsl(var(--chart-3))',
+  Replied: 'hsl(var(--chart-4))',
+  'Not Interested': 'hsl(var(--chart-5))',
+  default: 'hsl(var(--muted-foreground))',
+};
+
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -243,37 +238,7 @@ export default function DashboardPage() {
       </div>
       
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Revenue Overview</CardTitle>
-            <CardDescription>Monthly performance across all business units.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[350px] w-full">
-              {isClient && revenueData && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={revenueData} barSize={20}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
-                    <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={{ stroke: 'hsl(var(--border))' }} />
-                    <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      cursor={{ fill: 'hsla(var(--muted))' }}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--background))',
-                        borderColor: 'hsl(var(--border))',
-                        borderRadius: 'var(--radius)',
-                      }}
-                    />
-                    <Legend iconSize={10} wrapperStyle={{fontSize: '0.8rem'}}/>
-                    <Bar dataKey="Website Sales" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="E-Commerce" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Lead Gen" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <RevenueOverview />
         
         {/* Control Center */}
         <Card className="lg:col-span-2">
