@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Loader2, Volume2, Bot, Badge as UIBadge } from "lucide-react";
+import { Mic, Square, Loader2, Volume2, Bot, Send as UIBadge } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import { generateOutreachEmail, type GenerateOutreachEmailOutput } from "@/ai/fl
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 type CommandState = 
   | 'idle' 
@@ -157,7 +158,7 @@ export default function VoicePage() {
         setCommandState('idle'); // Reset state after navigation is initiated
         return; // Exit early
       } else {
-         responseText = "I'm sorry, I did not recognize that command. Please try again.";
+         responseText = "This is Omarim AI. I'm sorry, I did not recognize that command. Please try again.";
       }
       handleSpeak(responseText);
     } catch (error) {
@@ -337,7 +338,7 @@ export default function VoicePage() {
                     </div>
                     <div className="flex flex-wrap gap-2 pt-4">
                         {agentResult.data.hashtags.map((tag, index) => (
-                            <UIBadge key={index} variant="secondary">{tag}</UIBadge>
+                            <Badge key={index} variant="secondary">{tag}</Badge>
                         ))}
                         </div>
                 </div>
