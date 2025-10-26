@@ -1,4 +1,5 @@
 
+
 /**
  * @fileOverview A Genkit tool for identifying trending products and potential suppliers.
  * This tool uses a generative model to create a plausible, fictional product opportunity.
@@ -44,9 +45,9 @@ Return the result in the specified JSON format.
 });
 
 
-export const findTrendingProducts = ai.defineTool(
+export const findTrendingProductsTool = ai.defineTool(
   {
-    name: 'findTrendingProducts',
+    name: 'findTrendingProductsTool',
     description: 'Analyzes a product category to identify a single trending product, a potential supplier, and a marketing strategy.',
     inputSchema: TrendingProductInputSchema,
     outputSchema: TrendingProductSchema,
@@ -59,6 +60,17 @@ export const findTrendingProducts = ai.defineTool(
     }
 
     return output;
+  }
+);
+
+export const findTrendingProductsFlow = ai.defineFlow(
+  {
+    name: 'findTrendingProductsFlow',
+    inputSchema: TrendingProductInputSchema,
+    outputSchema: TrendingProductSchema,
+  },
+  async (input) => {
+    return await findTrendingProductsTool(input);
   }
 );
 
