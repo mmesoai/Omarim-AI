@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Users } from 'lucide-react';
+import { Users, Loader2 } from 'lucide-react';
 
 const leadStatusColors: { [key: string]: string } = {
   New: 'hsl(var(--chart-1))',
@@ -37,7 +37,7 @@ export function LeadIntelligenceChart({ leads }: { leads: any[] | null }) {
     
     // First, gate the rendering to only happen on the client
     if (!isClient) {
-        return <div className="h-[150px] w-full flex items-center justify-center"><Users className="h-8 w-8 text-muted-foreground" /></div>;
+        return <div className="h-full w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
     }
 
     // After confirming we are on the client, check for data
