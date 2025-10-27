@@ -407,4 +407,143 @@ export default function DashboardPage() {
                         </div>
                         <Progress value={system.progress} indicatorClassName="bg-primary" />
                     </div>
-                ))
+                ))}
+            </CardContent>
+          </Card>
+          
+          <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <FolderKanban className="h-8 w-8 text-primary" />
+                    <div>
+                        <CardTitle className="text-lg">Lead Intelligence</CardTitle>
+                        <CardDescription>B2B lead enrichment & pipeline.</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow items-center h-[200px]">
+                <LeadIntelligenceChart leads={leads} />
+            </CardContent>
+            <CardFooter>
+                 <Button size="sm" variant="outline" className="w-full" onClick={() => router.push("/dashboard/leads")}>
+                    Manage Leads <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+            </CardFooter>
+          </Card>
+
+          <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+            <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Zap className="h-8 w-8 text-primary" />
+                        <CardTitle className="text-lg">Outbound Engine</CardTitle>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+                <p className="text-sm text-muted-foreground">Autonomous lead generation, product sourcing, and outreach campaigns.</p>
+            </CardContent>
+            <CardFooter className="flex justify-between items-end">
+                 <div>
+                    <p className="text-2xl font-bold">{(leads?.length ?? 0) + (products?.length ?? 0)}</p>
+                    <p className="text-xs text-muted-foreground">Opportunities</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => router.push('/dashboard/agent')}>
+                    Launch Agent <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+            </CardFooter>
+          </Card>
+          
+          <Card className="border-primary/20 bg-background/80 backdrop-blur-lg">
+              <CardHeader className="flex flex-row items-start justify-between">
+                  <div className="flex items-center gap-3">
+                      <Bot className="h-6 w-6 text-primary animate-pulse" />
+                      <div>
+                          <CardTitle className="text-lg">AI Approval Request</CardTitle>
+                          <CardDescription>Omarim requires human confirmation to proceed.</CardDescription>
+                      </div>
+                  </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleReject}>
+                      <X className="h-4 w-4" />
+                    </Button>
+              </CardHeader>
+              {isFindingProduct && (
+                  <CardContent className="flex items-center justify-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                      <p className="ml-4 text-muted-foreground">Searching for opportunities...</p>
+                  </CardContent>
+              )}
+              {trendingProduct && (
+                  <>
+                      <CardContent className="space-y-4">
+                            <div>
+                              <h3 className="font-headline text-xl font-bold text-foreground">{trendingProduct.productName}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">{trendingProduct.description}</p>
+                          </div>
+                          <Separator />
+                          <div>
+                              <h4 className="font-semibold text-foreground flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4 text-primary"/> Marketing Angle</h4>
+                              <p className="mt-1 text-sm text-muted-foreground">{trendingProduct.marketingAngle}</p>
+                          </div>
+                      </CardContent>
+                      <CardFooter className="flex gap-2">
+                          <Button onClick={handleApproveAndLaunch} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
+                              {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4" />}
+                              {!!campaignAssets ? "Approved" : "Approve & Launch"}
+                          </Button>
+                          <Button variant="outline" onClick={handleReject} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
+                              <X className="mr-2 h-4 w-4"/>
+                              Deny
+                          </Button>
+                      </CardFooter>
+                  </>
+              )}
+          </Card>
+
+        </div>
+      </div>
+    </div>
+
+    {/* Quick Action Button */}
+    <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
+        <DialogTrigger asChild>
+            <Button
+              variant="default"
+              className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg"
+            >
+              <Sparkles className="h-8 w-8" />
+              <span className="sr-only">Quick Action</span>
+            </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Quick Action</DialogTitle>
+                <DialogDescription>
+                    Issue a command to Omarim AI. It will be sent to the main chat interface.
+                </DialogDescription>
+            </DialogHeader>
+            <Form {...actionForm}>
+              <form onSubmit={actionForm.handleSubmit(onActionSubmit)} className="space-y-4">
+                <FormField
+                  control={actionForm.control}
+                  name="command"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Command</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 'Generate a social post about AI'" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                    <Button type="submit" className="w-full">Execute</Button>
+                </DialogFooter>
+              </form>
+            </Form>
+        </DialogContent>
+    </Dialog>
+    </>
+  );
+}
