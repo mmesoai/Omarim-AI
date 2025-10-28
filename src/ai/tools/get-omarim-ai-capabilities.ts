@@ -27,53 +27,42 @@ export const getOmarimAiCapabilities = ai.defineTool(
   },
   async () => {
     // This is the single source of truth for the AI's capabilities.
-    // As we add features to the app, we update this object to keep the AI's self-knowledge current.
+    // It is written from the perspective of Omarim AI.
     return {
       platformName: 'Omarim AI',
-      coreMission: 'To act as an autonomous business development partner, automating tasks like lead generation, outreach, and content creation to help users grow their business.',
+      coreMission: 'I am an autonomous business development partner. My mission is to automate tasks like lead generation, outreach, and content creation to help you grow your business.',
       features: [
         {
           featureName: 'Autonomous Business Agent',
-          description: 'Users can provide a high-level objective (e.g., "Find me 5 local businesses that need a new website"), and the agent will autonomously find, qualify, and even initiate contact with potential leads. It uses AI to generate plausible leads in real-time, identify decision-makers, and determine if a company could benefit from AI-powered web services.',
-          relatedTools: ['autonomousLeadGen', 'initiateOutreach', 'findAndQualifyLeads'],
+          description: 'You can give me a high-level objective, like "Find 5 local businesses that need a new website," and I will autonomously find, qualify, and even initiate contact with potential leads for you.',
+          relatedTools: ['autonomousLeadGen', 'initiateOutreach'],
         },
         {
           featureName: 'Automated Digital Product Funnel',
-          description: 'A fully automated channel that identifies trending digital products, generates the product content (like an e-book or course outline), creates a marketing campaign, and simulates placing it for sale. This represents a complete, hands-off business funnel.',
-          relatedTools: ['automatedDigitalProductFunnel', 'findTrendingDigitalProduct', 'generateDigitalProduct'],
+          description: 'I can run a fully automated workflow to identify a trending digital product, generate its content (like an e-book), and create a complete marketing campaign to sell it.',
+          relatedTools: ['automatedDigitalProductFunnel'],
         },
         {
           featureName: 'E-commerce Product Sourcing',
-          description: "The AI can analyze product categories to identify trending items, generate marketing campaigns, and find potential (fictional) suppliers. This allows it to autonomously propose new product opportunities and initiate contact with suppliers, representing a key outbound channel.",
-          relatedTools: ['findTrendingProducts', 'generateProductCampaign', 'generateProductIdeas'],
+          description: "I can analyze product categories to find trending items, generate marketing campaigns, and even identify potential suppliers, helping you discover new product opportunities.",
+          relatedTools: ['findTrendingProducts', 'generateProductCampaign'],
         },
         {
-          featureName: 'Conversational Chat Interface',
-          description: 'A chat interface where users can issue natural language commands to the AI. The AI interprets these commands and executes the appropriate action, such as generating content, managing marketing campaigns, or navigating the user to other parts of the application.',
-          relatedTools: ['interpretCommand'],
+          featureName: 'Conversational Chat & Voice',
+          description: 'You can issue commands to me using natural language, either through text chat or by speaking to me in the Voice Command Center.',
+          relatedTools: ['interpretCommand', 'convertSpeechToText'],
         },
         {
           featureName: 'AI-Powered Content Generation',
-          description: "The AI can generate various types of content on demand. This includes personalized outreach emails based on a lead's profile and engaging social media posts on a given topic.",
-          relatedTools: ['generateOutreachEmail', 'generateSocialMediaPost'],
+          description: "I can generate various types of content on demand. This includes creating personalized outreach emails, generating engaging social media posts, or even designing a full technical blueprint for a new app idea.",
+          relatedTools: ['generateOutreachEmail', 'generateSocialMediaPost', 'generateAppBlueprint'],
         },
         {
-          featureName: 'Voice Interaction Tools',
-          description: 'The platform includes a Voice Command Center that can transcribe spoken audio into text commands and execute them. It also features text-to-speech capabilities to read text aloud in a natural-sounding AI voice.',
-          relatedTools: ['convertSpeechToText', 'convertTextToSpeech'],
-        },
-        {
-          featureName: 'Data Management & Integration',
-          description: 'Omarim AI manages data in a Firestore database, including leads, outreach sequences, and products. The platform is designed for integration with third-party services like e-commerce platforms (Shopify, WooCommerce) and email providers (SendGrid).',
-          relatedTools: ['manageOutreachSequence'],
-        },
-        {
-          featureName: 'Email Inbox Analysis',
-          description: 'The AI can analyze inbound email replies to determine their sentiment, categorize them (e.g., as a question or complaint), and suggest relevant tags. This helps users prioritize and manage their inbox more efficiently.',
+          featureName: 'Inbox Analysis',
+          description: 'I can analyze your inbound email replies to determine their sentiment and category, helping you prioritize and manage your inbox more efficiently.',
           relatedTools: ['classifyInboundReply'],
         }
       ],
     };
   }
 );
-

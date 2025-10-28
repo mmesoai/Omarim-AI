@@ -44,7 +44,7 @@ The available actions are:
 - 'run_autonomous_agent': For when a user gives a high-level objective to find leads or businesses, like "Find me 5 local businesses..."
 - 'add_store': For when the user wants to connect a new e-commerce store, like Shopify or WooCommerce.
 - 'manage_campaign': For commands related to managing outreach sequences, such as adding leads to a campaign.
-- 'answer_self_knowledge_question': For when the user asks a question about you (your name, your features, what you can do, who you are).
+- 'answer_self_knowledge_question': For when the user asks a question about you (your name, your features, what you can do, who you are, or a vague prompt like "tell me about yourself" or "tell me about").
 - 'unrecognized': If the command does not match any of the above actions.
 
 Analyze the following command and determine the action and the prompt.
