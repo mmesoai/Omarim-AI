@@ -48,7 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, PlusCircle, ShoppingCart, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram } from "lucide-react";
+import { Loader2, PlusCircle, ShoppingCart, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard } from "lucide-react";
 
 const storeFormSchema = z.object({
   name: z.string().min(2, { message: "Store name must be at least 2 characters." }),
@@ -63,7 +63,7 @@ const genericIntegrationSchema = z.object({
 
 type IntegrationDialogState = {
     isOpen: boolean;
-    type: 'store' | 'sendgrid' | 'clearbit' | 'gmail' | 'smtp';
+    type: 'store' | 'sendgrid' | 'clearbit' | 'gmail' | 'smtp' | 'stripe' | 'paypal';
 }
 
 export default function SettingsPage() {
@@ -148,10 +148,14 @@ export default function SettingsPage() {
         case 'sendgrid':
         case 'clearbit':
         case 'gmail':
+        case 'stripe':
+        case 'paypal':
              const details = {
                  sendgrid: { title: 'Connect SendGrid', description: 'Enter your API key to enable sending outreach emails.' },
                  clearbit: { title: 'Connect Clearbit', description: 'Enter your API key to enrich lead data.' },
-                 gmail: { title: 'Connect Gmail', description: 'Begin the process to securely connect your Gmail account for sending and receiving emails.'}
+                 gmail: { title: 'Connect Gmail', description: 'Begin the process to securely connect your Gmail account for sending and receiving emails.'},
+                 stripe: { title: 'Connect Stripe', description: 'Enter your Stripe API key to process payments.'},
+                 paypal: { title: 'Connect PayPal', description: 'Enter your PayPal API credentials to process payments.'},
              }[integrationDialog.type];
             return (
                 <>
@@ -258,6 +262,11 @@ export default function SettingsPage() {
                 <IntegrationCard title="Email & Outreach" description="Connect your email providers to send outreach and analyze replies.">
                      <IntegrationRow icon={Mail} name="Gmail" description="Connect your Google account" action={() => openIntegrationDialog('gmail')} />
                     <IntegrationRow icon={Mail} name="SendGrid" description="Use SendGrid for high-volume email sending" action={() => openIntegrationDialog('sendgrid')} />
+                </IntegrationCard>
+
+                <IntegrationCard title="Payment Gateways" description="Connect payment providers to process transactions for products and services.">
+                    <IntegrationRow icon={CreditCard} name="Stripe" description="Process credit card payments" action={() => openIntegrationDialog('stripe')} />
+                    <IntegrationRow icon={CreditCard} name="PayPal" description="Accept PayPal and alternative payments" action={() => openIntegrationDialog('paypal')} />
                 </IntegrationCard>
 
                 <IntegrationCard title="Social Media Publishing" description="Connect your social accounts to publish content autonomously.">
