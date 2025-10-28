@@ -48,7 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, PlusCircle, ShoppingCart, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard } from "lucide-react";
+import { Loader2, PlusCircle, ShoppingCart, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard, Shirt } from "lucide-react";
 
 const storeFormSchema = z.object({
   name: z.string().min(2, { message: "Store name must be at least 2 characters." }),
@@ -63,7 +63,7 @@ const genericIntegrationSchema = z.object({
 
 type IntegrationDialogState = {
     isOpen: boolean;
-    type: 'store' | 'sendgrid' | 'clearbit' | 'gmail' | 'smtp' | 'stripe' | 'paypal';
+    type: 'store' | 'sendgrid' | 'clearbit' | 'gmail' | 'smtp' | 'stripe' | 'paypal' | 'printify';
 }
 
 export default function SettingsPage() {
@@ -151,12 +151,14 @@ export default function SettingsPage() {
         case 'gmail':
         case 'stripe':
         case 'paypal':
+        case 'printify':
              const details = {
                  sendgrid: { title: 'Connect SendGrid', description: 'Enter your API key to enable sending outreach emails.' },
                  clearbit: { title: 'Connect Clearbit', description: 'Enter your API key to enrich lead data.' },
                  gmail: { title: 'Connect Gmail', description: 'Begin the process to securely connect your Gmail account for sending and receiving emails.'},
                  stripe: { title: 'Connect Stripe', description: 'Enter your Stripe API key to process payments.'},
                  paypal: { title: 'Connect PayPal', description: 'Enter your PayPal API credentials to process payments.'},
+                 printify: { title: 'Connect Printify', description: 'Enter your Printify API key to enable autonomous print-on-demand product creation.'},
              }[integrationDialog.type];
             return (
                 <>
@@ -278,7 +280,7 @@ export default function SettingsPage() {
                     <IntegrationRow icon={Youtube} name="YouTube" description="Publish shorts and videos" action={() => {}} />
                 </IntegrationCard>
 
-                <IntegrationCard title="E-commerce Platforms" description="Sync products from your online stores.">
+                <IntegrationCard title="E-commerce & Fulfillment" description="Sync products from your online stores and manage fulfillment.">
                     <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">Connect and manage your stores.</p>
                         <Button onClick={() => openIntegrationDialog('store')}><PlusCircle className="mr-2 h-4 w-4" /> Add Store</Button>
@@ -291,6 +293,7 @@ export default function SettingsPage() {
                       </div>
                     ))}
                     {!isLoadingStores && (!stores || stores.length === 0) && (<p className="text-center text-sm text-muted-foreground py-4">No stores connected yet.</p>)}
+                    <IntegrationRow icon={Shirt} name="Printify" description="Print-on-demand product fulfillment" action={() => openIntegrationDialog('printify')} />
                 </IntegrationCard>
 
                 <IntegrationCard title="Data & Enrichment" description="Enhance your lead and customer data.">

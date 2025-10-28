@@ -66,6 +66,7 @@ These are the proactive, autonomous engines where Omarim AI works on behalf of t
 - **Underlying AI:**
     - `findTrendingProducts`: Finds a single trending product, a potential (fictional) supplier, and a marketing angle.
     - `generateProductCampaign`: Takes product details and generates a full marketing campaign, including social posts, an AI-generated image, and a video concept.
+- **Integrations:** Designed to connect with e-commerce platforms like Shopify, WooCommerce, and print-on-demand services like Printify.
 - **Outputs:** A complete marketing campaign for a new product, ready for review and launch.
 
 ---
@@ -97,13 +98,17 @@ These are the proactive, autonomous engines where Omarim AI works on behalf of t
 - **Function:** An AI-powered tool to generate a professional technical blueprint for a new application idea.
 - **Features:** Takes a user's app description and outputs a full specification, including core features, data models, user personas, and a recommended tech stack.
 
-### f. Inbox (`/dashboard/inbox`)
+### f. Website Blueprint (`/dashboard/new-site`)
+- **Function:** An AI-powered tool to generate a professional website blueprint from a business description.
+- **Features:** Takes a user's business idea and outputs a site name, tagline, domain suggestion, and a full sitemap with page descriptions.
+
+### g. Inbox (`/dashboard/inbox`)
 - **Function:** A mock email client to view and analyze inbound replies.
 - **Underlying AI:** `classifyInboundReply` flow analyzes each email to determine its sentiment, category, and relevant tags, which are displayed to the user.
 
-### g. Settings (`/dashboard/settings`)
+### h. Settings (`/dashboard/settings`)
 - **Function:** A page for managing user profile, billing information, and third-party integrations.
-- **Features:** Allows users to connect e-commerce stores (Shopify, WooCommerce, etc.) and other services like SendGrid.
+- **Features:** Allows users to connect e-commerce stores (Shopify, WooCommerce, Printify), payment gateways (Stripe, PayPal), email services (SendGrid, Gmail), and social media accounts.
 
 ---
 
@@ -119,7 +124,8 @@ This is the "brain" of Omarim AI, containing all the Genkit flows and tools that
 - **`generateProductIdeas`:** Brainstorms new product ideas from a topic.
 - **`interpretCommand`:** The core NLU engine for the chat and voice interfaces.
 - **`generateMultipleSocialPosts`:** Repurposes content for different social platforms.
-- **`generateAppBlueprint`:** Creates a technical spec from an idea.
+- **`generateAppBlueprint`:** Creates a technical spec from an app idea.
+- **`generateSiteBlueprint`:** Creates a website plan from a business idea.
 - **`classifyInboundReply`:** Analyzes inbound emails for sentiment and category.
 - **`convertSpeechToText` & `convertTextToSpeech`:** The core voice interaction tools.
 - **`getOmarimAiCapabilities`:** A tool that allows the AI to be self-aware of its own features, which it uses to answer questions about itself.
