@@ -16,7 +16,7 @@ import {
   Package,
   Send,
   Settings,
-  BotMessageSquare,
+  LayoutTemplate,
   Share2,
   ShoppingBag,
 } from "lucide-react"
@@ -52,7 +52,7 @@ const featureNav = [
 const secondaryNav = [
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/voice", icon: Mic, label: "Voice Tools" },
-  { href: "/dashboard/new-site", icon: BotMessageSquare, label: "Intake Form" },
+  { href: "/dashboard/new-site", icon: LayoutTemplate, label: "Website Blueprint" },
 ];
 
 const NavGroup = ({

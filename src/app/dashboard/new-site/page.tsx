@@ -11,7 +11,6 @@ import {
   Sparkles,
   Globe,
   FileText,
-  LayoutTemplate,
   ChevronRight,
   CheckCircle,
 } from 'lucide-react';
@@ -33,10 +32,8 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -90,11 +87,11 @@ export default function NewSitePage() {
     <div className="container mx-auto max-w-6xl space-y-8 py-8">
       <div className="text-center">
         <h1 className="font-headline text-3xl font-bold md:text-4xl">
-          Autonomous Website Scaffolding
+          Autonomous Website Blueprint
         </h1>
         <p className="mt-2 text-lg text-muted-foreground">
           Describe your business, and let the AI generate a professional website
-          blueprint.
+          plan.
         </p>
       </div>
 
