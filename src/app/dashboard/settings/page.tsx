@@ -98,6 +98,7 @@ export default function SettingsPage() {
         storeForm.setValue('type', storeType as "Shopify" | "WooCommerce" | "Amazon" | "eBay");
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, storeForm]);
 
   function onStoreSubmit(values: z.infer<typeof storeFormSchema>) {
