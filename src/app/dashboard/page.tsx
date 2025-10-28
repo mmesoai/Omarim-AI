@@ -49,6 +49,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="lg:col-span-3 flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
 const LeadIntelligenceChart = dynamic(() => import('./components/lead-intelligence-chart').then(mod => mod.LeadIntelligenceChart), { ssr: false, loading: () => <div className="h-full w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> });
@@ -197,7 +198,7 @@ export default function DashboardPage() {
   const { data: products, isLoading: isLoadingProducts } = useCollection(productsCollectionRef);
   const { data: sequences, isLoading: isLoadingSequences } = useCollection(sequencesCollectionRef);
 
-  const isLoading = isLoadingLeads || isLoadingProducts || isLoadingSequences;
+  const isLoading = !isClient || isLoadingLeads || isLoadingProducts || isLoadingSequences;
 
   const kpiData = [
     { title: 'Total Leads', value: leads?.length ?? 0, icon: Users, change: "+45 today" },
@@ -222,15 +223,6 @@ export default function DashboardPage() {
     }
   };
 
-
-  if (isLoading && !isClient) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <>
     <div className="space-y-6">
@@ -250,20 +242,35 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
            {/* KPI Cards */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {kpiData.map((kpi, index) => (
-              <Card key={index} className="transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-                  <kpi.icon className="h-5 w-5 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-4xl font-bold">{kpi.value}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {kpi.change}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {isLoading ? (
+                Array.from({ length: 4 }).map((_, index) => (
+                    <Card key={index}>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <Skeleton className="h-4 w-2/3" />
+                            <Skeleton className="h-5 w-5 rounded-full" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-8 w-1/3 mt-1" />
+                            <Skeleton className="h-3 w-1/2 mt-2" />
+                        </CardContent>
+                    </Card>
+                ))
+            ) : (
+                kpiData.map((kpi, index) => (
+                <Card key={index} className="transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
+                    <kpi.icon className="h-5 w-5 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                    <div className="text-4xl font-bold">{kpi.value}</div>
+                    <p className="text-xs text-muted-foreground">
+                        {kpi.change}
+                    </p>
+                    </CardContent>
+                </Card>
+                ))
+            )}
           </div>
 
           <RevenueOverview />

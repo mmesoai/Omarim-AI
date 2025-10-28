@@ -52,10 +52,9 @@ const autonomousLeadGenFlow = ai.defineFlow(
         throw new Error("The AI agent failed to identify the required tool or parameters for the objective.");
     }
     
-    // In a real-world scenario with external tools, you'd execute the tool here.
-    // Since findAndQualifyLeads is an AI-powered tool itself, the LLM's request *is* the result.
-    // The key fix is extracting the leads from the tool request's input arguments.
-    // @ts-ignore
+    // The AI has decided to call the 'findAndQualifyLeads' tool with specific inputs.
+    // We now execute that tool call with the input the AI provided.
+    // @ts-ignore - The input schema is validated by the tool itself.
     const leads = await findAndQualifyLeads(toolRequest.input);
 
     return {
