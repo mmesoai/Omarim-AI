@@ -52,7 +52,7 @@ const featureNav = [
 const secondaryNav = [
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/voice", icon: Mic, label: "Voice Tools" },
-  { href: "/dashboard/new-site", icon: LayoutTemplate, label: "Website Blueprint" },
+  { href: "/dashboard/website-blueprint", icon: LayoutTemplate, label: "Website Blueprint" },
 ];
 
 const NavGroup = ({
