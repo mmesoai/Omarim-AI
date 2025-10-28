@@ -6,10 +6,8 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { collection } from 'firebase/firestore';
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,7 +32,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -51,8 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, PlusCircle } from "lucide-react";
-
+import { Loader2, PlusCircle, ShoppingCart, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram } from "lucide-react";
 
 const storeFormSchema = z.object({
   name: z.string().min(2, { message: "Store name must be at least 2 characters." }),
@@ -67,13 +63,11 @@ const genericIntegrationSchema = z.object({
 
 type IntegrationDialogState = {
     isOpen: boolean;
-    type: 'store' | 'sendgrid' | 'clearbit';
+    type: 'store' | 'sendgrid' | 'clearbit' | 'gmail' | 'smtp';
 }
 
 export default function SettingsPage() {
-  const [storeDialogOpen, setStoreDialogOpen] = useState(false);
   const [integrationDialog, setIntegrationDialog] = useState<IntegrationDialogState>({ isOpen: false, type: 'store' });
-
   const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
@@ -87,11 +81,7 @@ export default function SettingsPage() {
 
   const storeForm = useForm<z.infer<typeof storeFormSchema>>({
     resolver: zodResolver(storeFormSchema),
-    defaultValues: {
-      name: "",
-      apiKey: "",
-      apiUrl: "",
-    },
+    defaultValues: { name: "", apiKey: "", apiUrl: "" },
   });
 
   const genericForm = useForm<z.infer<typeof genericIntegrationSchema>>({
@@ -102,32 +92,28 @@ export default function SettingsPage() {
   useEffect(() => {
     const action = searchParams.get('action');
     const storeType = searchParams.get('storeType');
-
     if (action === 'addStore') {
-      setIntegrationDialog({ isOpen: true, type: 'store' });
+      openIntegrationDialog('store');
       if (storeType && ["Shopify", "WooCommerce", "Amazon", "eBay"].includes(storeType)) {
-        const capitalizedStoreType = storeType.charAt(0).toUpperCase() + storeType.slice(1);
-        storeForm.setValue('type', capitalizedStoreType as "Shopify" | "WooCommerce" | "Amazon" | "eBay");
+        storeForm.setValue('type', storeType as "Shopify" | "WooCommerce" | "Amazon" | "eBay");
       }
     }
   }, [searchParams, storeForm]);
-
 
   function onStoreSubmit(values: z.infer<typeof storeFormSchema>) {
     if (!storesCollectionRef) return;
     addDocumentNonBlocking(storesCollectionRef, values);
     storeForm.reset();
-    setIntegrationDialog({ isOpen: false, type: 'store' });
+    setIntegrationDialog({ ...integrationDialog, isOpen: false });
   }
   
   function onGenericSubmit(values: z.infer<typeof genericIntegrationSchema>) {
-    // In a real app, you would save this API key to a secure place.
     console.log(`Connecting ${integrationDialog.type} with key:`, values.apiKey);
     genericForm.reset();
-    setIntegrationDialog({ isOpen: false, type: integrationDialog.type });
+    setIntegrationDialog({ ...integrationDialog, isOpen: false });
   }
 
-  const openIntegrationDialog = (type: 'store' | 'sendgrid' | 'clearbit') => {
+  const openIntegrationDialog = (type: IntegrationDialogState['type']) => {
     setIntegrationDialog({ isOpen: true, type });
   }
 
@@ -138,116 +124,88 @@ export default function SettingsPage() {
                 <>
                  <DialogHeader>
                     <DialogTitle>Add New Store</DialogTitle>
-                    <DialogDescription>
-                      Enter the details for your new store integration.
-                    </DialogDescription>
+                    <DialogDescription>Enter the details for your new e-commerce store integration.</DialogDescription>
                   </DialogHeader>
                   <Form {...storeForm}>
                     <form onSubmit={storeForm.handleSubmit(onStoreSubmit)} className="space-y-4">
-                       <FormField
-                        control={storeForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Store Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="My Awesome Store" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={storeForm.control}
-                        name="type"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Platform</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a platform" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Shopify">Shopify</SelectItem>
-                                <SelectItem value="WooCommerce">WooCommerce</SelectItem>
-                                <SelectItem value="Amazon">Amazon</SelectItem>
-                                <SelectItem value="eBay">eBay</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={storeForm.control}
-                        name="apiUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>API URL</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://my-store.myshopify.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={storeForm.control}
-                        name="apiKey"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>API Key</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="shpat_xxxxxxxxxxxx" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <DialogFooter>
-                        <Button type="submit">Connect Store</Button>
-                      </DialogFooter>
+                       <FormField control={storeForm.control} name="name" render={({ field }) => (
+                          <FormItem><FormLabel>Store Name</FormLabel><FormControl><Input placeholder="My Awesome Store" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                      <FormField control={storeForm.control} name="type" render={({ field }) => (
+                          <FormItem><FormLabel>Platform</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a platform" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Shopify">Shopify</SelectItem><SelectItem value="WooCommerce">WooCommerce</SelectItem><SelectItem value="Amazon">Amazon</SelectItem><SelectItem value="eBay">eBay</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                        )}/>
+                       <FormField control={storeForm.control} name="apiUrl" render={({ field }) => (
+                          <FormItem><FormLabel>API URL</FormLabel><FormControl><Input placeholder="https://my-store.myshopify.com" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                       <FormField control={storeForm.control} name="apiKey" render={({ field }) => (
+                          <FormItem><FormLabel>API Key</FormLabel><FormControl><Input type="password" placeholder="shpat_xxxxxxxxxxxx" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                      <DialogFooter><Button type="submit">Connect Store</Button></DialogFooter>
                     </form>
                   </Form>
                 </>
             );
         case 'sendgrid':
         case 'clearbit':
-             const title = integrationDialog.type === 'sendgrid' ? 'Connect SendGrid' : 'Connect Clearbit';
-             const description = `Enter your API key to connect your ${integrationDialog.type} account.`;
+        case 'gmail':
+             const details = {
+                 sendgrid: { title: 'Connect SendGrid', description: 'Enter your API key to enable sending outreach emails.' },
+                 clearbit: { title: 'Connect Clearbit', description: 'Enter your API key to enrich lead data.' },
+                 gmail: { title: 'Connect Gmail', description: 'Begin the process to securely connect your Gmail account for sending and receiving emails.'}
+             }[integrationDialog.type];
             return (
                 <>
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                    <DialogDescription>{description}</DialogDescription>
-                </DialogHeader>
+                <DialogHeader><DialogTitle>{details.title}</DialogTitle><DialogDescription>{details.description}</DialogDescription></DialogHeader>
+                { integrationDialog.type === 'gmail' ? (
+                     <DialogFooter><Button onClick={() => setIntegrationDialog({...integrationDialog, isOpen: false})}>Connect with Google</Button></DialogFooter>
+                ) : (
                 <Form {...genericForm}>
                     <form onSubmit={genericForm.handleSubmit(onGenericSubmit)} className="space-y-4">
-                        <FormField
-                            control={genericForm.control}
-                            name="apiKey"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>API Key</FormLabel>
-                                    <FormControl>
-                                        <Input type="password" placeholder="Enter your API key" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <DialogFooter>
-                            <Button type="submit">Connect</Button>
-                        </DialogFooter>
+                        <FormField control={genericForm.control} name="apiKey" render={({ field }) => (
+                            <FormItem><FormLabel>API Key</FormLabel><FormControl><Input type="password" placeholder="Enter your API key" {...field} /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <DialogFooter><Button type="submit">Connect</Button></DialogFooter>
                     </form>
                 </Form>
+                )}
                 </>
             );
+        default:
+            return null;
     }
   }
 
+  const IntegrationCard = ({ title, description, children } : {title:string, description:string, children: React.ReactNode}) => (
+      <Card>
+          <CardHeader>
+              <CardTitle>{title}</CardTitle>
+              <CardDescription>{description}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+              {children}
+          </CardContent>
+      </Card>
+  );
+
+  const IntegrationRow = ({ icon: Icon, name, description, action, isConnected=false }: { icon: React.ElementType, name: string, description: string, action: () => void, isConnected?: boolean }) => (
+      <div className="flex items-center justify-between rounded-md border p-4">
+          <div className="flex items-center gap-4">
+              <Icon className="h-6 w-6" />
+              <div>
+                  <p className="font-medium">{name}</p>
+                  <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+          </div>
+          {isConnected ? (
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-green-500">Connected</p>
+                <Button variant="outline" size="sm">Disconnect</Button>
+              </div>
+          ) : (
+            <Button variant="secondary" onClick={action}>Connect</Button>
+          )}
+      </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -267,115 +225,68 @@ export default function SettingsPage() {
 
         <TabsContent value="profile">
           <Card>
-            <CardHeader>
-              <CardTitle>Profile</CardTitle>
-              <CardDescription>
-                Make changes to your public information here.
-              </CardDescription>
-            </CardHeader>
+            <CardHeader><CardTitle>Profile</CardTitle><CardDescription>Make changes to your public information here.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" defaultValue="John Doe" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue="john.doe@example.com" disabled/>
-              </div>
+              <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" defaultValue="John Doe" /></div>
+              <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" defaultValue="john.doe@example.com" disabled/></div>
             </CardContent>
-            <CardFooter>
-              <Button>Save changes</Button>
-            </CardFooter>
+            <CardFooter><Button>Save changes</Button></CardFooter>
           </Card>
         </TabsContent>
         
         <TabsContent value="billing">
           <Card>
-            <CardHeader>
-              <CardTitle>Billing</CardTitle>
-              <CardDescription>
-                Manage your billing information and view your invoices.
-              </CardDescription>
-            </CardHeader>
+            <CardHeader><CardTitle>Billing</CardTitle><CardDescription>Manage your billing information and view your invoices.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
                 <p className="font-medium">Current Plan: <span className="text-primary">E-commerce</span></p>
                 <p className="text-sm text-muted-foreground">Your next billing date is on the 1st of next month.</p>
                 <div className="space-y-2">
                     <Label>Payment Method</Label>
-                    <div className="flex items-center justify-between rounded-md border p-4">
-                        <p>Visa ending in 1234</p>
-                        <Button variant="outline">Update</Button>
-                    </div>
+                    <div className="flex items-center justify-between rounded-md border p-4"><p>Visa ending in 1234</p><Button variant="outline">Update</Button></div>
                 </div>
             </CardContent>
-            <CardFooter>
-              <Button variant="secondary">View Invoices</Button>
-            </CardFooter>
+            <CardFooter><Button variant="secondary">View Invoices</Button></CardFooter>
           </Card>
         </TabsContent>
 
         <TabsContent value="integrations">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Integrations</CardTitle>
-                <CardDescription>
-                  Connect your accounts from other services.
-                </CardDescription>
-              </div>
-               <Dialog open={integrationDialog.isOpen} onOpenChange={(isOpen) => setIntegrationDialog({ ...integrationDialog, isOpen })}>
-                <DialogContent className="sm:max-w-[425px]">
-                    {renderDialogContent()}
-                </DialogContent>
-              </Dialog>
-            </CardHeader>
-            <CardContent className="grid gap-4">
-                <div className="flex items-center justify-between rounded-md border p-4">
-                    <div>
-                        <p className="font-medium">E-commerce Stores</p>
-                        <p className="text-sm text-muted-foreground">Shopify, WooCommerce, etc.</p>
-                    </div>
-                    <Button onClick={() => openIntegrationDialog('store')}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Store
-                    </Button>
-                </div>
-
-                {isLoadingStores && <Loader2 className="mx-auto h-8 w-8 animate-spin" />}
+            <div className="space-y-6">
+                <Dialog open={integrationDialog.isOpen} onOpenChange={(isOpen) => setIntegrationDialog({ ...integrationDialog, isOpen })}>
+                    <DialogContent className="sm:max-w-[425px]">{renderDialogContent()}</DialogContent>
+                </Dialog>
                 
-                {!isLoadingStores && stores && stores.map((store) => (
-                   <div key={store.id} className="flex items-center justify-between rounded-md border p-4 ml-8">
-                      <div>
-                        <p className="font-medium">{store.name}</p>
-                        <p className="text-sm text-muted-foreground">{store.type}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm text-green-500">Connected</p>
-                        <Button variant="outline">Disconnect</Button>
-                      </div>
-                  </div>
-                ))}
-                
-                {!isLoadingStores && (!stores || stores.length === 0) && (
-                  <p className="text-center text-sm text-muted-foreground py-4">No stores connected yet.</p>
-                )}
+                <IntegrationCard title="Email & Outreach" description="Connect your email providers to send outreach and analyze replies.">
+                     <IntegrationRow icon={Mail} name="Gmail" description="Connect your Google account" action={() => openIntegrationDialog('gmail')} />
+                    <IntegrationRow icon={Mail} name="SendGrid" description="Use SendGrid for high-volume email sending" action={() => openIntegrationDialog('sendgrid')} />
+                </IntegrationCard>
 
-                 <div className="flex items-center justify-between rounded-md border p-4">
-                    <div>
-                        <p className="font-medium">SendGrid</p>
-                        <p className="text-sm text-muted-foreground">Email delivery service</p>
+                <IntegrationCard title="Social Media Publishing" description="Connect your social accounts to publish content autonomously.">
+                    <IntegrationRow icon={Twitter} name="X (Twitter)" description="Publish threads and posts" action={() => {}} />
+                    <IntegrationRow icon={Linkedin} name="LinkedIn" description="Publish articles and posts" action={() => {}} />
+                    <IntegrationRow icon={Facebook} name="Facebook" description="Publish to your pages and groups" action={() => {}} />
+                    <IntegrationRow icon={Instagram} name="Instagram" description="Publish reels and stories" action={() => {}} />
+                    <IntegrationRow icon={Youtube} name="YouTube" description="Publish shorts and videos" action={() => {}} />
+                </IntegrationCard>
+
+                <IntegrationCard title="E-commerce Platforms" description="Sync products from your online stores.">
+                    <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">Connect and manage your stores.</p>
+                        <Button onClick={() => openIntegrationDialog('store')}><PlusCircle className="mr-2 h-4 w-4" /> Add Store</Button>
                     </div>
-                    <Button variant="secondary" onClick={() => openIntegrationDialog('sendgrid')}>Connect</Button>
-                </div>
-                 <div className="flex items-center justify-between rounded-md border p-4">
-                    <div>
-                        <p className="font-medium">Clearbit</p>
-                        <p className="text-sm text-muted-foreground">Data enrichment platform</p>
-                    </div>
-                    <Button variant="secondary" onClick={() => openIntegrationDialog('clearbit')}>Connect</Button>
-                </div>
-            </CardContent>
-          </Card>
+                     {isLoadingStores && <div className="flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}
+                    {!isLoadingStores && stores && stores.map((store) => (
+                       <div key={store.id} className="flex items-center justify-between rounded-md border bg-card/50 p-4">
+                          <div><p className="font-medium">{store.name}</p><p className="text-sm text-muted-foreground">{store.type}</p></div>
+                          <div className="flex items-center gap-2"><p className="text-sm text-green-500">Connected</p><Button variant="outline" size="sm">Disconnect</Button></div>
+                      </div>
+                    ))}
+                    {!isLoadingStores && (!stores || stores.length === 0) && (<p className="text-center text-sm text-muted-foreground py-4">No stores connected yet.</p>)}
+                </IntegrationCard>
+
+                <IntegrationCard title="Data & Enrichment" description="Enhance your lead and customer data.">
+                    <IntegrationRow icon={BarChart} name="Clearbit" description="Enrich leads with company and contact data" action={() => openIntegrationDialog('clearbit')} />
+                </IntegrationCard>
+            </div>
         </TabsContent>
       </Tabs>
     </div>
