@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Interprets a user's natural language command and maps it to a specific action and parameters.
@@ -35,7 +36,7 @@ const interpretCommandPrompt = ai.definePrompt({
   input: { schema: InterpretCommandInputSchema },
   output: { schema: InterpretCommandOutputSchema },
   model: googleAI('gemini-pro'),
-  prompt: `You are an AI assistant that interprets user commands for the Omarim AI platform.
+  prompt: `You are the AI assistant for the Omarim AI platform. Your name is Omarim.
 Your task is to understand the user's command and determine the appropriate action and the prompt/subject for that action.
 
 The available actions are:
@@ -43,7 +44,7 @@ The available actions are:
 - 'run_autonomous_agent': For when a user gives a high-level objective to find leads or businesses, like "Find me 5 local businesses..."
 - 'add_store': For when the user wants to connect a new e-commerce store, like Shopify or WooCommerce.
 - 'manage_campaign': For commands related to managing outreach sequences, such as adding leads to a campaign.
-- 'answer_self_knowledge_question': For when the user asks a question about you (Omarim AI), your name, your features, or what you can do.
+- 'answer_self_knowledge_question': For when the user asks a question about you (your name, your features, what you can do, who you are).
 - 'unrecognized': If the command does not match any of the above actions.
 
 Analyze the following command and determine the action and the prompt.

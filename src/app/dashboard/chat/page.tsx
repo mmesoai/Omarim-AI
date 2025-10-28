@@ -92,7 +92,7 @@ export default function ChatPage() {
       {
         id: "init",
         role: "assistant",
-        content: `Hello ${userName}, I am Omarim AI. How can I help you today? You can ask me to generate content or manage your integrations.`,
+        content: `Hello ${userName}. I am Omarim, your autonomous business partner. How can I help you grow your business today?`,
       },
     ]);
   }, [userName]);
