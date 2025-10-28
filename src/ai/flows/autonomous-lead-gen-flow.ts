@@ -28,14 +28,14 @@ export async function autonomousLeadGen(input: AutonomousLeadGenInput): Promise<
 const autonomousLeadGenPrompt = ai.definePrompt({
   name: 'autonomousLeadGenPrompt',
   input: { schema: AutonomousLeadGenInputSchema },
-  output: { schema: z.object({ qualifiedLeads: z.array(findAndQualifyLeads.outputSchema) }) },
+  // The output should be the direct result of the tool call, which is an array of leads.
+  output: { schema: z.array(findAndQualifyLeads.outputSchema) },
   tools: [findAndQualifyLeads],
   model: googleAI('gemini-pro'),
   system: `You are an autonomous business development agent.
 Your goal is to find and qualify leads based on a high-level objective.
-Use the findAndQualifyLeads tool to achieve this.
-The tool will return a list of qualified leads.
-Your final output should be the result from the tool call.
+You MUST use the findAndQualifyLeads tool to achieve this.
+Your final output should be ONLY the direct result from the tool call. Do not wrap it in any other object.
 
 Objective: {{{objective}}}
 `,
@@ -48,11 +48,11 @@ const autonomousLeadGenFlow = ai.defineFlow(
     outputSchema: AutonomousLeadGenOutputSchema,
   },
   async (input) => {
+    // The prompt now directly returns the array of leads from the tool call.
     const llmResponse = await autonomousLeadGenPrompt(input);
     
-    // The `findAndQualifyLeads` tool is called by the LLM. 
-    // We can extract the leads from the structured output.
-    const leads = (llmResponse.output?.qualifiedLeads || []) as QualifiedLead[];
+    // The structured output is now the array itself.
+    const leads = (llmResponse.output || []) as QualifiedLead[];
     
     return {
       qualifiedLeads: leads,
