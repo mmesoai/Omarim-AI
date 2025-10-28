@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview An autonomous AI agent flow for lead generation and qualification.
@@ -28,8 +27,6 @@ export async function autonomousLeadGen(input: AutonomousLeadGenInput): Promise<
 const autonomousLeadGenPrompt = ai.definePrompt({
   name: 'autonomousLeadGenPrompt',
   input: { schema: AutonomousLeadGenInputSchema },
-  // The output should be the direct result of the tool call, which is an array of leads.
-  output: { schema: z.array(findAndQualifyLeads.outputSchema) },
   tools: [findAndQualifyLeads],
   model: googleAI('gemini-pro'),
   system: `You are an autonomous business development agent.
@@ -48,12 +45,19 @@ const autonomousLeadGenFlow = ai.defineFlow(
     outputSchema: AutonomousLeadGenOutputSchema,
   },
   async (input) => {
-    // The prompt now directly returns the array of leads from the tool call.
     const llmResponse = await autonomousLeadGenPrompt(input);
+    const toolRequest = llmResponse.toolRequest;
     
-    // The structured output is now the array itself.
-    const leads = (llmResponse.output || []) as QualifiedLead[];
+    if (!toolRequest || !toolRequest.input) {
+        throw new Error("The AI agent failed to identify the required tool or parameters for the objective.");
+    }
     
+    // In a real-world scenario with external tools, you'd execute the tool here.
+    // Since findAndQualifyLeads is an AI-powered tool itself, the LLM's request *is* the result.
+    // The key fix is extracting the leads from the tool request's input arguments.
+    // @ts-ignore
+    const leads = await findAndQualifyLeads(toolRequest.input);
+
     return {
       qualifiedLeads: leads,
       summary: `I have analyzed the request and identified ${leads.length} potential leads. Each has been qualified based on their role and the potential need for AI-powered web services.`,
