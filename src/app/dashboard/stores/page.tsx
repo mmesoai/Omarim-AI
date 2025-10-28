@@ -41,7 +41,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { Loader2, PlusCircle, Sparkles, Bot, TrendingUp, UserCheck, ShoppingCart, Mail, Twitter, Linkedin, Facebook, Video, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateProductIdeas, type GenerateProductIdeasOutput } from "@/ai/flows/generate-product-ideas";
-import { findTrendingProducts, generateProductCampaign } from '@/app/actions';
+import { findTrendingProducts, generateProductCampaign } from "@/app/actions";
 import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from "@/app/schemas";
 import { Separator } from "@/components/ui/separator";
 
@@ -424,7 +424,7 @@ export default function StoresPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    ))}
+                    ))}\
                 </div>
                 <div className="space-y-6">
                     <div>
