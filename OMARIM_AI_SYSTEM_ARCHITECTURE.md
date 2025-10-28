@@ -98,7 +98,7 @@ These are the proactive, autonomous engines where Omarim AI works on behalf of t
 - **Function:** An AI-powered tool to generate a professional technical blueprint for a new application idea.
 - **Features:** Takes a user's app description and outputs a full specification, including core features, data models, user personas, and a recommended tech stack.
 
-### f. Website Blueprint (`/dashboard/new-site`)
+### f. Website Blueprint (`/dashboard/website-blueprint`)
 - **Function:** An AI-powered tool to generate a professional website blueprint from a business description.
 - **Features:** Takes a user's business idea and outputs a site name, tagline, domain suggestion, and a full sitemap with page descriptions.
 
