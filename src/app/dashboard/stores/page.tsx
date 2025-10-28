@@ -41,8 +41,8 @@ import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { Loader2, PlusCircle, Sparkles, Bot, TrendingUp, UserCheck, ShoppingCart, Mail, Twitter, Linkedin, Facebook, Video, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateProductIdeas, type GenerateProductIdeasOutput } from "@/ai/flows/generate-product-ideas";
-import { findTrendingProducts, type TrendingProduct } from "@/ai/tools/find-trending-products";
-import { generateProductCampaign, type GenerateProductCampaignOutput } from "@/ai/flows/generate-product-campaign";
+import { findTrendingProducts, generateProductCampaign } from '@/app/actions';
+import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from "@/app/schemas";
 import { Separator } from "@/components/ui/separator";
 
 const sourceColors: { [key: string]: string } = {
@@ -65,7 +65,7 @@ export default function StoresPage() {
   const [isTrendingDialogOpen, setIsTrendingDialogOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedProducts, setGeneratedProducts] = useState<GenerateProductIdeasOutput['products'] | null>(null);
-  const [trendingProduct, setTrendingProduct] = useState<TrendingProduct | null>(null);
+  const [trendingProduct, setTrendingProduct] = useState<GenerateProductCampaignInput | null>(null);
   const [campaignAssets, setCampaignAssets] = useState<GenerateProductCampaignOutput | null>(null);
   const [isCampaignLoading, setIsCampaignLoading] = useState(false);
 
@@ -122,7 +122,7 @@ export default function StoresPage() {
     setGeneratedProducts(null);
     setCampaignAssets(null);
     try {
-      const result = await findTrendingProducts({ category: values.category });
+      const result = await findTrendingProducts(values.category);
       setTrendingProduct(result);
     } catch (error) {
       console.error("Failed to find trending products:", error);
