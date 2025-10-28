@@ -27,7 +27,8 @@ export async function autonomousLeadGen(input: AutonomousLeadGenInput): Promise<
 const autonomousLeadGenPrompt = ai.definePrompt({
   name: 'autonomousLeadGenPrompt',
   input: { schema: AutonomousLeadGenInputSchema },
-  output: { schema: z.object({ qualifiedLeads: z.array(findAndQualifyLeads.inputSchema) }) },
+  // Corrected the output schema to reference the tool's output schema.
+  output: { schema: z.object({ qualifiedLeads: z.array(findAndQualifyLeads.outputSchema) }) },
   tools: [findAndQualifyLeads],
   model: googleAI('gemini-pro'),
   system: `You are an autonomous business development agent.
