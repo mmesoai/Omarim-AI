@@ -7,7 +7,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
 import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const AutonomousLeadGenInputSchema = z.object({
   objective: z.string().describe('The high-level objective for the lead generation task. e.g., "Find 5 local businesses that need a new website."'),
@@ -24,19 +23,23 @@ export async function autonomousLeadGen(input: AutonomousLeadGenInput): Promise<
   return autonomousLeadGenFlow(input);
 }
 
-const autonomousLeadGenPrompt = ai.definePrompt({
-  name: 'autonomousLeadGenPrompt',
-  input: { schema: AutonomousLeadGenInputSchema },
-  tools: [findAndQualifyLeads],
-  model: googleAI('gemini-pro'),
-  system: `You are an autonomous business development agent.
-Your goal is to find and qualify leads based on a high-level objective.
-You MUST use the findAndQualifyLeads tool to achieve this.
-Your final output should be ONLY the direct result from the tool call. Do not wrap it in any other object.
+// This prompt's only job is to figure out the right parameters for the findAndQualifyLeads tool.
+const parameterExtractionPrompt = ai.definePrompt({
+    name: 'parameterExtractionPrompt',
+    input: { schema: AutonomousLeadGenInputSchema },
+    output: { schema: findAndQualifyLeads.inputSchema },
+    system: `You are an AI assistant. Your task is to extract the parameters for the 'findAndQualifyLeads' tool from a user's high-level objective.
 
-Objective: {{{objective}}}
+The tool has the following input schema:
+- count: The desired number of qualified leads to find.
+- leadQuery: A query describing the type of leads to look for.
+
+From the user's objective, determine the 'count' and the 'leadQuery'.
+
+User's Objective: {{{objective}}}
 `,
 });
+
 
 const autonomousLeadGenFlow = ai.defineFlow(
   {
@@ -45,18 +48,17 @@ const autonomousLeadGenFlow = ai.defineFlow(
     outputSchema: AutonomousLeadGenOutputSchema,
   },
   async (input) => {
-    const llmResponse = await autonomousLeadGenPrompt(input);
-    const toolRequest = llmResponse.toolRequest;
-    
-    if (!toolRequest || !toolRequest.input) {
-        throw new Error("The AI agent failed to identify the required tool or parameters for the objective.");
+    // Step 1: Use a simple prompt to determine the parameters for the tool.
+    const { output: toolParams } = await parameterExtractionPrompt(input);
+
+    if (!toolParams) {
+        throw new Error("The AI agent failed to determine the parameters for the lead generation tool.");
     }
     
-    // The AI has decided to call the 'findAndQualifyLeads' tool with specific inputs.
-    // We now execute that tool call with the input the AI provided.
-    // @ts-ignore - The input schema is validated by the tool itself.
-    const leads = await findAndQualifyLeads(toolRequest.input);
+    // Step 2: Directly call the tool with the determined parameters.
+    const leads = await findAndQualifyLeads(toolParams);
 
+    // Step 3: Return the structured output.
     return {
       qualifiedLeads: leads,
       summary: `I have analyzed the request and identified ${leads.length} potential leads. Each has been qualified based on their role and the potential need for AI-powered web services.`,

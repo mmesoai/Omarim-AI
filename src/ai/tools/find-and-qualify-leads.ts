@@ -28,7 +28,7 @@ const LeadGenerationInputSchema = z.object({
 const leadGenerationPrompt = ai.definePrompt({
   name: 'leadGenerationPrompt',
   input: { schema: LeadGenerationInputSchema },
-  output: { schema: z.object({ leads: z.array(QualifiedLeadSchema) }) },
+  output: { schema: z.array(QualifiedLeadSchema) }, // Output is a direct array
   model: googleAI('gemini-pro'),
   prompt: `You are an expert business development researcher. Your task is to generate a list of {{{count}}} plausible, yet fictional, business leads that match the following query: "{{{leadQuery}}}".
 
@@ -40,7 +40,7 @@ For each lead, you must:
     - If they have a website, the reason should focus on upgrading it with AI features like chatbots, personalization, or automation to gain a competitive edge.
 4.  Generate a plausible, fictional email address for the lead.
 
-Return the list of leads in the specified JSON format.
+Return the list of leads as a direct JSON array, without any wrapper object.
 `,
 });
 
@@ -55,10 +55,11 @@ export const findAndQualifyLeads = ai.defineTool(
   async (input) => {
     const { output } = await leadGenerationPrompt(input);
     
-    if (!output?.leads) {
+    if (!output) {
       return [];
     }
 
-    return output.leads;
+    return output;
   }
 );
+
