@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An autonomous AI agent flow for lead generation and qualification.
@@ -27,7 +28,6 @@ export async function autonomousLeadGen(input: AutonomousLeadGenInput): Promise<
 const autonomousLeadGenPrompt = ai.definePrompt({
   name: 'autonomousLeadGenPrompt',
   input: { schema: AutonomousLeadGenInputSchema },
-  // Corrected the output schema to reference the tool's output schema.
   output: { schema: z.object({ qualifiedLeads: z.array(findAndQualifyLeads.outputSchema) }) },
   tools: [findAndQualifyLeads],
   model: googleAI('gemini-pro'),
@@ -49,12 +49,9 @@ const autonomousLeadGenFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await autonomousLeadGenPrompt(input);
-    const toolResponse = llmResponse.toolRequest?.tool.toString();
-
-    // Note: In a real scenario, you'd execute the tool call here.
-    // For now, we are assuming the LLM's conceptual tool call is the result.
-    // This is a conceptual leap for demonstration. In a production system,
-    // you would execute the tool and then process its actual output.
+    
+    // The `findAndQualifyLeads` tool is called by the LLM. 
+    // We can extract the leads from the structured output.
     const leads = (llmResponse.output?.qualifiedLeads || []) as QualifiedLead[];
     
     return {
