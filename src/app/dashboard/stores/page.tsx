@@ -385,7 +385,7 @@ export default function StoresPage() {
           </CardContent>
           <CardFooter className="flex gap-2">
              <Button onClick={handleApproveAndLaunch} disabled={isCampaignLoading || !!campaignAssets}>
-                {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4" />}
+                {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                 {!!campaignAssets ? "Campaign Launched" : "Approve & Launch Campaign"}
              </Button>
              <Button variant="ghost" onClick={() => setTrendingProduct(null)}>Reject</Button>
@@ -424,7 +424,7 @@ export default function StoresPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    ))}\
+                    ))}
                 </div>
                 <div className="space-y-6">
                     <div>

@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from 'next/cache';
-import { findTrendingProductsFlow } from "@/ai/tools/find-trending-products";
+import { findTrendingProducts as findTrendingProductsFlow } from "@/ai/tools/find-trending-products";
 import { generateProductCampaign as generateProductCampaignFlow, type GenerateProductCampaignOutput } from "@/ai/flows/generate-product-campaign";
 import { 
     GenerateProductCampaignInputSchema, 
@@ -17,7 +17,7 @@ import { initiateOutreach as initiateOutreachFlow } from '@/ai/flows/initiate-ou
 
 export type TrendingProduct = GenerateProductCampaignInput;
 
-export async function findTrendingProducts(category: string): Promise<TrendingProduct> {
+export async function findTrendingProducts(category: string): Promise<GenerateProductCampaignInput> {
     return await findTrendingProductsFlow({ category });
 }
 
