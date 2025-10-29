@@ -475,12 +475,20 @@ export default function DashboardPage() {
                     </Button>
               </CardHeader>
               {isFindingProduct && (
-                  <CardContent className="flex items-center justify-center py-12">
-                      <Loader2 className="h-8 w-8 animate-spin" />
-                      <p className="ml-4 text-muted-foreground">Searching for opportunities...</p>
+                  <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
+                      </div>
+                      <Separator />
+                       <div className="space-y-2">
+                        <Skeleton className="h-5 w-1/3" />
+                        <Skeleton className="h-4 w-full" />
+                      </div>
                   </CardContent>
               )}
-              {trendingProduct && (
+              {trendingProduct && !isFindingProduct && (
                   <>
                       <CardContent className="space-y-4">
                             <div>
