@@ -13,9 +13,6 @@ import {
     where,
     getDocs,
     writeBatch,
-    doc,
-    addDoc,
-    updateDoc
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
@@ -93,47 +90,5 @@ export async function addLeadsToSequence(params: {
   } catch (error: any) {
     console.error("Error adding leads to sequence (client-side):", error);
     return { success: false, message: `An internal error occurred: ${error.message}` };
-  }
-}
-
-type LeadData = {
-  firstName?: string;
-  lastName?: string;
-  company?: string;
-  domain?: string;
-  email?: string;
-  status?: string;
-};
-
-/**
- * Saves or updates a lead in the database using the client SDK.
- * @param {object} params - The parameters for the operation.
- * @param {string} params.userId - The ID of the user.
- * @param {LeadData} params.leadData - The data for the lead.
- * @param {string} [params.leadId] - The ID of the lead to update.
- * @returns {Promise<{leadId: string}>} - The ID of the created or updated lead.
- */
-export async function saveLead(params: {
-  userId: string;
-  leadData: LeadData;
-  leadId?: string;
-}): Promise<{ leadId: string }> {
-  const { userId, leadData, leadId } = params;
-  const db = getClientFirestore();
-
-  try {
-    const leadsCollection = collection(db, `users/${userId}/leads`);
-    
-    if (leadId) {
-      const leadDocRef = doc(leadsCollection, leadId);
-      await updateDoc(leadDocRef, leadData);
-      return { leadId };
-    } else {
-      const leadDocRef = await addDoc(leadsCollection, leadData);
-      return { leadId: leadDocRef.id };
-    }
-  } catch (error: any) {
-    console.error("Error saving lead (client-side):", error);
-    throw new Error(`An internal error occurred while saving the lead: ${error.message}`);
   }
 }
