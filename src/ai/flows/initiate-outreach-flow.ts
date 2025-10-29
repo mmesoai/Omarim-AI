@@ -72,6 +72,7 @@ const initiateOutreachFlow = ai.defineFlow(
   },
   async ({ lead }) => {
     // Step 1: Generate the personalized email using an AI prompt
+    // The prompt expects the lead data to be nested under a 'lead' key.
     const { output: emailContent } = await generateEmailPrompt({ lead });
 
     if (!emailContent) {
@@ -89,7 +90,7 @@ const initiateOutreachFlow = ai.defineFlow(
     }
 
     return {
-      emailSent: sendResult.success,
+      emailSent: sendResult.success, 
       message: sendResult.success 
         ? `Successfully sent an introductory email to ${lead.name}.`
         : `Failed to send email to ${lead.name}.`,
