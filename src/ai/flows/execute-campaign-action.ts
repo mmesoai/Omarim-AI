@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Executes a campaign action using natural language commands.
@@ -8,6 +9,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { manageOutreachSequence } from '@/ai/tools/manage-outreach-sequence';
+import { addLeadsToSequence } from '@/services/firestore-service';
 import { googleAI } from '@genkit-ai/google-genai';
 
 const ExecuteCampaignActionInputSchema = z.object({
@@ -28,19 +30,18 @@ export async function executeCampaignAction(input: ExecuteCampaignActionInput): 
 const executeCampaignActionPrompt = ai.definePrompt({
   name: 'executeCampaignActionPrompt',
   input: { schema: ExecuteCampaignActionInputSchema },
-  output: { schema: ExecuteCampaignActionOutputSchema },
+  // The output is just the tool's input schema. The LLM's job is to figure out the parameters.
+  output: { schema: manageOutreachSequence.inputSchema },
   tools: [manageOutreachSequence],
   model: googleAI('gemini-pro'),
   system: `You are an AI assistant that manages marketing campaigns.
-You will be given a command from a user and a userId.
-Your task is to use the available tools to execute the command.
-The userId is required for all tool calls.
-Based on the result of the tool call, formulate a concise summary to return to the user.
+You will be given a command from a user.
+Your task is to determine the correct parameters for the 'manageOutreachSequence' tool based on the user's command.
+Do not call the tool. Simply output the parameters it would need.
 
 User Command: {{{command}}}
-User ID: {{{userId}}}
 
-Analyze the command, call the appropriate tool with the correct parameters (including the userId), and then summarize the outcome.`,
+Analyze the command and determine the 'sequenceName' and 'leadStatus' parameters.`,
 });
 
 
@@ -50,8 +51,24 @@ const executeCampaignActionFlow = ai.defineFlow(
     inputSchema: ExecuteCampaignActionInputSchema,
     outputSchema: ExecuteCampaignActionOutputSchema,
   },
-  async (input) => {
-    const { output } = await executeCampaignActionPrompt(input);
-    return output!;
+  async ({ command, userId }) => {
+    // Step 1: Use the LLM to figure out the parameters from the natural language command.
+    const { output: toolParams } = await executeCampaignActionPrompt({ command, userId });
+
+    if (!toolParams) {
+        throw new Error("Could not determine the parameters for the campaign action.");
+    }
+    
+    // Step 2: Call the actual, secure client-side database function with the determined parameters.
+    const result = await addLeadsToSequence({
+        userId,
+        sequenceName: toolParams.sequenceName,
+        leadStatus: toolParams.leadStatus,
+    });
+
+    // Step 3: Return the result from the secure function to the user.
+    return {
+        result: result.success ? `Action completed: ${result.message}` : `Action failed: ${result.message}`,
+    };
   }
 );

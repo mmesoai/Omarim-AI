@@ -1,25 +1,38 @@
+
 'use server';
 /**
- * @fileOverview A server-side service for interacting with Firestore.
- * This service uses the Firebase Admin SDK to perform backend operations.
+ * @fileOverview A client-side service for interacting with Firestore.
+ * This service uses the standard Firebase client SDK to perform operations,
+ * ensuring that all actions are subject to Firestore Security Rules.
  */
 
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initializeApp, getApps, App } from 'firebase-admin/app';
-import { firebaseConfig } from '@/firebase/config';
+import {
+    getFirestore,
+    collection,
+    query,
+    where,
+    getDocs,
+    writeBatch,
+    doc,
+    addDoc,
+    updateDoc
+} from 'firebase/firestore';
+import { initializeFirebase } from '@/firebase';
 
-// Initialize Firebase Admin SDK
-function getFirebaseAdminApp(): App {
-  if (getApps().length > 0) {
-    return getApps()[0]!;
-  }
-  return initializeApp({
-    projectId: firebaseConfig.projectId
-  });
+
+// This function should be called within a React component or a server action
+// where the Firebase context is available.
+function getClientFirestore() {
+    const services = initializeFirebase();
+    if (!services) {
+        throw new Error("Firebase has not been initialized. This function must be called on the client.");
+    }
+    return services.firestore;
 }
 
 /**
  * Adds leads of a specific status to a given outreach sequence for a user.
+ * This is a client-side operation and is subject to security rules.
  * @param {object} params - The parameters for the operation.
  * @param {string} params.userId - The ID of the user.
  * @param {string} params.sequenceName - The name of the outreach sequence.
@@ -32,53 +45,43 @@ export async function addLeadsToSequence(params: {
   leadStatus: string;
 }): Promise<{ success: boolean; message: string; leadsAdded?: number }> {
   const { userId, sequenceName, leadStatus } = params;
-  const db = getFirestore(getFirebaseAdminApp());
+  const db = getClientFirestore();
 
   try {
-    // 1. Find the outreach sequence by name for the user
-    const sequenceQuery = db
-      .collection(`users/${userId}/outreachSequences`)
-      .where('name', '==', sequenceName)
-      .limit(1);
-      
-    const sequenceSnapshot = await sequenceQuery.get();
+    const sequenceQuery = query(
+      collection(db, `users/${userId}/outreachSequences`),
+      where('name', '==', sequenceName)
+    );
+    const sequenceSnapshot = await getDocs(sequenceQuery);
 
     if (sequenceSnapshot.empty) {
       return { success: false, message: `Outreach sequence named '${sequenceName}' not found.` };
     }
     const sequenceDoc = sequenceSnapshot.docs[0];
-    const sequenceId = sequenceDoc.id;
-    const sequenceData = sequenceDoc.data();
-    const existingLeadIds = new Set(sequenceData.leadIds || []);
+    const existingLeadIds = new Set(sequenceDoc.data().leadIds || []);
 
-    // 2. Find all leads with the specified status for the user
-    const leadsQuery = db
-      .collection(`users/${userId}/leads`)
-      .where('status', '==', leadStatus);
-      
-    const leadsSnapshot = await leadsQuery.get();
-    
+    const leadsQuery = query(
+      collection(db, `users/${userId}/leads`),
+      where('status', '==', leadStatus)
+    );
+    const leadsSnapshot = await getDocs(leadsQuery);
+
     if (leadsSnapshot.empty) {
-        return { success: false, message: `No leads found with status '${leadStatus}'.` };
+      return { success: false, message: `No leads found with status '${leadStatus}'.` };
     }
 
-    // 3. Filter out leads that are already in the sequence
     const leadsToAdd = leadsSnapshot.docs.filter(doc => !existingLeadIds.has(doc.id));
-    
+
     if (leadsToAdd.length === 0) {
       return { success: true, message: `All leads with status '${leadStatus}' are already in the sequence.`, leadsAdded: 0 };
     }
 
     const leadIdsToAdd = leadsToAdd.map(doc => doc.id);
-
-    // 4. Add the new lead IDs to the sequence and update their status
-    const batch = db.batch();
-
-    // Update sequence
     const newLeadIds = Array.from(new Set([...Array.from(existingLeadIds), ...leadIdsToAdd]));
+
+    const batch = writeBatch(db);
     batch.update(sequenceDoc.ref, { leadIds: newLeadIds });
 
-    // Update leads
     for (const leadDoc of leadsToAdd) {
       batch.update(leadDoc.ref, { status: 'Contacted' });
     }
@@ -88,11 +91,10 @@ export async function addLeadsToSequence(params: {
     return { success: true, message: `Added ${leadsToAdd.length} leads.`, leadsAdded: leadsToAdd.length };
 
   } catch (error: any) {
-    console.error("Error adding leads to sequence:", error);
+    console.error("Error adding leads to sequence (client-side):", error);
     return { success: false, message: `An internal error occurred: ${error.message}` };
   }
 }
-
 
 type LeadData = {
   firstName?: string;
@@ -104,8 +106,7 @@ type LeadData = {
 };
 
 /**
- * Saves or updates a lead in the database.
- * If a leadId is provided, it updates the existing lead. Otherwise, it creates a new one.
+ * Saves or updates a lead in the database using the client SDK.
  * @param {object} params - The parameters for the operation.
  * @param {string} params.userId - The ID of the user.
  * @param {LeadData} params.leadData - The data for the lead.
@@ -118,30 +119,21 @@ export async function saveLead(params: {
   leadId?: string;
 }): Promise<{ leadId: string }> {
   const { userId, leadData, leadId } = params;
-  const db = getFirestore(getFirebaseAdminApp());
+  const db = getClientFirestore();
 
   try {
-    const leadsCollection = db.collection(`users/${userId}/leads`);
+    const leadsCollection = collection(db, `users/${userId}/leads`);
     
     if (leadId) {
-      // Update existing lead
-      const leadDocRef = leadsCollection.doc(leadId);
-      await leadDocRef.update({
-        ...leadData,
-        updatedAt: FieldValue.serverTimestamp(),
-      });
+      const leadDocRef = doc(leadsCollection, leadId);
+      await updateDoc(leadDocRef, leadData);
       return { leadId };
     } else {
-      // Create new lead
-      const leadDocRef = await leadsCollection.add({
-        ...leadData,
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp(),
-      });
+      const leadDocRef = await addDoc(leadsCollection, leadData);
       return { leadId: leadDocRef.id };
     }
   } catch (error: any) {
-    console.error("Error saving lead:", error);
+    console.error("Error saving lead (client-side):", error);
     throw new Error(`An internal error occurred while saving the lead: ${error.message}`);
   }
 }

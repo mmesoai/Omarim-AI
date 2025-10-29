@@ -1,18 +1,18 @@
 
 /**
  * @fileOverview A Genkit tool for managing outreach sequences in Firestore.
+ * This tool's purpose is to be called by the LLM. The actual database
+ * logic is handled securely in the calling flow.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { addLeadsToSequence } from '@/services/firestore-service';
 
 export const manageOutreachSequence = ai.defineTool(
   {
     name: 'manageOutreachSequence',
     description: 'Manages outreach sequences. Use this to add leads with a specific status to a named outreach sequence.',
     inputSchema: z.object({
-      userId: z.string().describe('The ID of the user for whom the action is being performed.'),
       sequenceName: z.string().describe('The name of the outreach sequence to modify.'),
       leadStatus: z.string().describe("The status of the leads to be added to the sequence (e.g., 'New')."),
     }),
@@ -23,28 +23,13 @@ export const manageOutreachSequence = ai.defineTool(
     }),
   },
   async (input) => {
-    try {
-      const result = await addLeadsToSequence({
-        userId: input.userId,
-        sequenceName: input.sequenceName,
-        leadStatus: input.leadStatus,
-      });
-
-      if (!result.success) {
-        return { success: false, message: result.message };
-      }
-
-      return {
-        success: true,
-        message: `Successfully added ${result.leadsAdded} leads to the '${input.sequenceName}' sequence.`,
-        leadsAdded: result.leadsAdded,
-      };
-    } catch (error: any) {
-      console.error('Error in manageOutreachSequence tool:', error);
-      return {
-        success: false,
-        message: `An error occurred: ${error.message || 'Unknown error'}`,
-      };
-    }
+    // This tool is now just a schema placeholder.
+    // The actual implementation is securely handled in the calling flow.
+    // We return a simulated success to satisfy the LLM's expectation,
+    // but the real work happens elsewhere.
+    return {
+      success: true,
+      message: `Simulated success for adding leads to '${input.sequenceName}'. The real operation is handled securely.`,
+    };
   }
 );

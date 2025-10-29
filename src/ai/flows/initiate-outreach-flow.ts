@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An autonomous AI agent flow for initiating outreach to a qualified lead.
@@ -72,7 +73,7 @@ const initiateOutreachFlow = ai.defineFlow(
     outputSchema: InitiateOutreachOutputSchema,
   },
   async ({ lead, userId }) => {
-    // Step 1: Save the lead to the database
+    // Step 1: Save the lead to the database using the secure client-side service
     const { leadId } = await saveLead({
       userId,
       leadData: {
@@ -110,7 +111,6 @@ const initiateOutreachFlow = ai.defineFlow(
         leadData: { status: 'Contacted' },
       });
     }
-
 
     return {
       leadId,
