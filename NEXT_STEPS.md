@@ -29,82 +29,73 @@ The application has been fully integrated with the SendGrid SDK. All you need to
 
 ---
 
-## 2. Activate E-commerce Data Sync (Ready for Keys)
+## 2. Activate E-commerce Data Sync (Developer Required)
 
-The UI and service layer for syncing with Shopify are complete. Provide your store credentials to bring in live product data.
+The user interface for managing stores and viewing products is complete. The next step is to build the backend logic to fetch data from live stores.
 
-**Purpose:** To automatically sync product listings from your Shopify store into the "Product Sourcing" dashboard.
+**Purpose:** To automatically sync product listings from your Shopify, WooCommerce, or other e-commerce stores into the "Product Sourcing" dashboard.
 
 **Instructions:**
 
-1.  **Obtain API Credentials:** In your Shopify store's admin panel, go to "Apps" -> "Develop apps" -> "Create an app". Give it a name (e.g., "Omarim AI Sync"). In the "API credentials" tab, configure "Admin API access scopes" and grant `read_products` permissions. Install the app to get your Admin API access token.
-2.  **Store Credentials Securely:** Add these credentials to your `.env` file.
+1.  **Obtain API Credentials:** For each store you want to connect (e.g., Shopify), go to its admin panel and create "Private App" or "Custom App" credentials to get an API Key and API URL.
+2.  **Store Credentials Securely:** Add these credentials to your `.env` file. For example, for a Shopify store:
 
     ```bash
     # --- Shopify Integration ---
     SHOPIFY_STORE_URL="https://your-store-name.myshopify.com"
-    SHOPIFY_API_KEY="shpat_xxxxxxxxxxxxxxxxxxxx" # Your Admin API access token
+    SHOPIFY_API_KEY="shpat_xxxxxxxxxxxxxxxxxxxx"
     ```
 
-**Result:** The "E-commerce" page will be able to fetch and display real products from your Shopify store.
+3.  **Build the Service Logic (For a developer):** A developer would need to create a new service file (e.g., `src/services/shopify-service.ts`) that uses these credentials to make API calls to Shopify to fetch product data. This service would then be used to populate the Firestore database, which the UI already reads from.
 
 ---
 
-## 3. Activate Social Media Publishing (Ready for Keys)
+## 3. Activate Social Media Publishing (Developer Required)
 
-The AI Social Publisher is fully functional for generating content and the service for publishing to X (Twitter) is complete. Provide developer tokens to enable live posting.
+The "AI Social Publisher" is fully functional for generating content. The final step is to build the logic to post this content to social media platforms.
 
-**Purpose:** To enable one-click publishing of your AI-generated content to X (Twitter) and other platforms.
+**Purpose:** To enable one-click publishing of your AI-generated content to X (Twitter), LinkedIn, Facebook, and other platforms.
 
-**Instructions (for X/Twitter):**
+**Instructions:**
 
-1.  **Apply for a Developer Account:** Go to [developer.twitter.com](https://developer.twitter.com/) and apply for a developer account.
-2.  **Create an App:** Create a new app with "Read and Write" permissions.
-3.  **Generate Keys and Tokens:** Generate an API Key, API Key Secret, Access Token, and Access Token Secret.
-4.  **Update Your `.env` File:** Add the generated credentials to your `.env` file.
-
-    ```bash
-    # --- Twitter/X API Keys ---
-    TWITTER_API_KEY="YOUR_API_KEY"
-    TWITTER_API_SECRET="YOUR_API_KEY_SECRET"
-    TWITTER_ACCESS_TOKEN="YOUR_ACCESS_TOKEN"
-    TWITTER_ACCESS_SECRET="YOUR_ACCESS_TOKEN_SECRET"
-    ```
-
-**Result:** The "Publish" button for Twitter posts will now post directly to your account. For other platforms, a developer would follow a similar process to add their respective services.
+1.  **Create Developer Apps:** For each platform (e.g., X, LinkedIn), you will need to apply for a developer account and create a new "app".
+2.  **Implement OAuth 2.0 Flow (For a developer):** Social media integrations require a secure authentication process called OAuth 2.0. A developer would need to build the UI flow (pop-ups, redirects) that allows a user to grant Omarim AI permission to post on their behalf.
+3.  **Build the API Service (For a developer):** After authentication, a developer would write the code in a new service file (e.g., `src/services/twitter-service.ts`) to take the generated content and use the platform's API to publish it as a new post.
 
 ---
 
-## 4. Activate Data Enrichment (Ready for Keys)
+## 4. Activate Data Enrichment (Developer Required)
 
-The service for enriching leads via Clearbit is complete.
+The user interface is ready. The next step is to build the service to enrich leads via Clearbit.
 
 **Purpose:** To automatically add valuable company and contact data to your leads.
 
 **Instructions:**
 
 1.  **Get a Clearbit API Key:** Sign up for a Clearbit account and get an API key from your dashboard.
-2.  **Update Your `.env` File:**
+2.  **Store Credentials:** Add the key to your `.env` file.
 
     ```bash
     # --- Data Enrichment ---
     CLEARBIT_API_KEY="YOUR_CLEARBIT_API_KEY"
     ```
+3.  **Build the Service Logic (For a developer):** A developer needs to create a service that uses this key to call the Clearbit Enrichment API and update the lead records in Firestore.
 
 ---
 
-## 5. Activate Print-on-Demand (Ready for Keys)
+## 5. Activate Print-on-Demand (Developer Required)
 
-The service for creating print-on-demand products via Printify is ready.
+The UI is ready. The next step is to build the service for creating print-on-demand products via Printify.
 
 **Purpose:** To autonomously create and publish new custom apparel or other print-on-demand products.
 
 **Instructions:**
 
 1.  **Get a Printify API Key:** In your Printify account, go to "Settings" -> "API" to generate a new Personal Access Token.
-2.  **Update Your `.env` File:**
+2.  **Store Credentials:** Add the key to your `.env` file.
 
     ```bash
     # --- Fulfillment ---
     PRINTIFY_API_KEY="YOUR_PRINTIFY_API_KEY"
     ```
+3.  **Build the Service Logic (For a developer):** A developer needs to create a service that uses this key to call the Printify API to create and publish new products to a selected store.

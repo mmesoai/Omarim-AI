@@ -16,7 +16,6 @@ import {
   Package,
   Send,
   Settings,
-  BotMessageSquare,
   Share2,
   ShoppingBag,
 } from "lucide-react"
@@ -29,7 +28,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarGroupLabel,
   SidebarSeparator
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
@@ -52,7 +50,6 @@ const featureNav = [
 const secondaryNav = [
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/voice", icon: Mic, label: "Voice Tools" },
-  { href: "/dashboard/new-site", icon: BotMessageSquare, label: "Intake Form" },
 ];
 
 const NavGroup = ({
