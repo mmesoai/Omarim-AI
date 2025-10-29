@@ -33,9 +33,7 @@ export async function initiateOutreach(
 const generateEmailPrompt = ai.definePrompt({
   name: 'generateAutonomousEmailPrompt',
   input: {
-    schema: z.object({
-      lead: findAndQualifyLeads.outputSchema.element,
-    }),
+    schema: InitiateOutreachInputSchema, // The prompt now expects the same input as the flow
   },
   output: {
     schema: z.object({
@@ -72,7 +70,6 @@ const initiateOutreachFlow = ai.defineFlow(
   },
   async ({ lead }) => {
     // Step 1: Generate the personalized email using an AI prompt
-    // The prompt expects the lead data to be nested under a 'lead' key.
     const { output: emailContent } = await generateEmailPrompt({ lead });
 
     if (!emailContent) {
