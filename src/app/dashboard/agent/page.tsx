@@ -9,19 +9,23 @@ import {
   Bot,
   Loader2,
   User,
-  ChevronRight,
-  CheckCircle2,
-  XCircle,
-  FileCheck2,
-  Building,
   Sparkles,
+  Building,
+  Briefcase,
+  ChevronRight,
+  XCircle,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   autonomousLeadGen,
   type AutonomousLeadGenOutput,
 } from '@/ai/flows/autonomous-lead-gen-flow';
+import { initiateOutreach } from '@/ai/flows/initiate-outreach-flow';
+import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { saveLeadAction, updateLeadStatusAction } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -40,8 +44,17 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const agentFormSchema = z.object({
   objective: z
@@ -51,8 +64,11 @@ const agentFormSchema = z.object({
 
 export default function AgentPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [outreachState, setOutreachState] = useState<{ [key: number]: 'loading' | 'done' }>({});
   const [agentResponse, setAgentResponse] =
     useState<AutonomousLeadGenOutput | null>(null);
+  
+  const [leadForConfirmation, setLeadForConfirmation] = useState<{lead: QualifiedLead, index: number} | null>(null);
 
   const { user } = useUser();
   const { toast } = useToast();
@@ -66,32 +82,11 @@ export default function AgentPage() {
   });
 
   async function onSubmit(values: z.infer<typeof agentFormSchema>) {
-    if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Error',
-        description: 'You must be logged in to run the agent.',
-      });
-      return;
-    }
-
     setIsLoading(true);
     setAgentResponse(null);
-    toast({
-        title: 'Autonomous Agent Activated',
-        description: 'The AI is now executing your objective...',
-    });
-
     try {
-      const response = await autonomousLeadGen({
-        objective: values.objective,
-        userId: user.uid,
-      });
+      const response = await autonomousLeadGen({ objective: values.objective });
       setAgentResponse(response);
-      toast({
-        title: 'Agent has completed its task!',
-        description: response.summary,
-      });
     } catch (error) {
       console.error('Autonomous Agent failed:', error);
       toast({
@@ -104,7 +99,112 @@ export default function AgentPage() {
     }
   }
 
+  const handleInitiateOutreach = async () => {
+    if (!leadForConfirmation || !user) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'User or lead information is missing.',
+      });
+      return;
+    }
+
+    const { lead, index } = leadForConfirmation;
+    setOutreachState(prev => ({...prev, [index]: 'loading'}));
+    setLeadForConfirmation(null); // Close dialog
+
+    try {
+      // Step 1: Save the lead to the database via Server Action
+      const { leadId, error: saveError } = await saveLeadAction({ userId: user.uid, lead });
+
+      if (saveError || !leadId) {
+        throw new Error(saveError || 'Failed to save lead.');
+      }
+      
+      toast({
+        title: 'Lead Saved',
+        description: `${lead.name} has been added to your pipeline.`,
+      });
+      
+      // Step 2: Generate and send the email
+      const outreachResult = await initiateOutreach({ lead });
+      
+      toast({
+        title: outreachResult.emailSent ? 'Email Sent!' : 'Email Failed',
+        description: outreachResult.message,
+        variant: outreachResult.emailSent ? 'default' : 'destructive',
+      });
+
+      // Step 3: If email was sent, update the lead's status
+      if (outreachResult.emailSent) {
+          await updateLeadStatusAction({ userId: user.uid, leadId, status: 'Contacted' });
+      }
+
+      setOutreachState(prev => ({...prev, [index]: 'done'}));
+    } catch (error: any) {
+      console.error('Engagement process failed:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Engagement Failed',
+        description: error.message || 'Could not complete the engagement for this lead.',
+      });
+      setOutreachState(prev => ({...prev, [index]: 'loading'})); // Reset to allow retry
+    }
+  };
+
+
+  const LeadCard = ({ lead, index }: { lead: QualifiedLead; index: number }) => {
+    const isProcessing = outreachState[index] === 'loading';
+    const isDone = outreachState[index] === 'done';
+
+    return (
+    <Card className="bg-card/50 transition-all hover:bg-card/80 hover:shadow-md">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-lg">{lead.name}</CardTitle>
+            <CardDescription>{lead.company}</CardDescription>
+          </div>
+          <Badge variant="secondary">{lead.title}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Building className="mr-2 h-4 w-4" />
+          <span>{lead.industry}</span>
+        </div>
+        <div className="flex items-center text-sm text-muted-foreground">
+          {lead.hasWebsite ? (
+            <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
+          ) : (
+            <XCircle className="mr-2 h-4 w-4 text-red-500" />
+          )}
+          <span>{lead.hasWebsite ? 'Has Website' : 'No Website'}</span>
+        </div>
+        <div className="flex items-start text-sm">
+          <Sparkles className="mr-2 mt-1 h-4 w-4 flex-shrink-0 text-primary" />
+          <p>{lead.qualificationReason}</p>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button
+          className="w-full"
+          onClick={() => setLeadForConfirmation({ lead, index })}
+          disabled={isProcessing || isDone}
+        >
+          {isProcessing ? (
+             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+             <Briefcase className="mr-2 h-4 w-4" />
+          )}
+         {isDone ? 'Engagement Complete' : 'Engage Lead'}
+        </Button>
+      </CardFooter>
+    </Card>
+  )};
+
   return (
+    <>
     <div className="container mx-auto max-w-5xl space-y-8 py-8">
       <div className="text-center">
         <h1 className="font-headline text-3xl font-bold md:text-4xl">
@@ -160,9 +260,8 @@ export default function AgentPage() {
       </Card>
 
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+        <div className="flex justify-center py-10">
           <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="mt-4">Agent is actively working on your objective...</p>
         </div>
       )}
 
@@ -171,60 +270,48 @@ export default function AgentPage() {
           <CardHeader>
             <div className="flex items-center gap-4">
               <Bot className="h-6 w-6 text-primary" />
-              <CardTitle>Agent Execution Report</CardTitle>
+              <CardTitle>Agent Response</CardTitle>
             </div>
             <CardDescription className="pt-2">
               {agentResponse.summary}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Separator className="my-4" />
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {agentResponse.results.map((result) => (
-                <Card
-                  key={result.leadId}
-                  className="bg-card/50 flex flex-col"
-                >
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-base">{result.lead.name}</CardTitle>
-                            <CardDescription>{result.lead.company}</CardDescription>
-                        </div>
-                        <Badge variant="secondary">{result.lead.title}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3 flex-grow">
-                     <div className="flex items-start text-sm">
-                        <Sparkles className="mr-2 mt-1 h-4 w-4 flex-shrink-0 text-primary" />
-                        <p>{result.lead.qualificationReason}</p>
-                    </div>
-                  </CardContent>
-                   <CardFooter className="flex flex-col items-start gap-3 bg-muted/50 p-4">
-                     <div className="flex items-center text-sm">
-                      <FileCheck2 className="mr-2 h-4 w-4 text-primary" />
-                      <p>Lead saved to database.</p>
-                    </div>
-                     <div className="flex items-center text-sm">
-                      {result.emailSent ? (
-                        <>
-                            <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
-                            <p>Outreach email sent.</p>
-                        </>
-                      ) : (
-                        <>
-                            <XCircle className="mr-2 h-4 w-4 text-red-500" />
-                            <p>Email sending failed.</p>
-                        </>
-                      )}
-                    </div>
-                  </CardFooter>
-                </Card>
+              {agentResponse.qualifiedLeads.map((lead, index) => (
+                <LeadCard key={index} lead={lead} index={index}/>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
     </div>
+    
+      <AlertDialog open={!!leadForConfirmation} onOpenChange={(open) => !open && setLeadForConfirmation(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="text-yellow-400" />
+                Confirm Action
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will save the lead to your database and send a personalized outreach email drafted by Omarim AI. This action cannot be undone. Are you sure?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {leadForConfirmation && (
+             <div className="text-sm rounded-md border bg-muted p-4">
+                 <p className="font-bold">{leadForConfirmation.lead.name}</p>
+                 <p className="text-muted-foreground">{leadForConfirmation.lead.company}</p>
+             </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>No, cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleInitiateOutreach}>
+              Yes, engage lead
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

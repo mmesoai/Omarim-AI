@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useUser, useFirestore, useCollection, updateDocumentNonBlocking, useMemoFirebase } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,13 +21,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Mail } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { updateLeadStatusAction } from "@/app/actions";
+import { initiateOutreach } from "@/ai/flows/initiate-outreach-flow";
 
 export default function LeadsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const router = useRouter();
   const { toast } = useToast();
 
   const leadsCollectionRef = useMemoFirebase(() => {
@@ -38,19 +38,43 @@ export default function LeadsPage() {
   const { data: leads, isLoading } = useCollection(leadsCollectionRef);
 
   
-  const handleDraftEmail = (lead: any) => {
-    if (!user || !firestore || !lead.id) return;
+  const handleInitiateEmail = async (lead: any) => {
+    if (!user || !lead.id) return;
     
-    const leadDocRef = doc(firestore, `users/${user.uid}/leads`, lead.id);
-    updateDocumentNonBlocking(leadDocRef, { status: 'Contacted' });
-
     toast({
-      title: "Status Updated",
-      description: `${lead.firstName} ${lead.lastName} has been marked as 'Contacted'. The Autonomous Agent is drafting an email.`,
+      title: "Initiating Email",
+      description: `Drafting and sending a personalized email to ${lead.firstName}...`,
     });
-    
-    const objective = `Draft a personalized outreach email to ${lead.firstName} ${lead.lastName}, the CEO of ${lead.company}, about their need for a new AI-powered website.`;
-    router.push(`/dashboard/agent?objective=${encodeURIComponent(objective)}`);
+
+    try {
+        const outreachResult = await initiateOutreach({ lead: {
+            name: `${lead.firstName} ${lead.lastName}`,
+            company: lead.company,
+            email: lead.email,
+            // These fields are not strictly necessary for the email but are part of the type
+            title: 'CEO', 
+            industry: 'Tech',
+            qualificationReason: 'Follow-up from lead list',
+            hasWebsite: true,
+        }});
+        
+        toast({
+            title: outreachResult.emailSent ? 'Email Sent!' : 'Email Failed',
+            description: outreachResult.message,
+            variant: outreachResult.emailSent ? 'default' : 'destructive',
+        });
+
+        if (outreachResult.emailSent) {
+            await updateLeadStatusAction({ userId: user.uid, leadId: lead.id, status: 'Contacted' });
+        }
+
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Email Failed',
+            description: error.message || 'Could not send the email.',
+        });
+    }
   };
 
   return (
@@ -98,8 +122,8 @@ export default function LeadsPage() {
                   <TableCell>
                     <Badge variant={
                       lead.status === "Interested" ? "default" : 
-                      lead.status === "Contacted" ? "default" :
-                      lead.status === "Replied" ? "default" :
+                      lead.status === "Contacted" ? "default" : 
+                      lead.status === "Replied" ? "default" : 
                       lead.status === "New" ? "secondary" : 
                       lead.status === "Not Interested" ? "destructive" : "outline"
                     }
@@ -113,13 +137,13 @@ export default function LeadsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDraftEmail(lead)} disabled={lead.status === 'Contacted'}>
+                    <Button variant="ghost" size="icon" onClick={() => handleInitiateEmail(lead)} disabled={lead.status === 'Contacted'}>
                       <Mail className="h-4 w-4" />
                       <span className="sr-only">Draft Email</span>
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))}\
               {!isLoading && (!leads || leads.length === 0) && (
                  <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-10">

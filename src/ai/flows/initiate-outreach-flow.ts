@@ -1,24 +1,22 @@
 
 'use server';
 /**
- * @fileOverview An autonomous AI agent flow for initiating outreach to a qualified lead.
+ * @fileOverview A flow for generating a personalized email and sending it.
+ * This flow no longer interacts with the database directly.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
-import { saveLead } from '@/services/firestore-service';
 import { sendEmail } from '@/ai/tools/send-email';
 import { googleAI } from '@genkit-ai/google-genai';
 
 const InitiateOutreachInputSchema = z.object({
   lead: findAndQualifyLeads.outputSchema.element, // A single qualified lead
-  userId: z.string().describe('The ID of the user initiating the outreach.'),
 });
 export type InitiateOutreachInput = z.infer<typeof InitiateOutreachInputSchema>;
 
 const InitiateOutreachOutputSchema = z.object({
-  leadId: z.string().describe('The ID of the newly saved lead in Firestore.'),
   emailSent: z.boolean().describe('Whether the email was successfully sent.'),
   message: z.string().describe('A summary of the action taken.'),
 });
@@ -72,28 +70,15 @@ const initiateOutreachFlow = ai.defineFlow(
     inputSchema: InitiateOutreachInputSchema,
     outputSchema: InitiateOutreachOutputSchema,
   },
-  async ({ lead, userId }) => {
-    // Step 1: Save the lead to the database using the secure client-side service
-    const { leadId } = await saveLead({
-      userId,
-      leadData: {
-        firstName: lead.name.split(' ')[0] || '',
-        lastName: lead.name.split(' ').slice(1).join(' ') || '',
-        company: lead.company,
-        domain: lead.hasWebsite ? new URL(`http://${lead.company.toLowerCase().replace(/ /g, '')}.com`).hostname : 'unknown.com', // Simulate domain
-        email: lead.email,
-        status: 'New', // Start with New status
-      },
-    });
-
-    // Step 2: Generate the personalized email using an AI prompt
+  async ({ lead }) => {
+    // Step 1: Generate the personalized email using an AI prompt
     const { output: emailContent } = await generateEmailPrompt({ lead });
 
     if (!emailContent) {
       throw new Error('Failed to generate email content.');
     }
 
-    // Step 3: Send the email using the sendEmail tool
+    // Step 2: Send the email using the sendEmail tool
     let sendResult = { success: false, message: 'Failed to send email.' };
     if (emailContent.subject && emailContent.body) {
       sendResult = await sendEmail({
@@ -102,22 +87,12 @@ const initiateOutreachFlow = ai.defineFlow(
         body: emailContent.body,
       });
     }
-    
-    // Step 4: If email was sent successfully, update the lead status to 'Contacted' in Firestore
-    if (sendResult.success) {
-      await saveLead({
-        userId,
-        leadId: leadId, // Pass leadId to update the existing document
-        leadData: { status: 'Contacted' },
-      });
-    }
 
     return {
-      leadId,
       emailSent: sendResult.success,
       message: sendResult.success 
-        ? `Successfully engaged ${lead.name} and sent an introductory email.`
-        : `Saved ${lead.name} as a lead, but failed to send email.`,
+        ? `Successfully sent an introductory email to ${lead.name}.`
+        : `Failed to send email to ${lead.name}.`,
     };
   }
 );
