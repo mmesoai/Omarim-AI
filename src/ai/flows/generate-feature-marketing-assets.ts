@@ -7,7 +7,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
-import { generateMultipleSocialPosts, type GenerateMultipleSocialPostsOutput } from '@/ai/flows/generate-multiple-social-posts';
+import { generateMultipleSocialPosts } from '@/ai/flows/generate-multiple-social-posts';
+import type { GenerateMultipleSocialPostsOutput } from '@/ai/flows/generate-multiple-social-posts';
 
 
 export const GenerateFeatureMarketingAssetsInputSchema = z.object({
