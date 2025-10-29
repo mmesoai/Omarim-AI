@@ -21,11 +21,10 @@ import {
   autonomousLeadGen,
   type AutonomousLeadGenOutput,
 } from '@/ai/flows/autonomous-lead-gen-flow';
-import { initiateOutreach } from '@/ai/flows/initiate-outreach-flow';
 import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { saveLeadAction, updateLeadStatusAction } from '@/app/actions';
+import { initiateOutreach } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -99,7 +98,7 @@ export default function AgentPage() {
     }
   }
 
-  const handleInitiateOutreach = async () => {
+  const handleEngageLead = async () => {
     if (!leadForConfirmation || !user) {
       toast({
         variant: 'destructive',
@@ -114,33 +113,17 @@ export default function AgentPage() {
     setLeadForConfirmation(null); // Close dialog
 
     try {
-      // Step 1: Save the lead to the database via Server Action
-      const { leadId, error: saveError } = await saveLeadAction({ userId: user.uid, lead });
-
-      if (saveError || !leadId) {
-        throw new Error(saveError || 'Failed to save lead.');
-      }
+      // Call the unified server action
+      const result = await initiateOutreach({ userId: user.uid, lead });
       
       toast({
-        title: 'Lead Saved',
-        description: `${lead.name} has been added to your pipeline.`,
+        title: result.success ? 'Engagement Successful' : 'Engagement Partially Failed',
+        description: result.message,
+        variant: result.success ? 'default' : 'destructive',
       });
       
-      // Step 2: Generate and send the email
-      const outreachResult = await initiateOutreach({ lead });
-      
-      toast({
-        title: outreachResult.emailSent ? 'Email Sent!' : 'Email Failed',
-        description: outreachResult.message,
-        variant: outreachResult.emailSent ? 'default' : 'destructive',
-      });
-
-      // Step 3: If email was sent, update the lead's status
-      if (outreachResult.emailSent) {
-          await updateLeadStatusAction({ userId: user.uid, leadId, status: 'Contacted' });
-      }
-
       setOutreachState(prev => ({...prev, [index]: 'done'}));
+
     } catch (error: any) {
       console.error('Engagement process failed:', error);
       toast({
@@ -148,7 +131,12 @@ export default function AgentPage() {
         title: 'Engagement Failed',
         description: error.message || 'Could not complete the engagement for this lead.',
       });
-      setOutreachState(prev => ({...prev, [index]: 'loading'})); // Reset to allow retry
+      // Allow retry on failure
+      setOutreachState(prev => {
+        const newState = { ...prev };
+        delete newState[index];
+        return newState;
+      });
     }
   };
 
@@ -306,7 +294,7 @@ export default function AgentPage() {
           )}
           <AlertDialogFooter>
             <AlertDialogCancel>No, cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleInitiateOutreach}>
+            <AlertDialogAction onClick={handleEngageLead}>
               Yes, engage lead
             </AlertDialogAction>
           </AlertDialogFooter>

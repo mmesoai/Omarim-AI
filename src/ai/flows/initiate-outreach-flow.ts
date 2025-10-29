@@ -2,7 +2,8 @@
 'use server';
 /**
  * @fileOverview A flow for generating a personalized email and sending it.
- * This flow no longer interacts with the database directly.
+ * This flow no longer interacts with the database directly. It is a pure
+ * AI and email-sending utility called by a secure server action.
  */
 
 import { ai } from '@/ai/genkit';
@@ -33,7 +34,7 @@ export async function initiateOutreach(
 const generateEmailPrompt = ai.definePrompt({
   name: 'generateAutonomousEmailPrompt',
   input: {
-    schema: InitiateOutreachInputSchema, // The prompt now expects the same input as the flow
+    schema: InitiateOutreachInputSchema,
   },
   output: {
     schema: z.object({
@@ -77,20 +78,17 @@ const initiateOutreachFlow = ai.defineFlow(
     }
 
     // Step 2: Send the email using the sendEmail tool
-    let sendResult = { success: false, message: 'Failed to send email.' };
-    if (emailContent.subject && emailContent.body) {
-      sendResult = await sendEmail({
-        to: lead.email,
-        subject: emailContent.subject,
-        body: emailContent.body,
-      });
-    }
+    const sendResult = await sendEmail({
+      to: lead.email,
+      subject: emailContent.subject,
+      body: emailContent.body,
+    });
 
     return {
       emailSent: sendResult.success, 
       message: sendResult.success 
         ? `Successfully sent an introductory email to ${lead.name}.`
-        : `Failed to send email to ${lead.name}.`,
+        : `Failed to send email to ${lead.name}: ${sendResult.message}`,
     };
   }
 );

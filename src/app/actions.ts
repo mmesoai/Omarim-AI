@@ -12,6 +12,7 @@ import {
 import { initializeFirebase } from "@/firebase/server-init";
 import { getFirestore } from "firebase-admin/firestore";
 import type { QualifiedLead } from "@/ai/tools/find-and-qualify-leads";
+import { initiateOutreach as initiateOutreachFlow } from '@/ai/flows/initiate-outreach-flow';
 
 
 export type TrendingProduct = GenerateProductCampaignInput;
@@ -25,58 +26,47 @@ export async function generateProductCampaign(input: GenerateProductCampaignInpu
     return await generateProductCampaignFlow(validatedInput);
 }
 
-
 /**
- * Saves a new lead to the database for a specific user.
- * This is a Server Action and is secure.
+ * Saves a lead, generates an outreach email, sends it, and updates the lead's status.
+ * This is a comprehensive server action to handle the entire lead engagement process.
  */
-export async function saveLeadAction(params: {
+export async function initiateOutreach(params: {
   userId: string;
   lead: QualifiedLead;
-}): Promise<{ leadId: string; error?: string }> {
+}): Promise<{ success: boolean; message: string; }> {
   const { userId, lead } = params;
-  
-  const app = initializeFirebase();
-  const db = getFirestore(app);
 
   try {
+    // Step 1: Save the lead to the database.
+    const app = initializeFirebase();
+    const db = getFirestore(app);
     const leadData = {
       firstName: lead.name.split(' ')[0] || '',
       lastName: lead.name.split(' ').slice(1).join(' ') || '',
       company: lead.company,
       domain: lead.hasWebsite ? new URL(`http://${lead.company.toLowerCase().replace(/ /g, '')}.com`).hostname : 'unknown.com',
       email: lead.email,
-      status: 'New',
+      status: 'New', // Start with New status
     };
-    const docRef = await db.collection(`users/${userId}/leads`).add(leadData);
-    revalidatePath('/dashboard/leads');
-    return { leadId: docRef.id };
-  } catch (error: any) {
-    console.error('Error saving lead (Server Action):', error);
-    return { leadId: '', error: 'Failed to save lead.' };
-  }
-}
+    const leadRef = await db.collection(`users/${userId}/leads`).add(leadData);
+    
+    // Step 2: Generate and send the email via the AI flow.
+    const outreachResult = await initiateOutreachFlow({ lead });
 
-/**
- * Updates the status of an existing lead.
- */
-export async function updateLeadStatusAction(params: {
-  userId: string;
-  leadId: string;
-  status: string;
-}): Promise<{ success: boolean; error?: string }> {
-    const { userId, leadId, status } = params;
-
-    const app = initializeFirebase();
-    const db = getFirestore(app);
-
-    try {
-        const leadRef = db.collection(`users/${userId}/leads`).doc(leadId);
-        await leadRef.update({ status });
-        revalidatePath('/dashboard/leads');
-        return { success: true };
-    } catch (error: any) {
-        console.error('Error updating lead status (Server Action):', error);
-        return { success: false, error: 'Failed to update lead status.' };
+    if (!outreachResult.emailSent) {
+      // If email fails, the lead is still saved, but we return a partial success message.
+      revalidatePath('/dashboard/leads');
+      return { success: false, message: `Lead for ${lead.name} saved, but email failed: ${outreachResult.message}` };
     }
+
+    // Step 3: If email was sent successfully, update the lead's status to 'Contacted'.
+    await leadRef.update({ status: 'Contacted' });
+
+    revalidatePath('/dashboard/leads');
+    return { success: true, message: `Successfully engaged ${lead.name}. Email sent and lead status updated.` };
+
+  } catch (error: any) {
+    console.error('Error in initiateOutreach server action:', error);
+    return { success: false, message: error.message || 'An unknown error occurred during the outreach process.' };
+  }
 }

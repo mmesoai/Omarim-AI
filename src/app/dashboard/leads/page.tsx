@@ -22,8 +22,8 @@ import {
 } from "@/components/ui/table";
 import { Loader2, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { updateLeadStatusAction } from "@/app/actions";
-import { initiateOutreach } from "@/ai/flows/initiate-outreach-flow";
+import { initiateOutreach } from "@/app/actions";
+import type { QualifiedLead } from "@/ai/tools/find-and-qualify-leads";
 
 export default function LeadsPage() {
   const { user } = useUser();
@@ -42,37 +42,37 @@ export default function LeadsPage() {
     if (!user || !lead.id) return;
     
     toast({
-      title: "Initiating Email",
-      description: `Drafting and sending a personalized email to ${lead.firstName}...`,
+      title: "Engaging Lead...",
+      description: `Preparing to contact ${lead.firstName}...`,
     });
 
+    // The lead from Firestore might not have all fields from QualifiedLead,
+    // so we construct what's necessary.
+    const qualifiedLeadForFlow: QualifiedLead = {
+      name: `${lead.firstName} ${lead.lastName}`,
+      company: lead.company,
+      email: lead.email,
+      title: lead.title || 'Decision Maker', 
+      industry: lead.industry || 'Unknown',
+      qualificationReason: 'Follow-up from lead pipeline.',
+      hasWebsite: !!lead.domain,
+    }
+
     try {
-        const outreachResult = await initiateOutreach({ lead: {
-            name: `${lead.firstName} ${lead.lastName}`,
-            company: lead.company,
-            email: lead.email,
-            // These fields are not strictly necessary for the email but are part of the type
-            title: 'CEO', 
-            industry: 'Tech',
-            qualificationReason: 'Follow-up from lead list',
-            hasWebsite: true,
-        }});
+        // We call the unified server action, which will handle everything
+        const result = await initiateOutreach({ userId: user.uid, lead: qualifiedLeadForFlow });
         
         toast({
-            title: outreachResult.emailSent ? 'Email Sent!' : 'Email Failed',
-            description: outreachResult.message,
-            variant: outreachResult.emailSent ? 'default' : 'destructive',
+            title: result.success ? 'Engagement Successful!' : 'Engagement Failed',
+            description: result.message,
+            variant: result.success ? 'default' : 'destructive',
         });
-
-        if (outreachResult.emailSent) {
-            await updateLeadStatusAction({ userId: user.uid, leadId: lead.id, status: 'Contacted' });
-        }
 
     } catch (error: any) {
         toast({
             variant: 'destructive',
-            title: 'Email Failed',
-            description: error.message || 'Could not send the email.',
+            title: 'Action Failed',
+            description: error.message || 'Could not complete the engagement process.',
         });
     }
   };
@@ -139,11 +139,11 @@ export default function LeadsPage() {
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleInitiateEmail(lead)} disabled={lead.status === 'Contacted'}>
                       <Mail className="h-4 w-4" />
-                      <span className="sr-only">Draft Email</span>
+                      <span className="sr-only">Initiate Email</span>
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}\
+              ))}
               {!isLoading && (!leads || leads.length === 0) && (
                  <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
