@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from 'next/cache';
-import { findTrendingProducts as findTrendingProductsFlow } from "@/ai/tools/find-trending-products";
+import { findTrendingProductsFlow } from "@/ai/tools/find-trending-products";
 import { generateProductCampaign as generateProductCampaignFlow, type GenerateProductCampaignOutput } from "@/ai/flows/generate-product-campaign";
 import { 
     GenerateProductCampaignInputSchema, 
