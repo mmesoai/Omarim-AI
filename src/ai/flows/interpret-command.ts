@@ -42,7 +42,7 @@ The available actions are:
 - 'generate_social_post': For when the user wants to create a social media post about a topic.
 - 'run_autonomous_agent': For when a user gives a high-level objective to find leads or businesses, like "Find me 5 local businesses..."
 - 'add_store': For when the user wants to connect a new e-commerce store, like Shopify or WooCommerce.
-- 'manage_campaign': For commands related to managing outreach sequences, such as adding leads to a campaign.
+- 'manage_campaign': For commands related to managing outreach sequences, such as "Add new leads to the welcome sequence."
 - 'answer_self_knowledge_question': For when the user asks a question about you (your name, your features, what you can do, who you are, or a vague prompt like "tell me about yourself" or "tell me about").
 - 'unrecognized': If the command does not match any of the above actions.
 
