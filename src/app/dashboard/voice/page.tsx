@@ -17,11 +17,10 @@ import { useToast } from "@/hooks/use-toast";
 import { convertSpeechToText } from "@/ai/flows/convert-speech-to-text";
 import { convertTextToSpeech } from "@/ai/flows/convert-text-to-speech";
 import { interpretCommand } from "@/ai/flows/interpret-command";
-import { generateSocialMediaPost, type GenerateSocialMediaPostOutput } from "@/ai/flows/generate-social-post";
+import { getSalesReport } from "@/ai/tools/get-sales-report";
+import { getDigitalProductsReport } from "@/ai/tools/get-digital-products-report";
 import { cn } from "@/lib/utils";
-
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 
 type CommandState = 
   | 'idle' 
@@ -31,15 +30,12 @@ type CommandState =
   | 'executing' 
   | 'responding';
 
-type AgentResult = 
-  | { type: 'social'; data: GenerateSocialMediaPostOutput };
-
 export default function VoicePage() {
   const [commandState, setCommandState] = useState<CommandState>('idle');
   const [transcription, setTranscription] = useState("");
   const [textToSpeak, setTextToSpeak] = useState("Hello, I am Omarim AI. I can read any text you provide.");
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [agentResult, setAgentResult] = useState<AgentResult | null>(null);
+  const [agentResult, setAgentResult] = useState<any | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -147,21 +143,27 @@ export default function VoicePage() {
   const handleExecution = async (action: string, prompt: string) => {
     setCommandState('executing');
     setAgentResult(null);
+    let responseText = "";
     try {
-      let responseText = "";
       switch (action) {
         case 'navigate':
           responseText = `This is Omarim AI. Navigating to ${prompt.split('/').pop()}.`;
           setTimeout(() => router.push(prompt), 1500);
           break;
-        case 'generate_social_post':
-          const output = await generateSocialMediaPost({ topic: prompt });
-          setAgentResult({ type: 'social', data: output });
-          responseText = `This is Omarim AI. I've created a social media post about ${prompt}.`;
-          break;
         case 'add_store':
           responseText = `This is Omarim AI. Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
           setTimeout(() => router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`), 2000);
+          break;
+        case 'get_report':
+          if (prompt.includes('sale')) {
+            const report = await getSalesReport();
+            responseText = report.reportSummary;
+          } else if (prompt.includes('digital product')) {
+            const report = await getDigitalProductsReport();
+            responseText = report.reportSummary;
+          } else {
+            responseText = "I can provide reports on sales or digital products. Which would you like?";
+          }
           break;
         default:
            responseText = "This is Omarim AI. I'm sorry, I did not recognize that command. Please try again.";
@@ -193,7 +195,6 @@ export default function VoicePage() {
         variant: "destructive",
       });
     } finally {
-      // The 'idle' state for command responses will be set in the onEnded event of the audio player
       if(!isCommandResponse) {
         setIsSpeaking(false);
       }
@@ -309,39 +310,6 @@ export default function VoicePage() {
           </CardContent>
         </Card>
       </div>
-
-       {agentResult && (
-         <Card>
-            <CardHeader className="flex flex-row items-center gap-4">
-                <Bot className="h-8 w-8 text-primary" />
-                <div>
-                    <CardTitle>Agent Response</CardTitle>
-                    <CardDescription>Here is the content generated from your voice command.</CardDescription>
-                </div>
-            </CardHeader>
-            <CardContent>
-            {agentResult.type === 'social' && (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="post-content">Post Content</Label>
-                        <Textarea
-                            id="post-content"
-                            readOnly
-                            value={agentResult.data.postContent}
-                            className="h-40"
-                        />
-                    </div>
-                    <div className="flex flex-wrap gap-2 pt-4">
-                        {agentResult.data.hashtags.map((tag, index) => (
-                            <Badge key={index} variant="secondary">#{tag}</Badge>
-                        ))
-                        }
-                        </div>
-                </div>
-            )}
-            </CardContent>
-         </Card>
-      )}
     </div>
   );
 }

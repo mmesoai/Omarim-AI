@@ -54,8 +54,8 @@ export const getOmarimAiCapabilities = ai.defineTool(
         },
         {
           featureName: 'Conversational Chat & Voice',
-          description: 'You can issue commands to me using natural language, either through text chat or by speaking to me in the Voice Command Center.',
-          relatedTools: ['interpretCommand', 'convertSpeechToText'],
+          description: 'You can issue commands to me using natural language, either through text chat or by speaking to me. I can understand requests to navigate the app or generate reports on your business data.',
+          relatedTools: ['interpretCommand', 'convertSpeechToText', 'getSalesReport', 'getDigitalProductsReport'],
         },
         {
           featureName: 'Inbox Analysis',
