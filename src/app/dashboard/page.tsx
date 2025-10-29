@@ -49,7 +49,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
+import { KpiCard } from './components/kpi-card';
+
 
 const RevenueOverview = dynamic(() => import('./components/revenue-overview').then(mod => mod.RevenueOverview), { ssr: false, loading: () => <Card className="lg:col-span-3 flex items-center justify-center h-[468px]"><Loader2 className="h-8 w-8 animate-spin"/></Card> });
 const LeadIntelligenceChart = dynamic(() => import('./components/lead-intelligence-chart').then(mod => mod.LeadIntelligenceChart), { ssr: false, loading: () => <div className="h-full w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin"/></div> });
@@ -217,13 +218,11 @@ export default function DashboardPage() {
   const { data: products, isLoading: isLoadingProducts } = useCollection(productsCollectionRef);
   const { data: sequences, isLoading: isLoadingSequences } = useCollection(sequencesCollectionRef);
 
-  const isLoading = !isClient || isLoadingLeads || isLoadingProducts || isLoadingSequences;
-
   const kpiData = [
-    { title: 'Total Leads', value: leads?.length ?? 0, icon: Users, change: "+45 today" },
-    { title: 'Synced Products', value: products?.length ?? 0, icon: ShoppingBag, change: "+12 this week" },
-    { title: 'Outreach Sequences', value: sequences?.length ?? 0, icon: Send, change: "+3" },
-    { title: 'Active Campaigns', value: sequences?.filter(s => s.status === 'Active').length ?? 0, icon: Activity, change: "+1" },
+    { title: 'Total Leads', value: leads?.length ?? 0, icon: Users, change: "+45 today", isLoading: isLoadingLeads },
+    { title: 'Synced Products', value: products?.length ?? 0, icon: ShoppingBag, change: "+12 this week", isLoading: isLoadingProducts },
+    { title: 'Outreach Sequences', value: sequences?.length ?? 0, icon: Send, change: "+3", isLoading: isLoadingSequences },
+    { title: 'Active Campaigns', value: sequences?.filter(s => s.status === 'Active').length ?? 0, icon: Activity, change: "+1", isLoading: isLoadingSequences },
   ];
 
   const controlCenterStatus = [
@@ -261,35 +260,16 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
            {/* KPI Cards */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {isLoading ? (
-                Array.from({ length: 4 }).map((_, index) => (
-                    <Card key={index}>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <Skeleton className="h-4 w-2/3" />
-                            <Skeleton className="h-5 w-5 rounded-full" />
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-8 w-1/3 mt-1" />
-                            <Skeleton className="h-3 w-1/2 mt-2" />
-                        </CardContent>
-                    </Card>
-                ))
-            ) : (
-                kpiData.map((kpi, index) => (
-                <Card key={index} className="transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">{kpi.title}</CardTitle>
-                    <kpi.icon className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                    <div className="text-4xl font-bold">{kpi.value}</div>
-                    <p className="text-xs text-muted-foreground">
-                        {kpi.change}
-                    </p>
-                    </CardContent>
-                </Card>
-                ))
-            )}
+            {kpiData.map((kpi, index) => (
+                <KpiCard
+                    key={index}
+                    title={kpi.title}
+                    value={kpi.value}
+                    change={kpi.change}
+                    icon={kpi.icon}
+                    isLoading={kpi.isLoading}
+                />
+            ))}
           </div>
 
           <RevenueOverview />
@@ -405,173 +385,4 @@ export default function DashboardPage() {
                                         <p className="text-xs text-muted-foreground">{activity.time}</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </TabsContent>
-                </Tabs>
-            </CardContent>
-        </Card>
-        </div>
-
-        {/* Right Sidebar Column */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-                <CardTitle>Control Center</CardTitle>
-                <CardDescription>Real-time system monitoring.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center gap-2 text-sm">
-                    <ShieldCheck className="h-4 w-4 text-green-400" />
-                    <span className="text-green-400 font-medium">All Systems Operational</span>
-                </div>
-                {controlCenterStatus.map((system, index) => (
-                    <div key={index}>
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium text-muted-foreground">{system.name}</span>
-                            <span className="text-sm font-bold">{system.progress}%</span>
-                        </div>
-                        <Progress value={system.progress} indicatorClassName="bg-primary" />
-                    </div>
-                ))}
-            </CardContent>
-          </Card>
-          
-          <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-            <CardHeader>
-                <div className="flex items-center gap-4">
-                    <FolderKanban className="h-8 w-8 text-primary" />
-                    <div>
-                        <CardTitle className="text-lg">Lead Intelligence</CardTitle>
-                        <CardDescription>B2B lead enrichment & pipeline.</CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="flex-grow items-center h-[200px]">
-                <LeadIntelligenceChart leads={leads} />
-            </CardContent>
-            <CardFooter>
-                 <Button size="sm" variant="outline" className="w-full" onClick={() => router.push("/dashboard/leads")}>
-                    Manage Leads <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-            </CardFooter>
-          </Card>
-
-          <Card className="flex flex-col transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1">
-            <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <Zap className="h-8 w-8 text-primary" />
-                        <CardTitle className="text-lg">Outbound Engine</CardTitle>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">Autonomous lead generation, product sourcing, and outreach campaigns.</p>
-            </CardContent>
-            <CardFooter className="flex justify-between items-end">
-                 <div>
-                    <p className="text-2xl font-bold">{(leads?.length ?? 0) + (products?.length ?? 0)}</p>
-                    <p className="text-xs text-muted-foreground">Opportunities</p>
-                </div>
-                <Button size="sm" variant="outline" onClick={() => router.push('/dashboard/agent')}>
-                    Launch Agent <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card className="border-primary/20 bg-background/80 backdrop-blur-lg">
-              <CardHeader className="flex flex-row items-start justify-between">
-                  <div className="flex items-center gap-3">
-                      <Bot className="h-6 w-6 text-primary animate-pulse" />
-                      <div>
-                          <CardTitle className="text-lg">AI Approval Request</CardTitle>
-                          <CardDescription>Omarim requires human confirmation to proceed.</CardDescription>
-                      </div>
-                  </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleReject}>
-                      <X className="h-4 w-4" />
-                    </Button>
-              </CardHeader>
-              {isFindingProduct && (
-                  <CardContent className="flex items-center justify-center py-12">
-                      <div className="flex items-center gap-3 text-muted-foreground">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <span className="text-sm">{thinkingSteps[thinkingStep]}</span>
-                      </div>
-                  </CardContent>
-              )}
-              {trendingProduct && !isFindingProduct && (
-                  <>
-                      <CardContent className="space-y-4">
-                            <div>
-                              <h3 className="font-headline text-xl font-bold text-foreground">{trendingProduct.productName}</h3>
-                              <p className="text-sm text-muted-foreground mt-1">{trendingProduct.description}</p>
-                          </div>
-                          <Separator />
-                          <div>
-                              <h4 className="font-semibold text-foreground flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4 text-primary"/> Marketing Angle</h4>
-                              <p className="mt-1 text-sm text-muted-foreground">{trendingProduct.marketingAngle}</p>
-                          </div>
-                      </CardContent>
-                      <CardFooter className="flex gap-2">
-                          <Button onClick={handleApproveAndLaunch} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
-                              {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4" />}
-                              {!!campaignAssets ? "Approved" : "Approve & Launch"}
-                          </Button>
-                          <Button variant="outline" onClick={handleReject} disabled={isCampaignLoading || !!campaignAssets} className="w-full">
-                              <X className="mr-2 h-4 w-4"/>
-                              Deny
-                          </Button>
-                      </CardFooter>
-                  </>
-              )}
-          </Card>
-
-        </div>
-      </div>
-    </div>
-
-    {/* Quick Action Button */}
-    <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
-        <DialogTrigger asChild>
-            <Button
-              variant="default"
-              className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg"
-            >
-              <Sparkles className="h-8 w-8" />
-              <span className="sr-only">Quick Action</span>
-            </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-                <DialogTitle>Quick Action</DialogTitle>
-                <DialogDescription>
-                    Issue a command to Omarim AI. It will be sent to the main chat interface.
-                </DialogDescription>
-            </DialogHeader>
-            <Form {...actionForm}>
-              <form onSubmit={actionForm.handleSubmit(onActionSubmit)} className="space-y-4">
-                <FormField
-                  control={actionForm.control}
-                  name="command"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Command</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 'Generate a social post about AI'" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                    <Button type="submit" className="w-full">Execute</Button>
-                </DialogFooter>
-              </form>
-            </Form>
-        </DialogContent>
-    </Dialog>
-    </>
-  );
-}
+                            ))
