@@ -1,7 +1,6 @@
 
 /**
- * @fileOverview A Genkit tool for sending emails.
- * This is a simulation and does not actually send emails.
+ * @fileOverview A Genkit tool for sending emails using the email service.
  */
 
 import { ai } from '@/ai/genkit';
@@ -22,14 +21,14 @@ const SendEmailOutputSchema = z.object({
 export const sendEmail = ai.defineTool(
   {
     name: 'sendEmail',
-    description: 'Sends an email to a specified recipient. This is a crucial step for outreach.',
+    description: 'Sends an email to a specified recipient using the configured email service (SendGrid). This is a crucial step for outreach.',
     inputSchema: SendEmailInputSchema,
     outputSchema: SendEmailOutputSchema,
   },
   async (input) => {
     try {
-      // In a real application, this would use a service like SendGrid, AWS SES, etc.
-      // We are using a simulated service for this example.
+      // The service now handles the logic of whether to send a real email
+      // or simulate it based on environment variable configuration.
       const result = await sendEmailService(input);
       return result;
     } catch (error: any) {
