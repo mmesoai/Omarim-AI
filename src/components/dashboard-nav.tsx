@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -17,6 +18,7 @@ import {
   Settings,
   Share2,
   ShoppingBag,
+  Globe,
 } from "lucide-react"
 import {
   Collapsible,
@@ -43,7 +45,8 @@ const featureNav = [
   { href: "/dashboard/outreach", icon: Send, label: "Outreach Engine" },
   { href: "/dashboard/stores", icon: Building2, label: "E-Commerce" },
   { href: "/dashboard/publisher", icon: Share2, label: "Social Publisher" },
-  { href: "/dashboard/blueprints", icon: Package, label: "Website/App Builder" },
+  { href: "/dashboard/app-builder", icon: Package, label: "App Builder" },
+  { href: "/dashboard/website-blueprint", icon: Globe, label: "Website Blueprint" },
 ];
 
 const secondaryNav = [
