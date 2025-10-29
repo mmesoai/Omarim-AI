@@ -6,13 +6,10 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { QualifiedLeadSchema, findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
+import { QualifiedLeadSchema } from '@/ai/tools/find-and-qualify-leads';
+import { saveLead } from '@/app/actions';
 import { sendEmail } from '@/ai/tools/send-email';
 import { googleAI } from '@genkit-ai/google-genai';
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
-
 
 const InitiateOutreachInputSchema = z.object({
   lead: QualifiedLeadSchema, // A single qualified lead
@@ -75,20 +72,18 @@ const initiateOutreachFlow = ai.defineFlow(
     outputSchema: InitiateOutreachOutputSchema,
   },
   async ({ lead, userId }) => {
-    const firestore = useFirestore();
-
     // Step 1: Save the lead to the database
-    const leadsCollection = collection(firestore, `users/${userId}/leads`);
-    const leadData = {
-      firstName: lead.name.split(' ')[0] || '',
-      lastName: lead.name.split(' ').slice(1).join(' ') || '',
-      company: lead.company,
-      domain: lead.hasWebsite ? new URL(`http://${lead.company.toLowerCase().replace(/ /g, '')}.com`).hostname : 'unknown.com',
-      email: lead.email,
-      status: 'New', // Start with New status
-    };
-    
-    const leadDocRefPromise = addDocumentNonBlocking(leadsCollection, leadData);
+    const { leadId } = await saveLead({
+      userId,
+      leadData: {
+        firstName: lead.name.split(' ')[0] || '',
+        lastName: lead.name.split(' ').slice(1).join(' ') || '',
+        company: lead.company,
+        domain: lead.hasWebsite ? new URL(`http://${lead.company.toLowerCase().replace(/ /g, '')}.com`).hostname : 'unknown.com', // Simulate domain
+        email: lead.email,
+        status: 'New', // Start with New status
+      },
+    });
 
     // Step 2: Generate the personalized email using an AI prompt
     const { output: emailContent } = await generateEmailPrompt({ lead });
@@ -106,10 +101,11 @@ const initiateOutreachFlow = ai.defineFlow(
     
     // Step 4: If email was sent successfully, update the lead status to 'Contacted' in Firestore
     if (sendResult.success) {
-      const leadDocRef = await leadDocRefPromise;
-      if (leadDocRef) {
-        updateDocumentNonBlocking(doc(firestore, leadsCollection.path, leadDocRef.id), { status: 'Contacted' });
-      }
+      await saveLead({
+        userId,
+        leadId: leadId, // Pass leadId to update the existing document
+        leadData: { status: 'Contacted' },
+      });
     }
 
     return {

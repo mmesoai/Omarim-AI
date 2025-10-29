@@ -9,7 +9,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { manageOutreachSequence } from '@/ai/tools/manage-outreach-sequence';
-import { addLeadsToSequence } from '@/services/firestore-service';
+import { addLeadsToSequence } from '@/app/actions';
 import { googleAI } from '@genkit-ai/google-genai';
 
 const ExecuteCampaignActionInputSchema = z.object({
@@ -59,7 +59,7 @@ const executeCampaignActionFlow = ai.defineFlow(
         throw new Error("Could not determine the parameters for the campaign action.");
     }
     
-    // Step 2: Call the actual, secure client-side database function with the determined parameters.
+    // Step 2: Call the actual, secure server action with the determined parameters.
     const result = await addLeadsToSequence({
         userId,
         sequenceName: toolParams.sequenceName,

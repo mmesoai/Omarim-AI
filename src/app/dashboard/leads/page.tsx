@@ -2,7 +2,7 @@
 "use client"
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +23,7 @@ import {
 import { Loader2, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { initiateOutreach } from "@/ai/flows/initiate-outreach-flow";
+import { initiateOutreach } from "@/app/actions";
 import type { QualifiedLead } from "@/ai/tools/find-and-qualify-leads";
 
 export default function LeadsPage() {
@@ -48,8 +48,6 @@ export default function LeadsPage() {
       description: `Preparing to contact ${lead.firstName}...`,
     });
 
-    // The lead from Firestore might not have all fields from QualifiedLead,
-    // so we construct what's necessary for the flow.
     const qualifiedLeadForFlow: QualifiedLead = {
       name: `${lead.firstName} ${lead.lastName}`,
       company: lead.company,
@@ -61,7 +59,6 @@ export default function LeadsPage() {
     }
 
     try {
-        // We call the unified flow, which will handle everything
         const result = await initiateOutreach({ userId: user.uid, lead: qualifiedLeadForFlow });
         
         toast({
