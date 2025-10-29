@@ -40,6 +40,7 @@ const mainNav = [
 const featureNav = [
   { href: "/dashboard/products", icon: ShoppingBag, label: "Products" },
   { href: "/dashboard/agent", icon: Bot, label: "Autonomous Agent" },
+  { href: "/dashboard/ai-calls-agent", icon: LifeBuoy, label: "AI Calls Agent" },
   { href: "/dashboard/leads", icon: FolderKanban, label: "Lead Intelligence" },
   { href: "/dashboard/outreach", icon: Send, label: "Outreach Engine" },
   { href: "/dashboard/stores", icon: Building2, label: "E-Commerce" },
