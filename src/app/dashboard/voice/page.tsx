@@ -149,15 +149,22 @@ export default function VoicePage() {
     setAgentResult(null);
     try {
       let responseText = "";
-      if (action === "generate_social_post") {
-        const output = await generateSocialMediaPost({ topic: prompt });
-        setAgentResult({ type: 'social', data: output });
-        responseText = `This is Omarim AI. I've created a social media post about ${prompt}.`;
-      } else if (action === 'add_store') {
-        responseText = `This is Omarim AI. Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
-        setTimeout(() => router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`), 2000);
-      } else {
-         responseText = "This is Omarim AI. I'm sorry, I did not recognize that command. Please try again.";
+      switch (action) {
+        case 'navigate':
+          responseText = `This is Omarim AI. Navigating to ${prompt.split('/').pop()}.`;
+          setTimeout(() => router.push(prompt), 1500);
+          break;
+        case 'generate_social_post':
+          const output = await generateSocialMediaPost({ topic: prompt });
+          setAgentResult({ type: 'social', data: output });
+          responseText = `This is Omarim AI. I've created a social media post about ${prompt}.`;
+          break;
+        case 'add_store':
+          responseText = `This is Omarim AI. Understood. Navigating to integrations to add your ${prompt || 'new'} store.`;
+          setTimeout(() => router.push(`/dashboard/settings?tab=integrations&action=addStore&storeType=${prompt || ''}`), 2000);
+          break;
+        default:
+           responseText = "This is Omarim AI. I'm sorry, I did not recognize that command. Please try again.";
       }
       await handleSpeak(responseText, true);
     } catch (error) {
@@ -327,7 +334,8 @@ export default function VoicePage() {
                     <div className="flex flex-wrap gap-2 pt-4">
                         {agentResult.data.hashtags.map((tag, index) => (
                             <Badge key={index} variant="secondary">#{tag}</Badge>
-                        ))}
+                        ))
+                        }
                         </div>
                 </div>
             )}
@@ -337,7 +345,3 @@ export default function VoicePage() {
     </div>
   );
 }
-
-    
-
-    
