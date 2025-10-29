@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -21,10 +20,10 @@ import {
   autonomousLeadGen,
   type AutonomousLeadGenOutput,
 } from '@/ai/flows/autonomous-lead-gen-flow';
+import { initiateOutreach } from '@/ai/flows/initiate-outreach-flow';
 import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { initiateOutreach } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -113,7 +112,6 @@ export default function AgentPage() {
     setLeadForConfirmation(null); // Close dialog
 
     try {
-      // Call the unified server action
       const result = await initiateOutreach({ userId: user.uid, lead });
       
       toast({

@@ -1,9 +1,7 @@
 
 'use server';
 /**
- * @fileOverview A flow for generating a personalized email and sending it.
- * This flow no longer interacts with the database directly. It is a pure
- * AI and email-sending utility called by a secure server action.
+ * @fileOverview An autonomous AI agent flow for initiating outreach to a qualified lead.
  */
 
 import { ai } from '@/ai/genkit';
@@ -11,14 +9,19 @@ import { z } from 'genkit';
 import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
 import { sendEmail } from '@/ai/tools/send-email';
 import { googleAI } from '@genkit-ai/google-genai';
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+
 
 const InitiateOutreachInputSchema = z.object({
   lead: findAndQualifyLeads.outputSchema.element, // A single qualified lead
+  userId: z.string().describe('The ID of the user initiating the outreach.'),
 });
 export type InitiateOutreachInput = z.infer<typeof InitiateOutreachInputSchema>;
 
 const InitiateOutreachOutputSchema = z.object({
-  emailSent: z.boolean().describe('Whether the email was successfully sent.'),
+  success: z.boolean(),
   message: z.string().describe('A summary of the action taken.'),
 });
 export type InitiateOutreachOutput = z.infer<
@@ -34,7 +37,9 @@ export async function initiateOutreach(
 const generateEmailPrompt = ai.definePrompt({
   name: 'generateAutonomousEmailPrompt',
   input: {
-    schema: InitiateOutreachInputSchema,
+    schema: z.object({
+      lead: findAndQualifyLeads.outputSchema.element,
+    }),
   },
   output: {
     schema: z.object({
@@ -69,26 +74,49 @@ const initiateOutreachFlow = ai.defineFlow(
     inputSchema: InitiateOutreachInputSchema,
     outputSchema: InitiateOutreachOutputSchema,
   },
-  async ({ lead }) => {
-    // Step 1: Generate the personalized email using an AI prompt
+  async ({ lead, userId }) => {
+    const firestore = useFirestore();
+
+    // Step 1: Save the lead to the database
+    const leadsCollection = collection(firestore, `users/${userId}/leads`);
+    const leadData = {
+      firstName: lead.name.split(' ')[0] || '',
+      lastName: lead.name.split(' ').slice(1).join(' ') || '',
+      company: lead.company,
+      domain: lead.hasWebsite ? new URL(`http://${lead.company.toLowerCase().replace(/ /g, '')}.com`).hostname : 'unknown.com',
+      email: lead.email,
+      status: 'New', // Start with New status
+    };
+    
+    const leadDocRefPromise = addDocumentNonBlocking(leadsCollection, leadData);
+
+    // Step 2: Generate the personalized email using an AI prompt
     const { output: emailContent } = await generateEmailPrompt({ lead });
 
     if (!emailContent) {
       throw new Error('Failed to generate email content.');
     }
 
-    // Step 2: Send the email using the sendEmail tool
+    // Step 3: Send the email using the sendEmail tool
     const sendResult = await sendEmail({
       to: lead.email,
       subject: emailContent.subject,
       body: emailContent.body,
     });
+    
+    // Step 4: If email was sent successfully, update the lead status to 'Contacted' in Firestore
+    if (sendResult.success) {
+      const leadDocRef = await leadDocRefPromise;
+      if (leadDocRef) {
+        updateDocumentNonBlocking(doc(firestore, leadsCollection.path, leadDocRef.id), { status: 'Contacted' });
+      }
+    }
 
     return {
-      emailSent: sendResult.success, 
+      success: sendResult.success,
       message: sendResult.success 
-        ? `Successfully sent an introductory email to ${lead.name}.`
-        : `Failed to send email to ${lead.name}: ${sendResult.message}`,
+        ? `Successfully engaged ${lead.name} and sent an introductory email.`
+        : `Saved ${lead.name} as a lead, but failed to send email.`,
     };
   }
 );
