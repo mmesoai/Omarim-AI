@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -18,6 +17,7 @@ import {
   Settings,
   Share2,
   ShoppingBag,
+  Globe,
 } from "lucide-react"
 import {
   Collapsible,
