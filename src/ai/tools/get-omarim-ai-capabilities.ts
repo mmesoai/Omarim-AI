@@ -48,14 +48,14 @@ export const getOmarimAiCapabilities = ai.defineTool(
           relatedTools: ['findTrendingProducts', 'generateProductCampaign'],
         },
         {
+            featureName: 'AI Blueprint Generator',
+            description: "I can generate various types of strategic documents on demand. This includes creating a full technical blueprint for a new app idea or a complete sitemap and strategy for a new website.",
+            relatedTools: ['generateAppBlueprint', 'generateSiteBlueprint'],
+        },
+        {
           featureName: 'Conversational Chat & Voice',
           description: 'You can issue commands to me using natural language, either through text chat or by speaking to me in the Voice Command Center.',
           relatedTools: ['interpretCommand', 'convertSpeechToText'],
-        },
-        {
-          featureName: 'AI Blueprint Generator',
-          description: "I can generate various types of strategic documents on demand. This includes creating a full technical blueprint for a new app idea or a complete sitemap and strategy for a new website.",
-          relatedTools: ['generateAppBlueprint', 'generateSiteBlueprint'],
         },
         {
           featureName: 'Inbox Analysis',

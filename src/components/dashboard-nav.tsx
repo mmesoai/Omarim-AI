@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -51,7 +52,7 @@ const featureNav = [
 const secondaryNav = [
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/voice", icon: Mic, label: "Voice Tools" },
-  { href: "/dashboard/website-blueprint", icon: LayoutTemplate, label: "Website Blueprint" },
+  { href: "/dashboard/intake-form", icon: LayoutTemplate, label: "Intake Form" },
 ];
 
 const NavGroup = ({
