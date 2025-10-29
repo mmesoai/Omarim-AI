@@ -20,26 +20,22 @@ We have successfully built and integrated the following core modules:
 
 ---
 
-## Next Steps: From Prototype to Production
+## From Prototype to Production: Your Guides
 
-The application is feature-complete and ready for its final activation. To transition from this prototype to a live, production-ready system, you will need to connect it to real-world services by providing the necessary API keys.
+The application is feature-complete. The following guides provide all the information you need to deploy the application and connect it to live services.
 
-I have prepared a detailed guide that walks you through this final process.
+### 1. Deployment Guide (How to Go Live)
+This is your first step. This guide contains the technical commands to build the application and deploy it to a public URL using Firebase.
+
+**[➡️ Click here to view the Deployment Guide (DEPLOYMENT_GUIDE.md)](./DEPLOYMENT_GUIDE.md)**
+
+### 2. Final Integration Steps (Connecting Services)
+Once the app is live, use this guide to connect it to real-world services by providing the necessary API keys.
 
 **[➡️ Click here to view your Final Integration Steps (NEXT_STEPS.md)](./NEXT_STEPS.md)**
 
-This guide will show you how to:
-1.  **Activate Real Email Outreach** by adding your SendGrid API keys.
-2.  **Enable Live E-commerce Data Sync** by connecting to your Shopify or WooCommerce stores.
-3.  **Turn on Social Media Publishing** by creating developer apps and managing API keys.
-4.  **Enable Data Enrichment** by adding your Clearbit API key.
-5.  **Activate Print-on-Demand** by connecting to Printify.
-
----
-
-## System Architecture Overview
-
-For a deep dive into the technical architecture, including a detailed breakdown of all the AI flows, user interface modules, and data models we've built, please refer to the system architecture document.
+### 3. System Architecture
+For a deep dive into the technical architecture, including a detailed breakdown of all the AI flows, user interface modules, and data models we've built.
 
 **[➡️ Click here to view the System Architecture (OMARIM_AI_SYSTEM_ARCHITECTURE.md)](./OMARIM_AI_SYSTEM_ARCHITECTURE.md)**
 
