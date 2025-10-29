@@ -15,9 +15,9 @@ import {
   Package,
   Send,
   Settings,
+  BotMessageSquare,
   Share2,
   ShoppingBag,
-  Globe,
 } from "lucide-react"
 import {
   Collapsible,
@@ -28,6 +28,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarGroupLabel,
   SidebarSeparator
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
@@ -44,13 +45,13 @@ const featureNav = [
   { href: "/dashboard/outreach", icon: Send, label: "Outreach Engine" },
   { href: "/dashboard/stores", icon: Building2, label: "E-Commerce" },
   { href: "/dashboard/publisher", icon: Share2, label: "Social Publisher" },
-  { href: "/dashboard/app-builder", icon: Package, label: "App Builder" },
-  { href: "/dashboard/website-blueprint", icon: Globe, label: "Website Blueprint" },
+  { href: "/dashboard/blueprints", icon: Package, label: "Blueprints" },
 ];
 
 const secondaryNav = [
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/voice", icon: Mic, label: "Voice Tools" },
+  { href: "/dashboard/new-site", icon: BotMessageSquare, label: "Intake Form" },
 ];
 
 const NavGroup = ({
