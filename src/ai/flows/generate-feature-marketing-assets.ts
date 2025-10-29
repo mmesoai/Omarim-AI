@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A Genkit flow to generate marketing assets for any given feature.
@@ -6,6 +7,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
+import { generateMultipleSocialPosts, type GenerateMultipleSocialPostsOutput } from '@/ai/flows/generate-multiple-social-posts';
+
 
 export const GenerateFeatureMarketingAssetsInputSchema = z.object({
   featureName: z.string().describe('The name of the feature to be marketed.'),
@@ -19,15 +22,9 @@ const LandingPageSchema = z.object({
     body: z.string().describe("The body copy for the landing page, detailing the features, benefits, and a call to action."),
 });
 
-const SocialPostSchema = z.object({
-    platform: z.enum(['Twitter', 'LinkedIn', 'Facebook']).describe('The target social media platform.'),
-    content: z.string().describe('The generated content for the social media post, tailored to the platform.'),
-    hashtags: z.array(z.string()).describe('A list of relevant hashtags for the post.'),
-});
-
 export const GenerateFeatureMarketingAssetsOutputSchema = z.object({
   landingPage: LandingPageSchema,
-  socialPosts: z.array(SocialPostSchema),
+  socialPosts: generateMultipleSocialPosts.outputSchema.shape.posts,
 });
 export type GenerateFeatureMarketingAssetsOutput = z.infer<typeof GenerateFeatureMarketingAssetsOutputSchema>;
 
@@ -35,25 +32,26 @@ export async function generateFeatureMarketingAssets(input: GenerateFeatureMarke
   return generateFeatureMarketingAssetsFlow(input);
 }
 
-const generateFeatureMarketingAssetsPrompt = ai.definePrompt({
-    name: 'generateFeatureMarketingAssetsPrompt',
+const generateLandingPagePrompt = ai.definePrompt({
+    name: 'generateFeatureLandingPagePrompt',
     input: { schema: GenerateFeatureMarketingAssetsInputSchema },
-    output: { schema: GenerateFeatureMarketingAssetsOutputSchema },
+    output: { schema: LandingPageSchema },
     model: googleAI('gemini-pro'),
-    prompt: `You are a world-class digital marketing strategist. Your task is to generate a complete set of marketing assets to sell a specific feature as a standalone product.
+    prompt: `You are a world-class digital marketing strategist. Your task is to generate compelling landing page content to sell a specific feature as a standalone product.
 
 Feature Details:
 - Name: {{{featureName}}}
 - Description: {{{featureDescription}}}
 - Price: {{{price}}}
 
-You must generate the following:
-1.  **Landing Page Content**: A powerful headline and compelling body copy. The copy should explain the problem, present the feature as the solution, and end with a strong call to action to purchase at the specified price.
-2.  **Social Media Posts**: Create three tailored posts for Twitter, LinkedIn, and Facebook to announce and promote this new service. Each post should be adapted for the platform's audience and include relevant hashtags.
+You must generate:
+- A powerful, attention-grabbing headline.
+- Compelling body copy that explains the problem, presents the feature as the solution, and ends with a strong call to action to purchase at the specified price.
 
-Generate all assets in the specified JSON format.
+Generate the content in the specified JSON format.
 `,
 });
+
 
 export const generateFeatureMarketingAssetsFlow = ai.defineFlow(
   {
@@ -62,7 +60,27 @@ export const generateFeatureMarketingAssetsFlow = ai.defineFlow(
     outputSchema: GenerateFeatureMarketingAssetsOutputSchema,
   },
   async (input) => {
-    const { output } = await generateFeatureMarketingAssetsPrompt(input);
-    return output!;
+    // Generate landing page and social posts in parallel
+    const [landingPageResponse, socialPostsResponse] = await Promise.all([
+        generateLandingPagePrompt(input),
+        generateMultipleSocialPosts({
+            topicOrContent: `Announcing our new service: ${input.featureName}. ${input.featureDescription} available now for ${input.price}.`,
+        }),
+    ]);
+    
+    const landingPage = landingPageResponse.output;
+
+    if (!landingPage) {
+        throw new Error("Failed to generate landing page content.");
+    }
+    
+    if (!socialPostsResponse) {
+        throw new Error("Failed to generate social media posts.");
+    }
+
+    return {
+      landingPage,
+      socialPosts: socialPostsResponse.posts,
+    };
   }
 );
