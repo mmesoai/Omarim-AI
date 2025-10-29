@@ -44,7 +44,7 @@ These are the primary ways a user can interact with and command Omarim AI.
 These are the proactive, autonomous engines where Omarim AI works on behalf of the user.
 
 ### a. Autonomous Business Agent (`/dashboard/agent`)
-- **Function:** Finds, qualifies, and initiates outreach to new business leads based on a high-level objective (e.g., "Find 5 local businesses that need a new website").
+- **Function:** Finds and qualifies new business leads based on a high-level objective (e.g., "Find 5 local businesses that need a new website").
 - **Underlying AI:**
     - `autonomousLeadGen`: Interprets the objective, finds leads, saves them to the database, and initiates outreach.
     - `initiateOutreach`: Saves the qualified lead, generates a personalized email, and simulates sending it.
@@ -93,19 +93,17 @@ These are the proactive, autonomous engines where Omarim AI works on behalf of t
 - **Function:** A tool to generate social media content for multiple platforms from a single input (text, topic, or YouTube URL).
 - **Features:** Creates tailored posts for Twitter, LinkedIn, and Facebook, complete with relevant hashtags.
 
-### e. AI App Builder (`/dashboard/app-builder`)
-- **Function:** An AI-powered tool to generate a professional technical blueprint for a new application idea.
-- **Features:** Takes a user's app description and outputs a full specification, including core features, data models, user personas, and a recommended tech stack.
+### e. AI Website/App Builder (`/dashboard/blueprints`)
+- **Function:** A unified, AI-powered tool to generate professional technical blueprints for a new application idea or a strategic plan for a new website.
+- **Features:**
+    - **App Blueprint:** Takes a user's app description and outputs a full specification, including core features, data models, user personas, and a recommended tech stack.
+    - **Website Blueprint:** Takes a user's business idea and outputs a site name, tagline, domain suggestion, and a full sitemap with page descriptions.
 
-### f. AI Website Blueprint (`/dashboard/website-blueprint`)
-- **Function:** An AI-powered tool to generate a strategic plan for a new website.
-- **Features:** Takes a user's business idea and outputs a site name, tagline, domain suggestion, and a full sitemap with page descriptions.
-
-### g. Inbox (`/dashboard/inbox`)
+### f. Inbox (`/dashboard/inbox`)
 - **Function:** A mock email client to view and analyze inbound replies.
 - **Underlying AI:** `classifyInboundReply` flow analyzes each email to determine its sentiment, category, and relevant tags, which are displayed to the user.
 
-### h. Settings (`/dashboard/settings`)
+### g. Settings (`/dashboard/settings`)
 - **Function:** A page for managing user profile, billing information, and third-party integrations.
 - **Features:** Allows users to connect e-commerce stores (Shopify, WooCommerce, Printify), payment gateways (Stripe, PayPal), email services (SendGrid, Gmail), and social media accounts.
 
