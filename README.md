@@ -15,6 +15,7 @@ We have successfully built and integrated the following core modules:
 -   **📈 E-commerce & Product Sourcing:** Analyzes product categories to find trending items, generates marketing assets, and helps you manage your product catalog.
 -   **💬 Conversational AI Chat & Voice:** A central command interface allowing you to direct the AI using natural language, either through text or voice.
 -   **🌐 AI-Powered Content & App Blueprints:** Tools to generate social media posts, multi-platform campaigns, and even detailed technical blueprints for new application ideas.
+-   **☎️ AI-Powered Customer Support:** An AI agent that can understand the systems you build and provide accurate answers to customer questions based on the app's own blueprint.
 -   **⚙️ Comprehensive Integration Hub:** A central settings panel to manage API keys and connections for e-commerce stores, email providers, payment gateways, and social media platforms.
 
 ---
