@@ -9,13 +9,12 @@ import {
   Bot,
   Loader2,
   User,
-  Sparkles,
-  Building,
-  Mail,
   ChevronRight,
   CheckCircle2,
   XCircle,
   FileCheck2,
+  Building,
+  Sparkles,
 } from 'lucide-react';
 import {
   autonomousLeadGen,
@@ -41,8 +40,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 const agentFormSchema = z.object({
   objective: z
@@ -184,12 +183,24 @@ export default function AgentPage() {
               {agentResponse.results.map((result) => (
                 <Card
                   key={result.leadId}
-                  className="bg-card/50"
+                  className="bg-card/50 flex flex-col"
                 >
                   <CardHeader>
-                    <CardTitle className="text-base">{result.message.split(' ')[2]} {result.message.split(' ')[3]}</CardTitle>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="text-base">{result.lead.name}</CardTitle>
+                            <CardDescription>{result.lead.company}</CardDescription>
+                        </div>
+                        <Badge variant="secondary">{result.lead.title}</Badge>
+                    </div>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-3 flex-grow">
+                     <div className="flex items-start text-sm">
+                        <Sparkles className="mr-2 mt-1 h-4 w-4 flex-shrink-0 text-primary" />
+                        <p>{result.lead.qualificationReason}</p>
+                    </div>
+                  </CardContent>
+                   <CardFooter className="flex flex-col items-start gap-3 bg-muted/50 p-4">
                      <div className="flex items-center text-sm">
                       <FileCheck2 className="mr-2 h-4 w-4 text-primary" />
                       <p>Lead saved to database.</p>
@@ -207,7 +218,7 @@ export default function AgentPage() {
                         </>
                       )}
                     </div>
-                  </CardContent>
+                  </CardFooter>
                 </Card>
               ))}
             </div>

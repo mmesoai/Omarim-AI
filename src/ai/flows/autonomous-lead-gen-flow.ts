@@ -6,7 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
+import { findAndQualifyLeads, type QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
 import { initiateOutreach } from './initiate-outreach-flow';
 import type { InitiateOutreachOutput } from './initiate-outreach-flow';
 
@@ -16,8 +16,12 @@ const AutonomousLeadGenInputSchema = z.object({
 });
 export type AutonomousLeadGenInput = z.infer<typeof AutonomousLeadGenInputSchema>;
 
+const AutonomousLeadGenResultSchema = initiateOutreach.outputSchema.extend({
+    lead: findAndQualifyLeads.outputSchema.element,
+});
+
 const AutonomousLeadGenOutputSchema = z.object({
-  results: z.array(initiateOutreach.outputSchema).describe('An array of results from the outreach initiation for each lead.'),
+  results: z.array(AutonomousLeadGenResultSchema).describe('An array of results from the outreach initiation for each lead.'),
   summary: z.string().describe('A summary of the actions taken and the results.'),
 });
 export type AutonomousLeadGenOutput = z.infer<typeof AutonomousLeadGenOutputSchema>;
@@ -69,7 +73,11 @@ const autonomousLeadGenFlow = ai.defineFlow(
     }
     
     // Step 3: For each lead, initiate the outreach process (save to DB, send email).
-    const outreachPromises = leads.map(lead => initiateOutreach({ lead, userId }));
+    const outreachPromises = leads.map(async (lead) => {
+        const result = await initiateOutreach({ lead, userId });
+        return { ...result, lead }; // Combine outreach result with the original lead data
+    });
+
     const results = await Promise.all(outreachPromises);
 
     // Step 4: Return the structured output.
