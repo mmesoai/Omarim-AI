@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
-import { collection } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, setDocumentNonBlocking, useDoc } from "@/firebase";
+import { collection, doc } from 'firebase/firestore';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -49,6 +49,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, PlusCircle, ShoppingCart, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard, Shirt } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const storeFormSchema = z.object({
   name: z.string().min(2, { message: "Store name must be at least 2 characters." }),
@@ -61,6 +62,12 @@ const genericIntegrationSchema = z.object({
     apiKey: z.string().min(10, { message: "API Key is required." }),
 });
 
+const profileFormSchema = z.object({
+  firstName: z.string().min(1, { message: "First name is required." }),
+  lastName: z.string().min(1, { message: "Last name is required." }),
+  email: z.string().email(),
+});
+
 type IntegrationDialogState = {
     isOpen: boolean;
     type: 'store' | 'sendgrid' | 'clearbit' | 'gmail' | 'smtp' | 'stripe' | 'paypal' | 'printify';
@@ -71,6 +78,13 @@ export default function SettingsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, "users", user.uid);
+  }, [user, firestore]);
+  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
 
   const storesCollectionRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -89,6 +103,25 @@ export default function SettingsPage() {
     defaultValues: { apiKey: "" },
   });
 
+  const profileForm = useForm<z.infer<typeof profileFormSchema>>({
+      resolver: zodResolver(profileFormSchema),
+      defaultValues: {
+          firstName: "",
+          lastName: "",
+          email: "",
+      }
+  });
+
+  useEffect(() => {
+      if(userData) {
+          profileForm.reset({
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              email: userData.email || '',
+          });
+      }
+  }, [userData, profileForm]);
+
   useEffect(() => {
     const action = searchParams.get('action');
     const storeType = searchParams.get('storeType');
@@ -100,6 +133,18 @@ export default function SettingsPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, storeForm]);
+
+  function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
+      if (!userDocRef) return;
+      setDocumentNonBlocking(userDocRef, {
+          firstName: values.firstName,
+          lastName: values.lastName,
+      }, { merge: true });
+      toast({
+          title: "Profile Updated",
+          description: "Your profile information has been saved.",
+      });
+  }
 
   function onStoreSubmit(values: z.infer<typeof storeFormSchema>) {
     if (!storesCollectionRef) return;
@@ -232,12 +277,33 @@ export default function SettingsPage() {
 
         <TabsContent value="profile">
           <Card>
-            <CardHeader><CardTitle>Profile</CardTitle><CardDescription>Make changes to your public information here.</CardDescription></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" defaultValue="John Doe" /></div>
-              <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" defaultValue="john.doe@example.com" disabled/></div>
-            </CardContent>
-            <CardFooter><Button>Save changes</Button></CardFooter>
+            <Form {...profileForm}>
+                <form onSubmit={profileForm.handleSubmit(onProfileSubmit)}>
+                    <CardHeader>
+                        <CardTitle>Profile</CardTitle>
+                        <CardDescription>Make changes to your public information here.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField control={profileForm.control} name="firstName" render={({ field }) => (
+                                <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )}/>
+                            <FormField control={profileForm.control} name="lastName" render={({ field }) => (
+                                <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )}/>
+                        </div>
+                        <FormField control={profileForm.control} name="email" render={({ field }) => (
+                            <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} disabled /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" disabled={profileForm.formState.isSubmitting}>
+                            {profileForm.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save changes
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Form>
           </Card>
         </TabsContent>
         
@@ -305,3 +371,5 @@ export default function SettingsPage() {
     </div>
   )
 }
+
+    
