@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -12,6 +13,7 @@ import {
   Facebook,
   Bot,
   Youtube,
+  Send,
 } from 'lucide-react';
 import {
   generateMultipleSocialPosts,
@@ -60,10 +62,13 @@ const PlatformIcon = ({ platform }: { platform: string }) => {
   }
 };
 
+type PublishState = 'idle' | 'publishing' | 'published';
+
 export default function PublisherPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPosts, setGeneratedPosts] =
     useState<GenerateMultipleSocialPostsOutput | null>(null);
+  const [publishStates, setPublishStates] = useState<Record<number, PublishState>>({});
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof publisherFormSchema>>({
@@ -77,6 +82,7 @@ export default function PublisherPage() {
   async function onSubmit(values: z.infer<typeof publisherFormSchema>) {
     setIsLoading(true);
     setGeneratedPosts(null);
+    setPublishStates({});
     try {
       const response = await generateMultipleSocialPosts({
         topicOrContent: values.topicOrContent,
@@ -93,6 +99,20 @@ export default function PublisherPage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  const handlePublish = (index: number, platform: string) => {
+    setPublishStates(prev => ({ ...prev, [index]: 'publishing' }));
+    
+    // In a real app, this would make an API call to the social media platform.
+    // Here, we simulate the process.
+    setTimeout(() => {
+        toast({
+            title: `Post Published to ${platform}!`,
+            description: "Your content is now live. (This is a simulation).",
+        });
+        setPublishStates(prev => ({ ...prev, [index]: 'published' }));
+    }, 1500);
   }
 
   return (
@@ -182,7 +202,9 @@ export default function PublisherPage() {
         <div className="space-y-6">
            <h2 className="text-center font-headline text-2xl font-bold">Generated Posts</h2>
            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              {generatedPosts.posts.map((post, index) => (
+              {generatedPosts.posts.map((post, index) => {
+                const state = publishStates[index] || 'idle';
+                return (
                 <Card key={index} className="flex flex-col">
                    <CardHeader>
                       <div className="flex items-center justify-between">
@@ -199,10 +221,18 @@ export default function PublisherPage() {
                       </div>
                    </CardContent>
                    <CardFooter>
-                      <Button className="w-full" variant="outline">Schedule Post</Button>
+                      <Button 
+                        className="w-full" 
+                        variant={state === 'published' ? 'secondary' : 'default'}
+                        onClick={() => handlePublish(index, post.platform)}
+                        disabled={state !== 'idle'}
+                       >
+                        {state === 'publishing' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {state === 'published' ? 'Published' : 'Publish Post'}
+                       </Button>
                    </CardFooter>
                 </Card>
-              ))}
+              )})}
            </div>
         </div>
       )}
