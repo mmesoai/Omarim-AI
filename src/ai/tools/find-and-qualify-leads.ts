@@ -28,7 +28,7 @@ const LeadGenerationInputSchema = z.object({
 const leadGenerationPrompt = ai.definePrompt({
   name: 'leadGenerationPrompt',
   input: { schema: LeadGenerationInputSchema },
-  output: { schema: z.array(QualifiedLeadSchema) }, // Output is a direct array
+  output: { schema: z.array(QualifiedLeadSchema) }, // Corrected: Output is a direct array
   model: googleAI('gemini-pro'),
   prompt: `You are an expert business development researcher. Your task is to generate a list of {{{count}}} plausible, yet fictional, business leads that match the following query: "{{{leadQuery}}}".
 
@@ -55,11 +55,8 @@ export const findAndQualifyLeads = ai.defineTool(
   async (input) => {
     const { output } = await leadGenerationPrompt(input);
     
-    if (!output) {
-      return [];
-    }
-
-    return output;
+    // The output is now correctly typed as QualifiedLead[] | undefined
+    // Return the output directly, or an empty array as a fallback.
+    return output || [];
   }
 );
-
