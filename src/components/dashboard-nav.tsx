@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -45,7 +46,7 @@ const featureNav = [
   { href: "/dashboard/outreach", icon: Send, label: "Outreach Engine" },
   { href: "/dashboard/stores", icon: Building2, label: "E-Commerce" },
   { href: "/dashboard/publisher", icon: Share2, label: "Social Publisher" },
-  { href: "/dashboard/blueprints", icon: Package, label: "Blueprints" },
+  { href: "/dashboard/blueprints", icon: Package, label: "Website/App Builder" },
 ];
 
 const secondaryNav = [
