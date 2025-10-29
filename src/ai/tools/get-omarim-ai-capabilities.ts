@@ -53,9 +53,9 @@ export const getOmarimAiCapabilities = ai.defineTool(
           relatedTools: ['interpretCommand', 'convertSpeechToText'],
         },
         {
-          featureName: 'AI-Powered Content Generation',
-          description: "I can generate various types of content on demand. This includes creating personalized outreach emails, generating engaging social media posts, or even designing a full technical blueprint for a new app idea.",
-          relatedTools: ['generateOutreachEmail', 'generateSocialMediaPost', 'generateAppBlueprint'],
+          featureName: 'AI Blueprint Generator',
+          description: "I can generate various types of strategic documents on demand. This includes creating a full technical blueprint for a new app idea or a complete sitemap and strategy for a new website.",
+          relatedTools: ['generateAppBlueprint', 'generateSiteBlueprint'],
         },
         {
           featureName: 'Inbox Analysis',
