@@ -99,11 +99,15 @@ These are the proactive, autonomous engines where Omarim AI works on behalf of t
     - **App Blueprint:** Takes a user's app description and outputs a full specification, including core features, data models, user personas, and a recommended tech stack.
     - **Website Blueprint:** Takes a user's business idea and outputs a site name, tagline, domain suggestion, and a full sitemap with page descriptions.
 
-### f. Inbox (`/dashboard/inbox`)
+### f. AI Customer Support (`/dashboard/customer-support`)
+- **Function:** An AI agent that can answer customer questions about a specific app or website.
+- **Underlying AI:** Uses the `answerCustomerQuery` flow, which takes a system blueprint (from the Website/App Builder) as its knowledge base to provide accurate, context-aware answers.
+
+### g. Inbox (`/dashboard/inbox`)
 - **Function:** A mock email client to view and analyze inbound replies.
 - **Underlying AI:** `classifyInboundReply` flow analyzes each email to determine its sentiment, category, and relevant tags, which are displayed to the user.
 
-### g. Settings (`/dashboard/settings`)
+### h. Settings (`/dashboard/settings`)
 - **Function:** A page for managing user profile, billing information, and third-party integrations.
 - **Features:** Allows users to connect e-commerce stores (Shopify, WooCommerce, Printify), payment gateways (Stripe, PayPal), email services (SendGrid, Gmail), and social media accounts.
 
@@ -124,5 +128,6 @@ This is the "brain" of Omarim AI, containing all the Genkit flows and tools that
 - **`generateAppBlueprint`:** Creates a technical spec from an app idea.
 - **`generateSiteBlueprint`:** Creates a website plan from a business idea.
 - **`classifyInboundReply`:** Analyzes inbound emails for sentiment and category.
+- **`answerCustomerQuery`:** Answers questions about a system using its blueprint as a knowledge source.
 - **`convertSpeechToText` & `convertTextToSpeech`:** The core voice interaction tools.
 - **`getOmarimAiCapabilities`:** A tool that allows the AI to be self-aware of its own features, which it uses to answer questions about itself.

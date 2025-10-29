@@ -18,6 +18,7 @@ import {
   Settings,
   Share2,
   ShoppingBag,
+  LifeBuoy,
 } from "lucide-react"
 import {
   Collapsible,
@@ -45,6 +46,7 @@ const featureNav = [
   { href: "/dashboard/stores", icon: Building2, label: "E-Commerce" },
   { href: "/dashboard/publisher", icon: Share2, label: "Social Publisher" },
   { href: "/dashboard/blueprints", icon: Package, label: "Website/App Builder" },
+  { href: "/dashboard/customer-support", icon: LifeBuoy, label: "Customer Support" },
 ];
 
 const secondaryNav = [
