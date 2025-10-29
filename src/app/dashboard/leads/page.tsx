@@ -2,7 +2,7 @@
 "use client"
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { collection, doc } from "firebase/firestore";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,13 +21,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { initiateOutreach } from "@/app/actions";
+import { initiateOutreach } from "@/ai/flows/initiate-outreach-flow";
 import type { QualifiedLead } from "@/ai/tools/find-and-qualify-leads";
 
 export default function LeadsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const router = useRouter();
   const { toast } = useToast();
 
   const leadsCollectionRef = useMemoFirebase(() => {
@@ -47,19 +49,19 @@ export default function LeadsPage() {
     });
 
     // The lead from Firestore might not have all fields from QualifiedLead,
-    // so we construct what's necessary.
+    // so we construct what's necessary for the flow.
     const qualifiedLeadForFlow: QualifiedLead = {
       name: `${lead.firstName} ${lead.lastName}`,
       company: lead.company,
       email: lead.email,
       title: lead.title || 'Decision Maker', 
       industry: lead.industry || 'Unknown',
-      qualificationReason: 'Follow-up from lead pipeline.',
+      qualificationReason: 'Follow-up from existing lead pipeline.',
       hasWebsite: !!lead.domain,
     }
 
     try {
-        // We call the unified server action, which will handle everything
+        // We call the unified flow, which will handle everything
         const result = await initiateOutreach({ userId: user.uid, lead: qualifiedLeadForFlow });
         
         toast({
