@@ -33,6 +33,11 @@ export const getOmarimAiCapabilities = ai.defineTool(
       coreMission: 'I am an autonomous business development partner. My mission is to automate tasks like lead generation, outreach, and content creation to help you grow your business.',
       features: [
         {
+          featureName: 'Autonomous E-Commerce Engine',
+          description: 'I can build and run an entire e-commerce business for you, from concept to marketing. First, you use the "AI Website/App Builder" to generate a professional blueprint for a new online store. Once that site is built and connected to me via the Settings panel, I take over. I autonomously find trending products, add them to your store and other marketplaces like Shopify or Amazon, and then launch complete marketing campaigns with AI-generated images and social media posts to drive sales.',
+          relatedTools: ['generateSiteBlueprint', 'findTrendingProducts', 'generateProductCampaign'],
+        },
+        {
           featureName: 'Autonomous Business Agent',
           description: 'You can give me a high-level objective, like "Find 5 local businesses that need a new website," and I will autonomously find, qualify, and even initiate contact with potential leads for you.',
           relatedTools: ['autonomousLeadGen', 'initiateOutreach'],
@@ -41,11 +46,6 @@ export const getOmarimAiCapabilities = ai.defineTool(
           featureName: 'Automated Digital Product Funnel',
           description: 'I can run a fully automated workflow to identify a trending digital product, generate its content (like an e-book), and create a complete marketing campaign to sell it.',
           relatedTools: ['automatedDigitalProductFunnel'],
-        },
-        {
-          featureName: 'E-commerce Product Sourcing',
-          description: "I can analyze product categories to find trending items, generate marketing campaigns, and even identify potential suppliers, helping you discover new product opportunities.",
-          relatedTools: ['findTrendingProducts', 'generateProductCampaign'],
         },
         {
             featureName: 'Website/App Builder',
