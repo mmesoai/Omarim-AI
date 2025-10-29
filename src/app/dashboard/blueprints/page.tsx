@@ -120,7 +120,7 @@ export default function BlueprintsPage() {
     <div className="container mx-auto max-w-6xl space-y-8 py-8">
       <div className="text-center">
         <h1 className="font-headline text-3xl font-bold md:text-4xl">
-          AI Blueprint Generator
+          AI Website/App Builder
         </h1>
         <p className="mt-2 text-lg text-muted-foreground">
           Transform your idea into a professional technical or website specification.

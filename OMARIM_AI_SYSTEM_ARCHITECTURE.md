@@ -94,7 +94,7 @@ These are the proactive, autonomous engines where Omarim AI works on behalf of t
 - **Function:** A tool to generate social media content for multiple platforms from a single input (text, topic, or YouTube URL).
 - **Features:** Creates tailored posts for Twitter, LinkedIn, and Facebook, complete with relevant hashtags.
 
-### e. AI Blueprint Generator (`/dashboard/blueprints`)
+### e. AI Website/App Builder (`/dashboard/blueprints`)
 - **Function:** A unified, AI-powered tool to generate professional technical blueprints for a new application idea or a strategic plan for a new website.
 - **Features:**
     - **App Blueprint:** Takes a user's app description and outputs a full specification, including core features, data models, user personas, and a recommended tech stack.
