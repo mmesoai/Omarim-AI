@@ -65,9 +65,9 @@ Your task is to answer the customer's query based strictly on the data within th
 5.  **Explain Reasoning:** Briefly explain which part of the blueprint you used to find the answer.
 
 **Blueprint (Source of Truth):**
-\`\`\`json
+\'\'\'json
 {{{json blueprint}}}
-\`\`\`
+\'\'\'
 
 **Customer's Question:**
 "{{{customerQuery}}}"
@@ -87,3 +87,5 @@ const answerCustomerQueryFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

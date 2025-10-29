@@ -1,3 +1,4 @@
+
 'use server';
 import { config } from 'dotenv';
 config();
@@ -19,6 +20,7 @@ import '@/ai/flows/generate-product-campaign.ts';
 import '@/ai/flows/automated-digital-product-funnel.ts';
 import '@/ai/flows/automated-ai-calling-service-funnel.ts';
 import '@/ai/flows/generate-feature-marketing-assets.ts';
+import '@/ai/flows/answer-customer-query.ts';
 import '@/ai/tools/get-omarim-ai-capabilities';
 import '@/ai/tools/find-trending-products';
 import '@/ai/tools/find-trending-digital-product';
@@ -26,3 +28,5 @@ import '@/ai/tools/generate-digital-product';
 import '@/ai/tools/get-sales-report';
 import '@/ai/tools/get-digital-products-report';
 import '@/ai/tools/get-call';
+
+    

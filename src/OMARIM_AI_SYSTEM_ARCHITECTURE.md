@@ -44,7 +44,7 @@ These are the core autonomous engines of Omarim AI. Each one is a standalone pro
 - **Autonomous Funnel:** The platform generates marketing materials to sell this "business-in-a-box" service.
 - **Core AI Engine:** `automatedDigitalProductFunnel`.
 
-### c. Product: AI-Powered Call Center (`/dashboard/products`)
+### c. Product: AI Calls Agent (`/dashboard/products`)
 - **Service Offered:** An AI agent that can understand a business's products and services and handle inbound customer support calls.
 - **Autonomous Funnel:** Generates its own marketing assets to sell this AI call center service, powered by the `automatedAiCallingServiceFunnel` flow.
 - **Core AI Engine:** `answerCustomerQuery` (using a business blueprint) and `getCall` (to simulate receiving calls).
@@ -84,10 +84,12 @@ These are the core autonomous engines of Omarim AI. Each one is a standalone pro
 This is the "brain" of Omarim AI, containing all the Genkit flows and tools.
 
 - **`generateFeatureMarketingAssets`:** The new core marketing engine that can generate a landing page and social campaign for any feature, turning it into a sellable product.
-- **`automatedAiCallingServiceFunnel`:** The autonomous funnel specifically for marketing and selling the AI Call Center service.
+- **`automatedAiCallingServiceFunnel`:** The autonomous funnel specifically for marketing and selling the AI Calls Agent service.
 - **`answerCustomerQuery`:** The core logic for the AI Calls Agent, answering questions based on a provided blueprint.
 - **`getCall`:** A tool to simulate receiving an inbound phone call.
 - **`autonomousLeadGen`:** Finds and qualifies leads.
 - **`automatedDigitalProductFunnel`:** The complete A-to-Z digital product creation and marketing flow.
 - **`interpretCommand`:** The core NLU engine for the chat and voice interfaces.
 ...and all other previously established flows.
+
+    
