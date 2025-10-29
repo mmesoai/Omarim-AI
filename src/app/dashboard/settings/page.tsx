@@ -284,17 +284,21 @@ export default function SettingsPage() {
                         <CardDescription>Make changes to your public information here.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField control={profileForm.control} name="firstName" render={({ field }) => (
-                                <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        {isUserDataLoading ? <Loader2 className="animate-spin" /> :
+                        <>
+                            <div className="grid grid-cols-2 gap-4">
+                                <FormField control={profileForm.control} name="firstName" render={({ field }) => (
+                                    <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                                <FormField control={profileForm.control} name="lastName" render={({ field }) => (
+                                    <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                )}/>
+                            </div>
+                            <FormField control={profileForm.control} name="email" render={({ field }) => (
+                                <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} disabled /></FormControl><FormMessage /></FormItem>
                             )}/>
-                            <FormField control={profileForm.control} name="lastName" render={({ field }) => (
-                                <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )}/>
-                        </div>
-                        <FormField control={profileForm.control} name="email" render={({ field }) => (
-                            <FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...field} disabled /></FormControl><FormMessage /></FormItem>
-                        )}/>
+                        </>
+                        }
                     </CardContent>
                     <CardFooter>
                         <Button type="submit" disabled={profileForm.formState.isSubmitting}>
@@ -371,5 +375,3 @@ export default function SettingsPage() {
     </div>
   )
 }
-
-    
