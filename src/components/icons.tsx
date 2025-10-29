@@ -12,11 +12,28 @@ export const Icons = {
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M12 2.5L3.5 7.5v9L12 21.5l8.5-5v-9L12 2.5z" />
-      <path d="M3.5 7.5L12 12m0 0l8.5-4.5M12 12v9.5" />
-      <path d="M16.5 5.5L8.5 10.5" />
-      <path d="m20.5 7.5-8.5 4.5" />
-      <path d="M3.5 16.5L12 12" />
+      {/* Central cube representing the data warehouse */}
+      <rect x="9" y="9" width="6" height="6" rx="1" />
+      <path d="M12 9V7" />
+      <path d="M12 15v2" />
+      <path d="M9 12H7" />
+      <path d="M15 12h2" />
+
+      {/* Outer layers representing the pipeline and data flow */}
+      <path d="M5 5h2" />
+      <path d="M5 19h2" />
+      <path d="M17 5h2" />
+      <path d="M17 19h2" />
+      <path d="M5 5l2 2" />
+      <path d="M5 19l2-2" />
+      <path d="M19 5l-2 2" />
+      <path d="M19 19l-2-2" />
+
+      {/* Connecting lines */}
+      <path d="M7 7h10" />
+      <path d="M7 17h10" />
+      <path d="M7 7v10" />
+      <path d="M17 7v10" />
     </svg>
   ),
 };
