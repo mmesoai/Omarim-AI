@@ -48,7 +48,7 @@ export const getOmarimAiCapabilities = ai.defineTool(
           relatedTools: ['findTrendingProducts', 'generateProductCampaign'],
         },
         {
-            featureName: 'AI Website/App Builder',
+            featureName: 'Website/App Builder',
             description: "I can generate various types of strategic documents on demand. This includes creating a full technical blueprint for a new app idea or a complete sitemap and strategy for a new website, all from a simple description.",
             relatedTools: ['generateAppBlueprint', 'generateSiteBlueprint'],
         },
