@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An autonomous AI agent flow for lead generation and qualification.
@@ -6,15 +7,17 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
-import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
+import { initiateOutreach } from './initiate-outreach-flow';
+import type { InitiateOutreachOutput } from './initiate-outreach-flow';
 
 const AutonomousLeadGenInputSchema = z.object({
   objective: z.string().describe('The high-level objective for the lead generation task. e.g., "Find 5 local businesses that need a new website."'),
+  userId: z.string().describe('The user ID to associate the leads with.'),
 });
 export type AutonomousLeadGenInput = z.infer<typeof AutonomousLeadGenInputSchema>;
 
 const AutonomousLeadGenOutputSchema = z.object({
-  qualifiedLeads: z.array(findAndQualifyLeads.outputSchema.element).describe('A list of qualified leads that match the objective.'),
+  results: z.array(initiateOutreach.outputSchema).describe('An array of results from the outreach initiation for each lead.'),
   summary: z.string().describe('A summary of the actions taken and the results.'),
 });
 export type AutonomousLeadGenOutput = z.infer<typeof AutonomousLeadGenOutputSchema>;
@@ -26,7 +29,7 @@ export async function autonomousLeadGen(input: AutonomousLeadGenInput): Promise<
 // This prompt's only job is to figure out the right parameters for the findAndQualifyLeads tool.
 const parameterExtractionPrompt = ai.definePrompt({
     name: 'parameterExtractionPrompt',
-    input: { schema: AutonomousLeadGenInputSchema },
+    input: { schema: z.object({ objective: z.string() }) },
     output: { schema: findAndQualifyLeads.inputSchema },
     system: `You are an AI assistant. Your task is to extract the parameters for the 'findAndQualifyLeads' tool from a user's high-level objective.
 
@@ -47,21 +50,34 @@ const autonomousLeadGenFlow = ai.defineFlow(
     inputSchema: AutonomousLeadGenInputSchema,
     outputSchema: AutonomousLeadGenOutputSchema,
   },
-  async (input) => {
+  async ({ objective, userId }) => {
     // Step 1: Use a simple prompt to determine the parameters for the tool.
-    const { output: toolParams } = await parameterExtractionPrompt(input);
+    const { output: toolParams } = await parameterExtractionPrompt({ objective });
 
     if (!toolParams) {
         throw new Error("The AI agent failed to determine the parameters for the lead generation tool.");
     }
     
-    // Step 2: Directly call the tool with the determined parameters.
+    // Step 2: Directly call the tool with the determined parameters to get the list of leads.
     const leads = await findAndQualifyLeads(toolParams);
 
-    // Step 3: Return the structured output.
+    if (!leads || leads.length === 0) {
+        return {
+            results: [],
+            summary: "I searched for leads matching your objective but did not find any. You may want to try rephrasing your objective.",
+        }
+    }
+    
+    // Step 3: For each lead, initiate the outreach process (save to DB, send email).
+    const outreachPromises = leads.map(lead => initiateOutreach({ lead, userId }));
+    const results = await Promise.all(outreachPromises);
+
+    // Step 4: Return the structured output.
+    const successfulEngagements = results.filter(r => r.emailSent).length;
+    
     return {
-      qualifiedLeads: leads,
-      summary: `I have analyzed the request and identified ${leads.length} potential leads. Each has been qualified based on their role and the potential need for AI-powered web services.`,
+      results,
+      summary: `I have finished the autonomous lead generation task. I identified ${leads.length} potential leads and successfully engaged with ${successfulEngagements} of them. They have been added to your lead pipeline.`,
     };
   }
 );
