@@ -82,6 +82,14 @@ const quickActionSchema = z.object({
   command: z.string().min(1, { message: "Command cannot be empty." }),
 });
 
+const thinkingSteps = [
+    "Analyzing market trends...",
+    "Identifying product opportunities...",
+    "Evaluating supplier options...",
+    "Formulating marketing angle...",
+    "Finalizing proposal...",
+];
+
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -94,6 +102,7 @@ export default function DashboardPage() {
   const [campaignAssets, setCampaignAssets] = useState<GenerateProductCampaignOutput | null>(null);
   const [isCampaignLoading, setIsCampaignLoading] = useState(false);
   const [isFindingProduct, setIsFindingProduct] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState(0);
   const [isClient, setIsClient] = useState(false);
 
   const actionForm = useForm<z.infer<typeof quickActionSchema>>({
@@ -107,10 +116,21 @@ export default function DashboardPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isFindingProduct) {
+      interval = setInterval(() => {
+        setThinkingStep((prevStep) => (prevStep + 1) % thinkingSteps.length);
+      }, 700);
+    }
+    return () => clearInterval(interval);
+  }, [isFindingProduct]);
+
   async function getTrendingProduct() {
     setIsFindingProduct(true);
-    setCampaignAssets(null); // Clear previous campaign assets
-    setTrendingProduct(null); // Clear previous product
+    setCampaignAssets(null);
+    setTrendingProduct(null);
+    setThinkingStep(0);
     try {
       const result = await findTrendingProducts("home office tech");
       setTrendingProduct(result);
@@ -132,7 +152,7 @@ export default function DashboardPage() {
 
     setIsCampaignLoading(true);
     setCampaignAssets(null);
-    setTrendingProduct(null); // This will hide the proposal box
+    setTrendingProduct(null);
     toast({ title: "Approval Received", description: "AI is now generating campaign assets. This may take a moment..." });
     
     try {
@@ -172,7 +192,6 @@ export default function DashboardPage() {
         title: "Proposal Rejected",
         description: "The AI will look for another product opportunity.",
     });
-    // Immediately fetch a new product
     getTrendingProduct();
   }
 
@@ -475,16 +494,10 @@ export default function DashboardPage() {
                     </Button>
               </CardHeader>
               {isFindingProduct && (
-                  <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Skeleton className="h-6 w-3/4" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-5/6" />
-                      </div>
-                      <Separator />
-                       <div className="space-y-2">
-                        <Skeleton className="h-5 w-1/3" />
-                        <Skeleton className="h-4 w-full" />
+                  <CardContent className="flex items-center justify-center py-12">
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span className="text-sm">{thinkingSteps[thinkingStep]}</span>
                       </div>
                   </CardContent>
               )}
@@ -562,3 +575,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+    
