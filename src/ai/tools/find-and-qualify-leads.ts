@@ -8,7 +8,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 
-const QualifiedLeadSchema = z.object({
+export const QualifiedLeadSchema = z.object({
     company: z.string().describe("The name of the lead's company."),
     name: z.string().describe("The full name of the lead."),
     title: z.string().describe("The job title of the lead (e.g., CEO, Founder, Director)."),

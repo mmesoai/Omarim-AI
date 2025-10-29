@@ -6,7 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
+import { QualifiedLeadSchema, findAndQualifyLeads } from '@/ai/tools/find-and-qualify-leads';
 import { sendEmail } from '@/ai/tools/send-email';
 import { googleAI } from '@genkit-ai/google-genai';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
@@ -15,7 +15,7 @@ import { useFirestore } from '@/firebase';
 
 
 const InitiateOutreachInputSchema = z.object({
-  lead: findAndQualifyLeads.outputSchema.element, // A single qualified lead
+  lead: QualifiedLeadSchema, // A single qualified lead
   userId: z.string().describe('The ID of the user initiating the outreach.'),
 });
 export type InitiateOutreachInput = z.infer<typeof InitiateOutreachInputSchema>;
@@ -38,7 +38,7 @@ const generateEmailPrompt = ai.definePrompt({
   name: 'generateAutonomousEmailPrompt',
   input: {
     schema: z.object({
-      lead: findAndQualifyLeads.outputSchema.element,
+      lead: QualifiedLeadSchema,
     }),
   },
   output: {
