@@ -99,7 +99,7 @@ These are the proactive, autonomous engines where Omarim AI works on behalf of t
     - **App Blueprint:** Takes a user's app description and outputs a full specification, including core features, data models, user personas, and a recommended tech stack.
     - **Website Blueprint:** Takes a user's business idea and outputs a site name, tagline, domain suggestion, and a full sitemap with page descriptions.
 
-### f. AI Customer Support (`/dashboard/customer-support`)
+### f. AI Calls Agent (`/dashboard/ai-calls-agent`)
 - **Function:** An AI agent that can answer customer questions about a specific app or website.
 - **Underlying AI:** Uses the `answerCustomerQuery` flow, which takes a system blueprint (from the Website/App Builder) as its knowledge base to provide accurate, context-aware answers.
 
