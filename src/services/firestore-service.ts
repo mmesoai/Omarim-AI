@@ -1,5 +1,5 @@
 
-'use server';
+'use client';
 /**
  * @fileOverview A client-side service for interacting with Firestore.
  * This service uses the standard Firebase client SDK to perform operations,
