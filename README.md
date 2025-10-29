@@ -32,6 +32,8 @@ This guide will show you how to:
 1.  **Activate Real Email Outreach** by adding your SendGrid API keys.
 2.  **Enable Live E-commerce Data Sync** by connecting to your Shopify or WooCommerce stores.
 3.  **Turn on Social Media Publishing** by creating developer apps and managing API keys.
+4.  **Enable Data Enrichment** by adding your Clearbit API key.
+5.  **Activate Print-on-Demand** by connecting to Printify.
 
 ---
 
