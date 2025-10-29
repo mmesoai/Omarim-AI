@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -196,114 +195,117 @@ export default function BlueprintsPage() {
             </div>
         )}
         
-        {appBlueprint && (
-            <Card className="border-none bg-transparent shadow-none mt-8">
-            <CardHeader className="text-center">
-                <div className="flex items-center justify-center gap-4">
-                <Bot className="h-8 w-8 text-primary" />
-                <div>
-                    <CardTitle className="text-3xl">{appBlueprint.appName}</CardTitle>
-                    <CardDescription className="text-lg">
-                    {appBlueprint.tagline}
-                    </CardDescription>
-                </div>
-                </div>
-            </CardHeader>
-            <CardContent className="mt-6 space-y-6">
-                <AppSection icon={List} title="Core Features (MVP)">
-                    <ul className="space-y-3 list-disc list-inside">
-                        {appBlueprint.coreFeatures.map((feature, i) => (
-                            <li key={i}>
-                                <span className="font-semibold">{feature.name}:</span> <span className="text-muted-foreground">{feature.description}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </AppSection>
-                
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <AppSection icon={Database} title="Data Models">
-                        <div className="space-y-3">
-                            {appBlueprint.dataModels.map((model, i) => (
-                                <div key={i}>
-                                    <h4 className="font-semibold">{model.name}</h4>
-                                    <p className="text-sm text-muted-foreground">{model.properties.join(', ')}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </AppSection>
-                    <AppSection icon={Users} title="User Personas">
-                        <div className="space-y-3">
-                            {appBlueprint.userPersonas.map((persona, i) => (
-                                <div key={i}>
-                                    <h4 className="font-semibold">{persona.name}</h4>
-                                    <p className="text-sm text-muted-foreground">{persona.description}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </AppSection>
-                </div>
-
-                <AppSection icon={Layers} title="Technology Stack">
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                        <div className="text-center"><p className="font-semibold">Frontend</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.frontend}</p></div>
-                        <div className="text-center"><p className="font-semibold">Backend</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.backend}</p></div>
-                        <div className="text-center"><p className="font-semibold">Database</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.database}</p></div>
-                        <div className="text-center"><p className="font-semibold">AI/ML</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.ai}</p></div>
+        <TabsContent value="app">
+            {appBlueprint && (
+                <Card className="border-none bg-transparent shadow-none mt-8">
+                <CardHeader className="text-center">
+                    <div className="flex items-center justify-center gap-4">
+                    <Bot className="h-8 w-8 text-primary" />
+                    <div>
+                        <CardTitle className="text-3xl">{appBlueprint.appName}</CardTitle>
+                        <CardDescription className="text-lg">
+                        {appBlueprint.tagline}
+                        </CardDescription>
                     </div>
-                </AppSection>
-            </CardContent>
-            </Card>
-        )}
-
-        {siteBlueprint && (
-             <Card className="mt-8 border-primary/20 bg-card/70">
-                <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                    Blueprint Generated
-                </CardTitle>
-                <CardDescription>
-                    The AI has created the following plan. The next step would be
-                    to autonomously register the domain and deploy the site.
-                </CardDescription>
+                    </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                <div>
-                    <h3 className="font-semibold text-lg">
-                    {siteBlueprint.siteName}
-                    </h3>
-                    <p className="text-sm text-muted-foreground italic">
-                    {siteBlueprint.tagline}
-                    </p>
-                </div>
-                <div>
-                    <h4 className="flex items-center gap-2 text-sm font-semibold">
-                    <Globe className="h-4 w-4" /> Suggested Domain
-                    </h4>
-                    <Badge variant="outline">{siteBlueprint.domainSuggestion}</Badge>
-                </div>
-                <div>
-                    <h4 className="flex items-center gap-2 text-sm font-semibold">
-                    <FileText className="h-4 w-4" /> Site Pages
-                    </h4>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                    {siteBlueprint.pages.map((page) => (
-                        <Badge key={page.slug} variant="secondary">
-                        {page.name}
-                        </Badge>
-                    ))}
+                <CardContent className="mt-6 space-y-6">
+                    <AppSection icon={List} title="Core Features (MVP)">
+                        <ul className="space-y-3 list-disc list-inside">
+                            {appBlueprint.coreFeatures.map((feature, i) => (
+                                <li key={i}>
+                                    <span className="font-semibold">{feature.name}:</span> <span className="text-muted-foreground">{feature.description}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </AppSection>
+                    
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <AppSection icon={Database} title="Data Models">
+                            <div className="space-y-3">
+                                {appBlueprint.dataModels.map((model, i) => (
+                                    <div key={i}>
+                                        <h4 className="font-semibold">{model.name}</h4>
+                                        <p className="text-sm text-muted-foreground">{model.properties.join(', ')}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </AppSection>
+                        <AppSection icon={Users} title="User Personas">
+                            <div className="space-y-3">
+                                {appBlueprint.userPersonas.map((persona, i) => (
+                                    <div key={i}>
+                                        <h4 className="font-semibold">{persona.name}</h4>
+                                        <p className="text-sm text-muted-foreground">{persona.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </AppSection>
                     </div>
-                </div>
-                </CardContent>
-                <CardFooter>
-                <Button className="w-full">
-                    <ChevronRight className="mr-2 h-4 w-4" />
-                    Proceed to Autonomous Deployment
-                </Button>
-                </CardFooter>
-            </Card>
-        )}
 
+                    <AppSection icon={Layers} title="Technology Stack">
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                            <div className="text-center"><p className="font-semibold">Frontend</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.frontend}</p></div>
+                            <div className="text-center"><p className="font-semibold">Backend</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.backend}</p></div>
+                            <div className="text-center"><p className="font-semibold">Database</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.database}</p></div>
+                            <div className="text-center"><p className="font-semibold">AI/ML</p><p className="text-sm text-muted-foreground">{appBlueprint.techStack.ai}</p></div>
+                        </div>
+                    </AppSection>
+                </CardContent>
+                </Card>
+            )}
+        </TabsContent>
+
+        <TabsContent value="website">
+            {siteBlueprint && (
+                <Card className="mt-8 border-primary/20 bg-card/70">
+                    <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                        Blueprint Generated
+                    </CardTitle>
+                    <CardDescription>
+                        The AI has created the following plan. The next step would be
+                        to autonomously register the domain and deploy the site.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                    <div>
+                        <h3 className="font-semibold text-lg">
+                        {siteBlueprint.siteName}
+                        </h3>
+                        <p className="text-sm text-muted-foreground italic">
+                        {siteBlueprint.tagline}
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="flex items-center gap-2 text-sm font-semibold">
+                        <Globe className="h-4 w-4" /> Suggested Domain
+                        </h4>
+                        <Badge variant="outline">{siteBlueprint.domainSuggestion}</Badge>
+                    </div>
+                    <div>
+                        <h4 className="flex items-center gap-2 text-sm font-semibold">
+                        <FileText className="h-4 w-4" /> Site Pages
+                        </h4>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                        {siteBlueprint.pages.map((page) => (
+                            <Badge key={page.slug} variant="secondary">
+                            {page.name}
+                            </Badge>
+                        ))}
+                        </div>
+                    </div>
+                    </CardContent>
+                    <CardFooter>
+                    <Button className="w-full">
+                        <ChevronRight className="mr-2 h-4 w-4" />
+                        Proceed to Autonomous Deployment
+                    </Button>
+                    </CardFooter>
+                </Card>
+            )}
+        </TabsContent>
       </Tabs>
     </div>
   );
