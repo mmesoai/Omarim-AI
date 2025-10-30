@@ -38,7 +38,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlaceHolderImages } from "@/lib/placeholder-images"
-import { Loader2, PlusCircle, Sparkles, Bot, TrendingUp, UserCheck, ShoppingCart, Mail, Twitter, Linkedin, Facebook, Video, ImageIcon } from "lucide-react";
+import { Loader2, PlusCircle, Sparkles, Bot, TrendingUp, UserCheck, ShoppingCart, Mail, Twitter, Linkedin, Facebook, Video, ImageIcon, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateProductIdeas, type GenerateProductIdeasOutput } from "@/ai/flows/generate-product-ideas";
 import { findTrendingProducts, generateProductCampaign } from "@/app/actions";
@@ -385,7 +385,7 @@ export default function StoresPage() {
           </CardContent>
           <CardFooter className="flex gap-2">
              <Button onClick={handleApproveAndLaunch} disabled={isCampaignLoading || !!campaignAssets}>
-                {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                {isCampaignLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CheckCircle className="mr-2 h-4 w-4" />}
                 {!!campaignAssets ? "Campaign Launched" : "Approve & Launch Campaign"}
              </Button>
              <Button variant="ghost" onClick={() => setTrendingProduct(null)}>Reject</Button>
