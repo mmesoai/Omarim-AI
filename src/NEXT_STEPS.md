@@ -18,23 +18,21 @@ All AI features in this application are powered by Google's Gemini models. You m
 4.  **Create API Key:** You will be taken to a page to manage your keys. Click the button that says **"Create API key in new project"**.
 5.  **Copy Your Key:** A new API key will be generated. It is a long string of letters and numbers. **Copy this key to your clipboard immediately.**
 
-### Step 2: Add the Key to Your Live Application (Click-by-Click)
+### Step 2: Add the Key to Your Render Application (Click-by-Click)
 
-These instructions are for a typical hosting provider like Render or Vercel. The names may vary slightly, but the process is the same.
-
-1.  **Go to Your Hosting Dashboard:** Log in to your account on the platform where you deployed Omarim AI (e.g., `dashboard.render.com`).
-2.  **Select Your Application:** Find and click on your Omarim AI service or application in the list of projects.
-3.  **Find "Environment" Settings:** On the sidebar for your application, look for a menu item named **"Environment"** or **"Environment Variables"**. Click on it.
-4.  **Add a New Variable:** Look for a button that says **"Add Environment Variable"** or **"Add Secret"**. Click it. This will typically show two input boxes: one for the `Key` and one for the `Value`.
-5.  **Enter the Key Name:** In the first input box, labeled **`Key`** or **`Name`**, type exactly:
+1.  **Go to Your Render Dashboard:** Log in to your account at [**dashboard.render.com**](https://dashboard.render.com).
+2.  **Select Your Application:** On the main dashboard, find and click on your Omarim AI service in the list of projects.
+3.  **Find "Environment" Settings:** On the sidebar for your application (on the left), look for a menu item named **"Environment"**. Click on it.
+4.  **Add a New Variable:** Under the "Environment Variables" section, look for a button that says **"Add Environment Variable"**. Click it. This will show two input boxes: one for the `Key` and one for the `Value`.
+5.  **Enter the Key Name:** In the first input box, labeled **`Key`**, type exactly:
     ```
     GEMINI_API_KEY
     ```
 6.  **Enter the Key Value:** In the second input box, labeled **`Value`**, **paste the Gemini API key** you copied from Google AI Studio.
-7.  **Save Your Changes:** Click the **"Save Changes"** or **"Add"** button.
-8.  **Wait for Redeployment:** Your hosting service will automatically detect the new variable and restart or redeploy your application. This may take a minute or two.
+7.  **Save Your Changes:** Click the **"Save Changes"** button at the bottom of the page.
+8.  **Wait for Redeployment:** Render will automatically detect the new variable and start a new deployment for your application. This may take a minute or two. You can monitor its progress in the "Events" tab.
 
-**Result:** Once your application is running again, all AI features of Omarim AI will be fully operational.
+**Result:** Once the new deployment is live, all AI features of Omarim AI will be fully operational.
 
 ---
 
