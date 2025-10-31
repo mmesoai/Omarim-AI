@@ -19,6 +19,7 @@ import {
   Share2,
   ShoppingBag,
   LifeBuoy,
+  Phone,
 } from "lucide-react"
 import {
   Collapsible,
@@ -52,6 +53,7 @@ const featureNav = [
 const secondaryNav = [
   { href: "/dashboard/inbox", icon: Inbox, label: "Inbox" },
   { href: "/dashboard/voice", icon: Mic, label: "Voice Tools" },
+  { href: "/dashboard/customer-support", icon: Phone, label: "Customer Support" },
 ];
 
 const NavGroup = ({
