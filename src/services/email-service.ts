@@ -65,8 +65,7 @@ export async function sendEmail(params: EmailParams): Promise<{ success: boolean
       html: body,
     };
     
-    // For local development and testing without sending real emails,
-    // we will log the action instead of calling sgMail.send(msg).
+    // In local development and testing, we will log the action instead of sending real emails.
     // In a production environment, you would uncomment the line below.
     // await sgMail.send(msg);
     

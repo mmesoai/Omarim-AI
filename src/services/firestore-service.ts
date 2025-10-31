@@ -6,7 +6,18 @@
  */
 
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
-import { initializeFirebase as initializeFirebaseAdmin } from '@/firebase/server-init';
+import { initializeApp, getApps, App } from 'firebase-admin/app';
+import { firebaseConfig } from '@/firebase/config';
+
+// Initialize Firebase Admin SDK
+function getFirebaseAdminApp(): App {
+  if (getApps().length > 0) {
+    return getApps()[0]!;
+  }
+  return initializeApp({
+    projectId: firebaseConfig.projectId
+  });
+}
 
 /**
  * Adds leads of a specific status to a given outreach sequence for a user.
@@ -22,7 +33,7 @@ export async function addLeadsToSequence(params: {
   leadStatus: string;
 }): Promise<{ success: boolean; message: string; leadsAdded?: number }> {
   const { userId, sequenceName, leadStatus } = params;
-  const db = getFirestore(initializeFirebaseAdmin());
+  const db = getFirestore(getFirebaseAdminApp());
 
   try {
     // 1. Find the outreach sequence by name for the user
@@ -107,7 +118,7 @@ export async function saveLead(params: {
   leadId?: string;
 }): Promise<{ leadId: string }> {
   const { userId, leadData, leadId } = params;
-  const db = getFirestore(initializeFirebaseAdmin());
+  const db = getFirestore(getFirebaseAdminApp());
 
   try {
     const leadsCollection = db.collection(`users/${userId}/leads`);
