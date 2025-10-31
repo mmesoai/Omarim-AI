@@ -6,6 +6,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeFirebase as initializeFirebaseAdmin } from '@/firebase/server-init';
 import { findTrendingProductsFlow } from "@/ai/tools/find-trending-products";
 import { generateProductCampaign as generateProductCampaignFlow, type GenerateProductCampaignOutput } from "@/ai/flows/generate-product-campaign";
+import { sourceProductFromImage as sourceProductFromImageFlow, type SourceProductFromImageInput, type SourceProductFromImageOutput } from '@/ai/flows/source-product-from-image';
 import { 
     GenerateProductCampaignInputSchema, 
     type GenerateProductCampaignInput
@@ -27,6 +28,10 @@ export async function findTrendingProducts(category: string): Promise<TrendingPr
 export async function generateProductCampaign(input: GenerateProductCampaignInput): Promise<GenerateProductCampaignOutput> {
     const validatedInput = GenerateProductCampaignInputSchema.parse(input);
     return await generateProductCampaignFlow(validatedInput);
+}
+
+export async function sourceProductFromImage(input: SourceProductFromImageInput): Promise<SourceProductFromImageOutput> {
+    return await sourceProductFromImageFlow(input);
 }
 
 export async function initiateOutreach(input: InitiateOutreachInput): Promise<InitiateOutreachOutput> {
