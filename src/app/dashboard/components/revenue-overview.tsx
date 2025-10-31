@@ -29,16 +29,8 @@ export function RevenueOverview() {
 
     if (!isClient) {
         return (
-            <Card className="lg:col-span-3">
-                <CardHeader>
-                    <CardTitle>Revenue Overview</CardTitle>
-                    <CardDescription>Monthly performance across all business units.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="h-[350px] w-full flex items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                    </div>
-                </CardContent>
+            <Card className="lg:col-span-3 flex items-center justify-center h-[468px]">
+                <Loader2 className="h-8 w-8 animate-spin" />
             </Card>
         );
     }
