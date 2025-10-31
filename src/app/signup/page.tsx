@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -93,7 +94,11 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center">
+    <div className="relative flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="absolute top-4 left-4 flex items-center gap-2 text-white">
+        <Icons.logo className="h-8 w-8" />
+        <span className="font-headline text-xl font-bold">Omarim AI</span>
+      </div>
        <Image
         src="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop"
         alt="Futuristic background"
