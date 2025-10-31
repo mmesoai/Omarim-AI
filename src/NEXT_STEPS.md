@@ -10,31 +10,39 @@ All AI features in this application are powered by Google's Gemini models. You m
 
 **Purpose:** To enable all AI capabilities, including content generation, lead analysis, and autonomous agents.
 
-**Instructions:**
+### Step 1: Get Your Gemini API Key
 
-1.  **Get a Gemini API Key:**
-    *   Visit [**Google AI Studio**](https://aistudio.google.com/).
-    *   Log in with your Google account.
-    *   Click on **"Get API key"** and then **"Create API key in new project"**.
-    *   Copy the generated API key.
+1.  **Visit Google AI Studio:** Open your web browser and go to [**aistudio.google.com**](https://aistudio.google.com/).
+2.  **Log In:** Sign in with your Google account.
+3.  **Get API Key:** On the main screen, look for a button or link that says **"Get API key"**. Click on it.
+4.  **Create API Key:** You will be taken to a page to manage your keys. Click the button that says **"Create API key in new project"**.
+5.  **Copy Your Key:** A new API key will be generated. It is a long string of letters and numbers. **Copy this key to your clipboard immediately.**
 
-2.  **Add the Key to Your Live Application:**
-    *   Go to your application's dashboard on your hosting provider (e.g., Render, Vercel).
-    *   Navigate to the **"Environment"** or **"Environment Variables"** section for your service.
-    *   Add a new environment variable with the following name and value:
-        *   **Name:** `GEMINI_API_KEY`
-        *   **Value:** `YOUR_API_KEY_HERE` (Paste the key you copied from Google AI Studio)
-    *   Save the changes. Your application will likely restart automatically to apply the new setting.
+### Step 2: Add the Key to Your Live Application (Click-by-Click)
 
-**Result:** With this key in place, all AI features of Omarim AI will be fully operational.
+These instructions are for a typical hosting provider like Render or Vercel. The names may vary slightly, but the process is the same.
+
+1.  **Go to Your Hosting Dashboard:** Log in to your account on the platform where you deployed Omarim AI (e.g., `dashboard.render.com`).
+2.  **Select Your Application:** Find and click on your Omarim AI service or application in the list of projects.
+3.  **Find "Environment" Settings:** On the sidebar for your application, look for a menu item named **"Environment"** or **"Environment Variables"**. Click on it.
+4.  **Add a New Variable:** Look for a button that says **"Add Environment Variable"** or **"Add Secret"**. Click it. This will typically show two input boxes: one for the `Key` and one for the `Value`.
+5.  **Enter the Key Name:** In the first input box, labeled **`Key`** or **`Name`**, type exactly:
+    ```
+    GEMINI_API_KEY
+    ```
+6.  **Enter the Key Value:** In the second input box, labeled **`Value`**, **paste the Gemini API key** you copied from Google AI Studio.
+7.  **Save Your Changes:** Click the **"Save Changes"** or **"Add"** button.
+8.  **Wait for Redeployment:** Your hosting service will automatically detect the new variable and restart or redeploy your application. This may take a minute or two.
+
+**Result:** Once your application is running again, all AI features of Omarim AI will be fully operational.
 
 ---
 
-## 2. Activate Real Email Outreach (Ready for Keys)
+## 2. Activate Real Email Outreach (Via Dashboard)
 
-The application has been fully integrated with the SendGrid SDK. You can add your API keys via the **Settings > Integrations** page in your dashboard.
+The application is integrated with SendGrid. You can add your API keys directly via the **Settings > Integrations** page in your dashboard.
 
-**Purpose:** To enable the Autonomous Agent and other outreach features to send real emails to your leads.
+**Purpose:** To enable the Autonomous Agent to send real emails to your leads.
 
 **Instructions:**
 
@@ -43,39 +51,11 @@ The application has been fully integrated with the SendGrid SDK. You can add you
 3.  **Generate an API Key:** In your SendGrid account, go to "Settings" -> "API Keys" and create a new API key with "Full Access" permissions.
 4.  **Add the Key in Your Dashboard:** Navigate to **/dashboard/settings/integrations** in your live application and connect SendGrid by providing the API key.
 
-**Result:** Once the key is saved, the "Engage Lead" and other email-related features will send emails through your SendGrid account.
-
 ---
 
-## 3. Activate Data Enrichment (Ready for Keys)
+## 3. Activate Other Integrations (Via Dashboard)
 
-**Purpose:** To automatically add valuable company and contact data to your leads.
+**Purpose:** To connect other services like data enrichment, print-on-demand, and payment gateways.
 
 **Instructions:**
-
-1.  **Get a Clearbit API Key:** Sign up for a Clearbit account and get an API key from your dashboard.
-2.  **Add the Key in Your Dashboard:** Navigate to **/dashboard/settings/integrations** in your live application and connect Clearbit by providing the API key.
-
----
-
-## 4. Activate Print-on-Demand (Ready for Keys)
-
-**Purpose:** To autonomously create and publish new custom apparel or other print-on-demand products.
-
-**Instructions:**
-
-1.  **Get a Printify API Key:** In your Printify account, go to "Settings" -> "API" to generate a new Personal Access Token.
-2.  **Add the Key in Your Dashboard:** Navigate to **/dashboard/settings/integrations** in your live application and connect Printify by providing the API key.
-
----
-
-## 5. E-commerce, Social Media, & Payments (Developer Required)
-
-The user interface for managing these connections is complete. A developer is required to build the final API service logic for each platform.
-
-**Purpose:** To sync products from your e-commerce stores, publish content to social media, and process payments.
-
-**Instructions (For a developer):** For each integration (e.g., Shopify, Stripe, X/Twitter), a developer would need to:
-1.  Obtain the necessary API credentials for the platform.
-2.  Build the service logic (e.g., in a file like `src/services/shopify-service.ts`) that uses the stored credentials to make API calls to the platform.
-3.  Connect this service to the existing UI and AI flows.
+For each service (Clearbit, Printify, Stripe, etc.), obtain your API key from that service's dashboard, then navigate to **/dashboard/settings/integrations** in your live application and add the key to the corresponding integration.
