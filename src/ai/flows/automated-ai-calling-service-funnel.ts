@@ -44,5 +44,3 @@ const automatedAiCallingServiceFunnelFlow = ai.defineFlow(
     };
   }
 );
-
-    

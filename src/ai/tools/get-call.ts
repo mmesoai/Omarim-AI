@@ -38,5 +38,3 @@ export const getCall = ai.defineTool(
     };
   }
 );
-
-    
