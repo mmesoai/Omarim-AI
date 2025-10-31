@@ -21,7 +21,7 @@ const InterpretCommandOutputSchema = z.object({
   action: z
     .enum(['navigate', 'generate_social_post', 'run_autonomous_agent', 'add_store', 'manage_campaign', 'get_report', 'answer_self_knowledge_question', 'unrecognized'])
     .describe('The specific action the user wants to perform.'),
-  prompt: z.string().describe('The subject or prompt for the action. For navigation, this is the URL slug. For reports, this is the topic of the report (e.g., "sales", "digital products"). For autonomous agent, this is the objective. For social posts, this is the topic. For adding a store, this could be the type of store (e.g., Shopify). For campaign management, this is the original user command. For self-knowledge questions, this is the original question.'),
+  prompt: z.string().describe('The subject or prompt for the action. For navigation, this is the URL slug. For reports, this is the topic of the report (e.g., "sales", "digital products", "youtube"). For autonomous agent, this is the objective. For social posts, this is the topic. For adding a store, this could be the type of store (e.g., Shopify). For campaign management, this is the original user command. For self-knowledge questions, this is the original question.'),
 });
 export type InterpretCommandOutput = z.infer<typeof InterpretCommandOutputSchema>;
 
@@ -41,7 +41,7 @@ Your task is to understand the user's command and determine the appropriate acti
 
 The available actions are:
 - 'navigate': When the user wants to go to a specific page. The prompt should be the URL slug (e.g., /dashboard/settings).
-- 'get_report': For when a user asks for a report or summary of data (e.g., "give me a sales report"). The prompt should be the topic of the report, like "sales" or "digital products".
+- 'get_report': For when a user asks for a report or summary of data (e.g., "give me a sales report"). The prompt should be the topic of the report, like "sales", "digital products", or "youtube".
 - 'generate_social_post': For when the user wants to create a social media post about a topic.
 - 'run_autonomous_agent': For when a user gives a high-level objective to find leads or businesses.
 - 'add_store': For when the user wants to connect a new e-commerce store.

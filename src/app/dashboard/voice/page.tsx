@@ -19,6 +19,7 @@ import { convertTextToSpeech } from "@/ai/flows/convert-text-to-speech";
 import { interpretCommand } from "@/ai/flows/interpret-command";
 import { getSalesReport } from "@/ai/tools/get-sales-report";
 import { getDigitalProductsReport } from "@/ai/tools/get-digital-products-report";
+import { getYouTubeChannelRevenue } from "@/ai/tools/get-youtube-channel-revenue";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 
@@ -161,8 +162,11 @@ export default function VoicePage() {
           } else if (prompt.includes('digital product')) {
             const report = await getDigitalProductsReport();
             responseText = report.reportSummary;
+          } else if (prompt.includes('youtube')) {
+            const report = await getYouTubeChannelRevenue();
+            responseText = report.reportSummary;
           } else {
-            responseText = "I can provide reports on sales or digital products. Which would you like?";
+            responseText = "I can provide reports on sales, digital products, or YouTube revenue. Which would you like?";
           }
           break;
         default:
