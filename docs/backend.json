@@ -42,31 +42,6 @@
         "status"
       ]
     },
-    "NotionPage": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "NotionPage",
-      "type": "object",
-      "description": "Represents a Notion page where lead data is stored.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the NotionPage entity."
-        },
-        "pageUrl": {
-          "type": "string",
-          "description": "URL of the Notion page."
-        },
-        "databaseId": {
-          "type": "string",
-          "description": "ID of the Notion database."
-        }
-      },
-      "required": [
-        "id",
-        "pageUrl",
-        "databaseId"
-      ]
-    },
     "OutreachSequence": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "OutreachSequence",
@@ -98,216 +73,6 @@
         "name",
         "description",
         "leadIds"
-      ]
-    },
-    "Email": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Email",
-      "type": "object",
-      "description": "Represents an email sent as part of an outreach sequence.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Email entity."
-        },
-        "outreachSequenceId": {
-          "type": "string",
-          "description": "Reference to OutreachSequence. (Relationship: OutreachSequence 1:N Email)"
-        },
-        "leadId": {
-          "type": "string",
-          "description": "Reference to Lead. (Relationship: Lead 1:N Email)"
-        },
-        "subject": {
-          "type": "string",
-          "description": "Subject line of the email."
-        },
-        "body": {
-          "type": "string",
-          "description": "Body of the email."
-        },
-        "sentAt": {
-          "type": "string",
-          "description": "Timestamp when the email was sent.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "outreachSequenceId",
-        "leadId",
-        "subject",
-        "body",
-        "sentAt"
-      ]
-    },
-    "InboundReply": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "InboundReply",
-      "type": "object",
-      "description": "Represents an inbound email reply.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the InboundReply entity."
-        },
-        "emailId": {
-          "type": "string",
-          "description": "Reference to Email. (Relationship: Email 1:N InboundReply)"
-        },
-        "receivedAt": {
-          "type": "string",
-          "description": "Timestamp when the reply was received.",
-          "format": "date-time"
-        },
-        "body": {
-          "type": "string",
-          "description": "Body of the reply email."
-        },
-        "sentiment": {
-          "type": "string",
-          "description": "Sentiment of the reply (e.g., positive, negative, neutral)."
-        },
-        "tags": {
-          "type": "array",
-          "description": "Tags associated with the reply.",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "emailId",
-        "receivedAt",
-        "body",
-        "sentiment",
-        "tags"
-      ]
-    },
-    "DomainCheck": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "DomainCheck",
-      "type": "object",
-      "description": "Represents the result of a domain check.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the DomainCheck entity."
-        },
-        "domain": {
-          "type": "string",
-          "description": "The domain being checked."
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the domain (e.g., available, registered)."
-        },
-        "options": {
-          "type": "array",
-          "description": "Alternative domain options.",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "domain",
-        "status",
-        "options"
-      ]
-    },
-    "Payment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Payment",
-      "type": "object",
-      "description": "Represents a payment transaction.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Payment entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Payment)"
-        },
-        "amount": {
-          "type": "number",
-          "description": "Amount of the payment."
-        },
-        "currency": {
-          "type": "string",
-          "description": "Currency of the payment."
-        },
-        "paymentMethod": {
-          "type": "string",
-          "description": "Payment method used (e.g., Stripe, PayPal)."
-        },
-        "transactionId": {
-          "type": "string",
-          "description": "Transaction ID from the payment gateway."
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the payment (e.g., pending, completed, failed)."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the payment was created.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "amount",
-        "currency",
-        "paymentMethod",
-        "transactionId",
-        "status",
-        "createdAt"
-      ]
-    },
-    "Provisioning": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Provisioning",
-      "type": "object",
-      "description": "Represents the provisioning of a service after payment.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Provisioning entity."
-        },
-        "paymentId": {
-          "type": "string",
-          "description": "Reference to Payment. (Relationship: Payment 1:N Provisioning)"
-        },
-        "serviceType": {
-          "type": "string",
-          "description": "Type of service being provisioned."
-        },
-        "status": {
-          "type": "string",
-          "description": "Status of the provisioning (e.g., pending, completed, failed)."
-        },
-        "details": {
-          "type": "string",
-          "description": "Details about the provisioning process."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the provisioning was created.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "paymentId",
-        "serviceType",
-        "status",
-        "details",
-        "createdAt"
       ]
     },
     "Product": {
@@ -376,33 +141,28 @@
         "lastName"
       ]
     },
-    "Store": {
+    "Integration": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Store",
+      "title": "Integration",
       "type": "object",
-      "description": "Represents a store integrated with the application.",
+      "description": "Represents a third-party service integration.",
       "properties": {
-        "name": {
+        "provider": {
           "type": "string",
-          "description": "Name of the store."
-        },
-        "type": {
-          "type": "string",
-          "description": "Type of store (e.g., Shopify, WooCommerce, Amazon, eBay)."
-        },
-        "apiUrl": {
-          "type": "string",
-          "description": "API URL of the store."
+          "description": "The name of the service provider (e.g., 'sendgrid', 'printify')."
         },
         "apiKey": {
           "type": "string",
-          "description": "API Key for the store."
+          "description": "The API key for the service."
+        },
+        "otherCredentials": {
+            "type": "object",
+            "description": "A flexible object to store other credentials like API URLs or client secrets.",
+            "additionalProperties": true
         }
       },
       "required": [
-        "name",
-        "type",
-        "apiUrl",
+        "provider",
         "apiKey"
       ]
     }
@@ -438,17 +198,11 @@
       },
       "description": "Collection of outreach sequences created by a user."
     },
-    "/users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}": {
-      "schema": {
-        "$ref": "#/entities/Email"
-      },
-      "description": "Collection of emails associated with an outreach sequence."
-    },
-    "/users/{userId}/stores/{storeId}": {
-      "schema": {
-        "$ref": "#/entities/Store"
-      },
-      "description": "Collection of stores integrated by a user."
+    "/users/{userId}/integrations/{integrationId}": {
+        "schema": {
+            "$ref": "#/entities/Integration"
+        },
+        "description": "Stores API keys and credentials for a user's third-party integrations."
     }
   }
 }

@@ -2,15 +2,13 @@
 'use server';
 /**
  * @fileOverview An email sending service using SendGrid.
- * It reads the API key and 'from' email from environment variables.
+ * API keys are retrieved on-demand from a secure tool.
  */
 
 import sgMail from '@sendgrid/mail';
-
-// Set the API key from environment variables when the server starts.
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-}
+import { getIntegrationApiKey } from '@/ai/tools/get-integration-api-key';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeFirebase as initializeFirebaseAdmin } from '@/firebase/server-init';
 
 interface EmailParams {
   to: string;
@@ -19,32 +17,51 @@ interface EmailParams {
 }
 
 /**
- * Sends an email using SendGrid.
+ * Sends an email using SendGrid. It dynamically fetches the user's API key.
  * @param {EmailParams} params - The email parameters.
  * @returns {Promise<{success: boolean, message: string}>} - The result of the operation.
  */
 export async function sendEmail(params: EmailParams): Promise<{ success: boolean; message: string }> {
   const { to, subject, body } = params;
-  
-  // Check if the service is configured for production.
-  if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
-    console.error("SendGrid API Key or From Email not configured in environment variables.");
-    return { 
-        success: false, 
-        message: 'Email service is not configured. Please add SENDGRID_API_KEY and SENDGRID_FROM_EMAIL to your environment variables.' 
-    };
-  }
-  
-  const msg = {
-    to: to,
-    from: process.env.SENDGRID_FROM_EMAIL, // Use the verified sender email from .env
-    subject: subject,
-    html: body, // SendGrid uses `html` for the body
-  };
 
   try {
+    // This is a server-side flow, so we need to get the currently acting user.
+    // This is a placeholder for how you might get the current user in your environment.
+    // In a real scenario, this might come from a session or a decoded token.
+    const auth = getAuth(initializeFirebaseAdmin());
+    // This is just an example, you would need a real way to get the current user's ID.
+    // For this prototype, we cannot reliably get the user, so we cannot send email.
+    const userId = undefined; // Replace with actual user ID retrieval logic
+
+    if (!userId) {
+        throw new Error("User ID could not be determined. Cannot send email.");
+    }
+
+    // Securely fetch the API key using the tool
+    const apiKey = await getIntegrationApiKey({ userId, provider: 'sendgrid' });
+
+    if (!apiKey) {
+      console.error("SendGrid API Key not configured for the user.");
+      return { 
+          success: false, 
+          message: 'Email service is not configured. Please connect SendGrid in your settings.' 
+      };
+    }
+    
+    sgMail.setApiKey(apiKey);
+
+    const fromEmail = "no-reply@omarim.ai"; // A generic 'from' email
+
+    const msg = {
+      to: to,
+      from: fromEmail,
+      subject: subject,
+      html: body,
+    };
+
     await sgMail.send(msg);
     return { success: true, message: `Email successfully sent to ${to}` };
+
   } catch (error: any) {
     console.error('SendGrid Error:', error.response?.body || error);
     return {

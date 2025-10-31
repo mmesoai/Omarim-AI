@@ -1,179 +1,194 @@
+/**
+ * @fileoverview Firestore Security Rules for the application.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model.  All data is nested under /users/{userId},
+ * and users can only read and write data they own. The rule prioritizes simplicity and security.
+ * Data shape validation is relaxed to allow for rapid prototyping.
+ *
+ * Data Structure:
+ * All data is nested under /users/{userId}, including leads, products, outreach sequences,
+ * emails, and stores. This ensures clear ownership and prevents unauthorized access.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - Default security posture is strict owner-only access unless otherwise specified.
+ * - Denormalization is used to avoid costly `get()` calls within rules, improving performance
+ *   and preventing potential rule execution failures.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Secure user profiles, allowing only the owner to read and write their own profile.
+     * @description Rule for the /users collection.  Users can only create their own profile.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user 'user_abc' can create their profile if request.auth.uid == userId
-     * @allow (get, update, delete) - Authenticated user 'user_abc' can read, update, or delete their profile if request.auth.uid == userId
-     * @deny (create) - Authenticated user 'user_xyz' cannot create a profile for 'user_abc' if request.auth.uid != userId
-     * @deny (get, update, delete) - Authenticated user 'user_xyz' cannot read, update, or delete 'user_abc' profile if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Authenticated user with ID matching the document ID can create their profile.
+     * @deny (create) - Unauthenticated user cannot create a profile.
+     * @deny (create) - Authenticated user with ID not matching the document ID cannot create a profile.
+     * @allow (get) - Authenticated user can get their own profile.
+     * @deny (get) - Unauthenticated user cannot get a profile.
+     * @allow (list) - Deny user listing.
+     * @deny (update) - Users cannot update the profile after creation
+     * @deny (delete) - Users cannot delete the profile after creation
+     * @principle Enforces user-ownership for profile creation.  Disallows unauthorized profile access or modification.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
+      allow create: if isSignedIn() && isOwner(userId);
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow update: if false;
+      allow delete: if false;
     }
 
     /**
-     * @description Secure leads collection, allowing only the owner to manage their own leads.
+     * @description Rule for the /users/{userId}/leads collection.  Users can only access leads they own.
      * @path /users/{userId}/leads/{leadId}
-     * @allow (create) - Authenticated user 'user_abc' can create a lead under their ID if request.auth.uid == userId
-     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete leads under their ID if request.auth.uid == userId
-     * @deny (create) - Authenticated user 'user_xyz' cannot create a lead under 'user_abc' ID if request.auth.uid != userId
-     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete leads under 'user_abc' ID if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Authenticated user can create a lead under their profile.
+     * @deny (create) - Unauthenticated user cannot create a lead.
+     * @deny (create) - Authenticated user creating a lead under another user's profile.
+     * @allow (get) - Authenticated user can get a lead under their profile.
+     * @deny (get) - Unauthenticated user cannot get a lead.
+     * @deny (get) - Authenticated user getting a lead under another user's profile.
+     * @allow (list) - Authenticated user can list leads under their profile.
+     * @deny (list) - Unauthenticated user cannot list leads.
+     * @deny (list) - Authenticated user listing leads under another user's profile.
+     * @allow (update) - Authenticated user can update a lead under their profile.
+     * @deny (update) - Unauthenticated user cannot update a lead.
+     * @deny (update) - Authenticated user updating a lead under another user's profile.
+     * @allow (delete) - Authenticated user can delete a lead under their profile.
+     * @deny (delete) - Unauthenticated user cannot delete a lead.
+     * @deny (delete) - Authenticated user deleting a lead under another user's profile.
+     * @principle Enforces user-ownership for lead data.  Disallows unauthorized lead access or modification.
      */
     match /users/{userId}/leads/{leadId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
+      allow create: if isSignedIn() && isOwner(userId);
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Secure products collection, allowing only the owner to manage their own products.
+     * @description Rule for the /users/{userId}/products collection.  Users can only access products they own.
      * @path /users/{userId}/products/{productId}
-     * @allow (create) - Authenticated user 'user_abc' can create a product under their ID if request.auth.uid == userId
-     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete products under their ID if request.auth.uid == userId
-     * @deny (create) - Authenticated user 'user_xyz' cannot create a product under 'user_abc' ID if request.auth.uid != userId
-     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete products under 'user_abc' ID if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Authenticated user can create a product under their profile.
+     * @deny (create) - Unauthenticated user cannot create a product.
+     * @deny (create) - Authenticated user creating a product under another user's profile.
+     * @allow (get) - Authenticated user can get a product under their profile.
+     * @deny (get) - Unauthenticated user cannot get a product.
+     * @deny (get) - Authenticated user getting a product under another user's profile.
+     * @allow (list) - Authenticated user can list products under their profile.
+     * @deny (list) - Unauthenticated user cannot list products.
+     * @deny (list) - Authenticated user listing products under another user's profile.
+     * @allow (update) - Authenticated user can update a product under their profile.
+     * @deny (update) - Unauthenticated user cannot update a product.
+     * @deny (update) - Authenticated user updating a product under another user's profile.
+     * @allow (delete) - Authenticated user can delete a product under their profile.
+     * @deny (delete) - Unauthenticated user cannot delete a product.
+     * @deny (delete) - Authenticated user deleting a product under another user's profile.
+     * @principle Enforces user-ownership for product data.  Disallows unauthorized product access or modification.
      */
     match /users/{userId}/products/{productId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
+      allow create: if isSignedIn() && isOwner(userId);
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Secure outreach sequences collection, allowing only the owner to manage their own sequences.
+     * @description Rule for the /users/{userId}/outreachSequences collection.  Users can only access outreach sequences they own.
      * @path /users/{userId}/outreachSequences/{outreachSequenceId}
-     * @allow (create) - Authenticated user 'user_abc' can create an outreach sequence under their ID if request.auth.uid == userId
-     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete outreach sequences under their ID if request.auth.uid == userId
-     * @deny (create) - Authenticated user 'user_xyz' cannot create an outreach sequence under 'user_abc' ID if request.auth.uid != userId
-     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete outreach sequences under 'user_abc' ID if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Authenticated user can create an outreach sequence under their profile.
+     * @deny (create) - Unauthenticated user cannot create an outreach sequence.
+     * @deny (create) - Authenticated user creating an outreach sequence under another user's profile.
+     * @allow (get) - Authenticated user can get an outreach sequence under their profile.
+     * @deny (get) - Unauthenticated user cannot get an outreach sequence.
+     * @deny (get) - Authenticated user getting an outreach sequence under another user's profile.
+     * @allow (list) - Authenticated user can list outreach sequences under their profile.
+     * @deny (list) - Unauthenticated user cannot list outreach sequences.
+     * @deny (list) - Authenticated user listing outreach sequences under another user's profile.
+     * @allow (update) - Authenticated user can update an outreach sequence under their profile.
+     * @deny (update) - Unauthenticated user cannot update an outreach sequence.
+     * @deny (update) - Authenticated user updating an outreach sequence under another user's profile.
+     * @allow (delete) - Authenticated user can delete an outreach sequence under their profile.
+     * @deny (delete) - Unauthenticated user cannot delete an outreach sequence.
+     * @deny (delete) - Authenticated user deleting an outreach sequence under another user's profile.
+     * @principle Enforces user-ownership for outreach sequence data.  Disallows unauthorized access or modification.
      */
     match /users/{userId}/outreachSequences/{outreachSequenceId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
+      allow create: if isSignedIn() && isOwner(userId);
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Secure emails collection, allowing only the owner to manage emails within their outreach sequences.
+     * @description Rule for the /users/{userId}/outreachSequences/{outreachSequenceId}/emails collection.  Users can only access emails they own.
      * @path /users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}
-     * @allow (create) - Authenticated user 'user_abc' can create an email under their outreach sequence if request.auth.uid == userId
-     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete emails under their outreach sequence if request.auth.uid == userId
-     * @deny (create) - Authenticated user 'user_xyz' cannot create an email under 'user_abc' outreach sequence if request.auth.uid != userId
-     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete emails under 'user_abc' outreach sequence if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Authenticated user can create an email under their outreach sequence.
+     * @deny (create) - Unauthenticated user cannot create an email.
+     * @deny (create) - Authenticated user creating an email under another user's outreach sequence.
+     * @allow (get) - Authenticated user can get an email under their outreach sequence.
+     * @deny (get) - Unauthenticated user cannot get an email.
+     * @deny (get) - Authenticated user getting an email under another user's outreach sequence.
+     * @allow (list) - Authenticated user can list emails under their outreach sequence.
+     * @deny (list) - Unauthenticated user cannot list emails.
+     * @deny (list) - Authenticated user listing emails under another user's outreach sequence.
+     * @allow (update) - Authenticated user can update an email under their outreach sequence.
+     * @deny (update) - Unauthenticated user cannot update an email.
+     * @deny (update) - Authenticated user updating an email under another user's outreach sequence.
+     * @allow (delete) - Authenticated user can delete an email under their outreach sequence.
+     * @deny (delete) - Unauthenticated user cannot delete an email.
+     * @deny (delete) - Authenticated user deleting an email under another user's outreach sequence.
+     * @principle Enforces user-ownership for email data.  Disallows unauthorized access or modification.
      */
     match /users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
+      allow create: if isSignedIn() && isOwner(userId);
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
     }
 
     /**
-     * @description Secure stores collection, allowing only the owner to manage their own stores.
+     * @description Rule for the /users/{userId}/stores collection.  Users can only access stores they own.
      * @path /users/{userId}/stores/{storeId}
-     * @allow (create) - Authenticated user 'user_abc' can create a store under their ID if request.auth.uid == userId
-     * @allow (get, list, update, delete) - Authenticated user 'user_abc' can read, list, update, or delete stores under their ID if request.auth.uid == userId
-     * @deny (create) - Authenticated user 'user_xyz' cannot create a store under 'user_abc' ID if request.auth.uid != userId
-     * @deny (get, list, update, delete) - Authenticated user 'user_xyz' cannot read, list, update, or delete stores under 'user_abc' ID if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) - Authenticated user can create a store under their profile.
+     * @deny (create) - Unauthenticated user cannot create a store.
+     * @deny (create) - Authenticated user creating a store under another user's profile.
+     * @allow (get) - Authenticated user can get a store under their profile.
+     * @deny (get) - Unauthenticated user cannot get a store.
+     * @deny (get) - Authenticated user getting a store under another user's profile.
+     * @allow (list) - Authenticated user can list stores under their profile.
+     * @deny (list) - Unauthenticated user cannot list stores.
+     * @deny (list) - Authenticated user listing stores under another user's profile.
+     * @allow (update) - Authenticated user can update a store under their profile.
+     * @deny (update) - Unauthenticated user cannot update a store.
+     * @deny (update) - Authenticated user updating a store under another user's profile.
+     * @allow (delete) - Authenticated user can delete a store under their profile.
+     * @deny (delete) - Unauthenticated user cannot delete a store.
+     * @deny (delete) - Authenticated user deleting a store under another user's profile.
+     * @principle Enforces user-ownership for store data.  Disallows unauthorized access or modification.
      */
     match /users/{userId}/stores/{storeId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
-      }
-
+      allow create: if isSignedIn() && isOwner(userId);
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
     }
+  }
+
+  // Helper function to determine if the user is signed in.
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  // Helper function to determine if the user is the owner of the document.
+  function isOwner(userId) {
+    return request.auth.uid == userId;
   }
 }
