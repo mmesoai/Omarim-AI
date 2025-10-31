@@ -8,7 +8,6 @@ import * as z from 'zod';
 import {
   Bot,
   Loader2,
-  Sparkles,
   Phone,
   User,
   BrainCircuit,
