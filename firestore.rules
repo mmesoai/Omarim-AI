@@ -1,3 +1,4 @@
+
 /**
  * @fileoverview Firestore Security Rules for the application.
  *
@@ -34,10 +35,10 @@ service cloud.firestore {
      * @principle Enforces user-ownership for profile creation.  Disallows unauthorized profile access or modification.
      */
     match /users/{userId} {
-      allow create: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && (isOwner(userId) || isSigningInWithGoogle());
       allow get: if isSignedIn() && isOwner(userId);
       allow list: if false;
-      allow update: if false;
+      allow update: if isSignedIn() && isOwner(userId);
       allow delete: if false;
     }
 
@@ -126,59 +127,13 @@ service cloud.firestore {
     }
 
     /**
-     * @description Rule for the /users/{userId}/outreachSequences/{outreachSequenceId}/emails collection.  Users can only access emails they own.
-     * @path /users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId}
-     * @allow (create) - Authenticated user can create an email under their outreach sequence.
-     * @deny (create) - Unauthenticated user cannot create an email.
-     * @deny (create) - Authenticated user creating an email under another user's outreach sequence.
-     * @allow (get) - Authenticated user can get an email under their outreach sequence.
-     * @deny (get) - Unauthenticated user cannot get an email.
-     * @deny (get) - Authenticated user getting an email under another user's outreach sequence.
-     * @allow (list) - Authenticated user can list emails under their outreach sequence.
-     * @deny (list) - Unauthenticated user cannot list emails.
-     * @deny (list) - Authenticated user listing emails under another user's outreach sequence.
-     * @allow (update) - Authenticated user can update an email under their outreach sequence.
-     * @deny (update) - Unauthenticated user cannot update an email.
-     * @deny (update) - Authenticated user updating an email under another user's outreach sequence.
-     * @allow (delete) - Authenticated user can delete an email under their outreach sequence.
-     * @deny (delete) - Unauthenticated user cannot delete an email.
-     * @deny (delete) - Authenticated user deleting an email under another user's outreach sequence.
-     * @principle Enforces user-ownership for email data.  Disallows unauthorized access or modification.
+     * @description Rule for the /users/{userId}/integrations collection.  Users can only access integrations they own.
+     * @path /users/{userId}/integrations/{integrationId}
+     * @allow (read, write) - Authenticated user can manage their own integration credentials.
+     * @principle Enforces strict user-ownership for sensitive API keys and credentials.
      */
-    match /users/{userId}/outreachSequences/{outreachSequenceId}/emails/{emailId} {
-      allow create: if isSignedIn() && isOwner(userId);
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId) && resource != null;
-      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Rule for the /users/{userId}/stores collection.  Users can only access stores they own.
-     * @path /users/{userId}/stores/{storeId}
-     * @allow (create) - Authenticated user can create a store under their profile.
-     * @deny (create) - Unauthenticated user cannot create a store.
-     * @deny (create) - Authenticated user creating a store under another user's profile.
-     * @allow (get) - Authenticated user can get a store under their profile.
-     * @deny (get) - Unauthenticated user cannot get a store.
-     * @deny (get) - Authenticated user getting a store under another user's profile.
-     * @allow (list) - Authenticated user can list stores under their profile.
-     * @deny (list) - Unauthenticated user cannot list stores.
-     * @deny (list) - Authenticated user listing stores under another user's profile.
-     * @allow (update) - Authenticated user can update a store under their profile.
-     * @deny (update) - Unauthenticated user cannot update a store.
-     * @deny (update) - Authenticated user updating a store under another user's profile.
-     * @allow (delete) - Authenticated user can delete a store under their profile.
-     * @deny (delete) - Unauthenticated user cannot delete a store.
-     * @deny (delete) - Authenticated user deleting a store under another user's profile.
-     * @principle Enforces user-ownership for store data.  Disallows unauthorized access or modification.
-     */
-    match /users/{userId}/stores/{storeId} {
-      allow create: if isSignedIn() && isOwner(userId);
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId) && resource != null;
-      allow delete: if isSignedIn() && isOwner(userId) && resource != null;
+    match /users/{userId}/integrations/{integrationId} {
+        allow read, write: if isSignedIn() && isOwner(userId);
     }
   }
 
@@ -190,5 +145,10 @@ service cloud.firestore {
   // Helper function to determine if the user is the owner of the document.
   function isOwner(userId) {
     return request.auth.uid == userId;
+  }
+
+  // Helper function to check if the sign-in provider is Google.
+  function isSigningInWithGoogle() {
+    return request.auth.token.firebase.sign_in_provider == 'google.com';
   }
 }
