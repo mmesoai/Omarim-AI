@@ -81,6 +81,7 @@ const initiateOutreachFlow = ai.defineFlow(
 
     // Step 2: Send the email using the sendEmail tool
     const sendResult = await sendEmail({
+      userId,
       to: lead.email,
       subject: emailContent.subject,
       body: emailContent.body,

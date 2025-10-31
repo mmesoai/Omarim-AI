@@ -11,6 +11,7 @@ const SendEmailInputSchema = z.object({
   to: z.string().email().describe('The email address of the recipient.'),
   subject: z.string().describe('The subject line of the email.'),
   body: z.string().describe('The HTML or text content of the email body.'),
+  userId: z.string().describe('The ID of the user on whose behalf the email is being sent.'),
 });
 
 const SendEmailOutputSchema = z.object({
@@ -28,7 +29,7 @@ export const sendEmail = ai.defineTool(
   async (input) => {
     try {
       // The service now handles the logic of whether to send a real email
-      // or simulate it based on environment variable configuration.
+      // or simulate it based on whether the user has configured their API key in the dashboard.
       const result = await sendEmailService(input);
       return result;
     } catch (error: any) {

@@ -1,4 +1,3 @@
-
 # Omarim AI: Autonomous Business Development Platform
 
 Welcome to Omarim AI, a next-generation autonomous business development partner designed to help you grow your business with the power of artificial intelligence. This platform automates critical tasks, from lead generation and e-commerce sourcing to content creation and social media management.
@@ -33,12 +32,12 @@ This is your first step. This guide contains the technical commands to build the
 ### 2. Final Integration Steps (Connecting Services)
 Once the app is live, use this guide to connect it to real-world services by providing the necessary API keys.
 
-**[➡️ Click here to view your Final Integration Steps (NEXT_STEPS.md)](./NEXT_STEPS.md)**
+**[➡️ Click here to view your Final Integration Steps (src/NEXT_STEPS.md)](./src/NEXT_STEPS.md)**
 
 ### 3. System Architecture
 For a deep dive into the technical architecture, including a detailed breakdown of all the AI flows, user interface modules, and data models we've built.
 
-**[➡️ Click here to view the System Architecture (OMARIM_AI_SYSTEM_ARCHITECTURE.md)](./OMARIM_AI_SYSTEM_ARCHITECTURE.md)**
+**[➡️ Click here to view the System Architecture (src/OMARIM_AI_SYSTEM_ARCHITECTURE.md)](./src/OMARIM_AI_SYSTEM_ARCHITECTURE.md)**
 
 ---
 

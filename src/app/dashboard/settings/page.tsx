@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, setDocumentNonBlocking, useDoc } from "@/firebase";
-import { collection, doc, query, where } from 'firebase/firestore';
+import { collection, doc } from 'firebase/firestore';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,7 +41,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Loader2, PlusCircle, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard, Shirt, CheckCircle } from "lucide-react";
+import { Loader2, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard, Shirt, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Icons } from "@/components/icons";
 
@@ -155,7 +155,7 @@ export default function SettingsPage() {
       });
   };
 
-  const isConnected = (provider: IntegrationProvider | 'gmail') => {
+  const isConnected = (provider: IntegrationProvider) => {
       return !!integrations?.find(int => int.id === provider);
   }
 
@@ -166,20 +166,16 @@ export default function SettingsPage() {
       </Card>
   );
 
-  const IntegrationRow = ({ provider, isOAuth }: { provider: IntegrationProvider | 'gmail', isOAuth?: boolean }) => {
-    const details = integrationDetails[provider as IntegrationProvider];
+  const IntegrationRow = ({ provider } : { provider: IntegrationProvider }) => {
+    const details = integrationDetails[provider];
     const connected = isConnected(provider);
-    const title = details ? details.title.replace('Connect ', '') : 'Gmail';
-    const description = details ? details.description : 'Allow Omarim to read and send emails on your behalf.';
-    const Icon = details ? details.icon : Icons.google;
 
     return (
         <div className="flex items-center justify-between rounded-md border p-4">
             <div className="flex items-center gap-4">
-                <Icon className="h-6 w-6" />
+                <details.icon className="h-6 w-6" />
                 <div>
-                    <p className="font-medium">{title}</p>
-                    <p className="text-sm text-muted-foreground">{description}</p>
+                    <p className="font-medium">{details.title.replace('Connect ','')}</p>
                 </div>
             </div>
             {connected ? (
@@ -187,12 +183,8 @@ export default function SettingsPage() {
                   <CheckCircle className="h-5 w-5" />
                   Connected
                 </div>
-            ) : isOAuth ? (
-                <Button variant="secondary" onClick={() => handleOAuthConnect(title)}>
-                  <Icons.google className="mr-2 h-4 w-4" /> Connect with Google
-                </Button>
             ) : (
-              <Button variant="secondary" onClick={() => openIntegrationDialog(provider as IntegrationProvider)}>Connect</Button>
+              <Button variant="secondary" onClick={() => openIntegrationDialog(provider)}>Connect</Button>
             )}
         </div>
     );
@@ -282,7 +274,6 @@ export default function SettingsPage() {
             ) : (
                 <div className="space-y-6">
                     <IntegrationCard title="Email & Outreach" description="Connect your email providers to send outreach and analyze replies.">
-                        <IntegrationRow provider="gmail" isOAuth />
                         <IntegrationRow provider="sendgrid" />
                     </IntegrationCard>
 
