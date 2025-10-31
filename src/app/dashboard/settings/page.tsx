@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/form"
 import { Loader2, PlusCircle, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard, Shirt, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Icons } from "@/components/icons";
 
 const integrationFormSchema = z.object({
     apiKey: z.string().min(10, { message: "API Key must be at least 10 characters." }),
@@ -54,7 +55,7 @@ const profileFormSchema = z.object({
   email: z.string().email(),
 });
 
-type IntegrationProvider = 'sendgrid' | 'clearbit' | 'gmail' | 'stripe' | 'paypal' | 'printify' | 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'youtube';
+type IntegrationProvider = 'sendgrid' | 'clearbit' | 'stripe' | 'paypal' | 'printify' | 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'youtube';
 
 type IntegrationDialogState = {
     isOpen: boolean;
@@ -64,7 +65,6 @@ type IntegrationDialogState = {
 const integrationDetails: Record<IntegrationProvider, { title: string, description: string, icon: React.ElementType }> = {
     sendgrid: { title: 'Connect SendGrid', description: 'Enter your API key to enable sending outreach emails.', icon: Mail },
     clearbit: { title: 'Connect Clearbit', description: 'Enter your API key to enrich lead data.', icon: BarChart },
-    gmail: { title: 'Connect Gmail', description: 'Begin the process to securely connect your Gmail account.', icon: Mail },
     stripe: { title: 'Connect Stripe', description: 'Enter your Stripe API key to process payments.', icon: CreditCard },
     paypal: { title: 'Connect PayPal', description: 'Enter your PayPal API credentials to process payments.', icon: CreditCard },
     printify: { title: 'Connect Printify', description: 'Enter your Printify API key to enable autonomous print-on-demand product creation.', icon: Shirt },
@@ -148,7 +148,14 @@ export default function SettingsPage() {
     setIntegrationDialog({ isOpen: true, provider });
   }
 
-  const isConnected = (provider: IntegrationProvider) => {
+  const handleOAuthConnect = (provider: string) => {
+      toast({
+          title: `${provider} Connection`,
+          description: "The full OAuth connection flow requires developer implementation.",
+      });
+  };
+
+  const isConnected = (provider: IntegrationProvider | 'gmail') => {
       return !!integrations?.find(int => int.id === provider);
   }
 
@@ -268,7 +275,25 @@ export default function SettingsPage() {
             ) : (
                 <div className="space-y-6">
                     <IntegrationCard title="Email & Outreach" description="Connect your email providers to send outreach and analyze replies.">
-                         <IntegrationRow provider="gmail" />
+                        <div className="flex items-center justify-between rounded-md border p-4">
+                            <div className="flex items-center gap-4">
+                                <Icons.google className="h-6 w-6" />
+                                <div>
+                                    <p className="font-medium">Gmail</p>
+                                    <p className="text-sm text-muted-foreground">Allow Omarim to read and send emails on your behalf.</p>
+                                </div>
+                            </div>
+                            {isConnected('gmail') ? (
+                                <div className="flex items-center gap-2 text-sm font-semibold text-green-500">
+                                    <CheckCircle className="h-5 w-5" />
+                                    Connected
+                                </div>
+                            ) : (
+                                <Button variant="secondary" onClick={() => handleOAuthConnect('Gmail')}>
+                                    <Icons.google className="mr-2 h-4 w-4" /> Connect with Google
+                                </Button>
+                            )}
+                        </div>
                         <IntegrationRow provider="sendgrid" />
                     </IntegrationCard>
 
