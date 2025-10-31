@@ -53,8 +53,10 @@ Analyze the following command and determine the action and the prompt.
 
 Navigation URLs:
 - Dashboard: /dashboard
+- Products: /dashboard/products
 - Chat: /dashboard/chat
 - Autonomous Agent: /dashboard/agent
+- AI Calls Agent: /dashboard/ai-calls-agent
 - Digital Products: /dashboard/digital-products
 - Lead Intelligence: /dashboard/leads
 - Outreach Engine: /dashboard/outreach

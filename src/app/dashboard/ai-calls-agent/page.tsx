@@ -36,7 +36,6 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
@@ -53,6 +52,11 @@ const PlatformIcon = ({ platform }: { platform: string }) => {
   }
 };
 
+type Simulation = {
+    query: string;
+    response: AnswerCustomerQueryOutput;
+}
+
 export default function AiCallsAgentPage() {
   const [isFunnelLoading, setIsFunnelLoading] = useState(false);
   const [isSimulationLoading, setIsSimulationLoading] = useState(false);
@@ -61,9 +65,9 @@ export default function AiCallsAgentPage() {
     setFunnelResponse,
   ] = useState<AutomatedAiCallingServiceFunnelOutput | null>(null);
   const [
-    simulationResponse,
-    setSimulationResponse,
-  ] = useState<AnswerCustomerQueryOutput | null>(null);
+    simulation,
+    setSimulation,
+  ] = useState<Simulation | null>(null);
   const { toast } = useToast();
 
   async function handleRunFunnel() {
@@ -95,7 +99,7 @@ export default function AiCallsAgentPage() {
 
   async function handleSimulateCall() {
     setIsSimulationLoading(true);
-    setSimulationResponse(null);
+    setSimulation(null);
     try {
       // Step 1: Simulate receiving a call
       const inboundCall = await getCall();
@@ -104,7 +108,8 @@ export default function AiCallsAgentPage() {
       const demoBlueprint = {
         siteName: 'QuantumLeap AI',
         tagline: 'Integrate Tomorrow`s AI Today',
-        pages: [{ name: 'Pricing', slug: '/pricing' }],
+        pages: [{ name: 'Pricing', slug: '/pricing', description: 'Our pricing starts at $499/mo for the basic plan.' }],
+        coreFeatures: [{name: 'Password Reset', description: 'Users can reset their password via the login page.'}]
       };
 
       // Step 3: Let the AI answer the query based on the blueprint
@@ -112,7 +117,7 @@ export default function AiCallsAgentPage() {
         blueprint: demoBlueprint,
         customerQuery: inboundCall.customerQuery,
       });
-      setSimulationResponse(response);
+      setSimulation({ query: inboundCall.customerQuery, response });
       toast({
         title: 'Simulation Complete',
         description: `AI Agent handled query: "${inboundCall.customerQuery}"`,
@@ -266,13 +271,13 @@ export default function AiCallsAgentPage() {
         </Card>
       )}
 
-      {isSimulationLoading && !simulationResponse && (
+      {isSimulationLoading && !simulation && (
         <div className="flex justify-center py-10">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       )}
 
-      {simulationResponse && (
+      {simulation && (
         <Card>
           <CardHeader>
             <CardTitle>Call Simulation Result</CardTitle>
@@ -287,8 +292,7 @@ export default function AiCallsAgentPage() {
                 Customer Query
               </h3>
               <p className="text-sm italic text-muted-foreground mt-1">
-                {/* This is a bit of a shortcut; in a real app we'd get the query from the simulation result */}
-                &quot;Hi, I can&apos;t log into my account, can you reset my password?&quot;
+                &quot;{simulation.query}&quot;
               </p>
             </div>
              <div className="rounded-md border bg-muted/50 p-4">
@@ -296,17 +300,17 @@ export default function AiCallsAgentPage() {
                 <Bot className="h-4 w-4 text-primary" />
                 AI Agent Response
               </h3>
-              <p className="text-sm mt-1">{simulationResponse.answer}</p>
+              <p className="text-sm mt-1">{simulation.response.answer}</p>
             </div>
             <Separator />
             <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                     <h4 className="font-semibold">Confidence</h4>
-                    <p className="text-primary font-bold">{simulationResponse.confidence.toFixed(2)} / 1.00</p>
+                    <p className="text-primary font-bold">{simulation.response.confidence.toFixed(2)} / 1.00</p>
                 </div>
                  <div>
                     <h4 className="font-semibold">Reasoning</h4>
-                    <p className="text-xs text-muted-foreground italic">{simulationResponse.reasoning}</p>
+                    <p className="text-xs text-muted-foreground italic">{simulation.response.reasoning}</p>
                 </div>
             </div>
           </CardContent>

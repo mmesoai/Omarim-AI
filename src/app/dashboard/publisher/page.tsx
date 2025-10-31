@@ -128,10 +128,7 @@ export default function PublisherPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <CardTitle>Content Generator</CardTitle>
-          </div>
+          <CardTitle>Content Generator</CardTitle>
           <CardDescription>
             Enter a topic, a block of text, or a YouTube URL, and the AI will create tailored posts for each platform.
           </CardDescription>
@@ -228,7 +225,7 @@ export default function PublisherPage() {
                         disabled={state !== 'idle'}
                        >
                         {state === 'publishing' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {state === 'published' ? 'Published' : 'Publish Post'}
+                        {state === 'published' ? 'Published' : (<><Send className="mr-2 h-4 w-4" /> Publish Post</>)}
                        </Button>
                    </CardFooter>
                 </Card>

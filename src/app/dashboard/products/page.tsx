@@ -11,6 +11,9 @@ import {
   ChevronRight,
   FileText,
   Send,
+  Twitter,
+  Linkedin,
+  Facebook,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +36,7 @@ import {
     generateFeatureMarketingAssets,
     type GenerateFeatureMarketingAssetsOutput
 } from '@/ai/flows/generate-feature-marketing-assets';
+import { useRouter } from 'next/navigation';
 
 type FeatureProduct = {
   id: 'autonomousAgent' | 'digitalProductFunnel' | 'aiCallsAgent';
@@ -40,6 +44,7 @@ type FeatureProduct = {
   description: string;
   icon: React.ElementType;
   price: string;
+  page: string;
 };
 
 const featureProducts: FeatureProduct[] = [
@@ -50,6 +55,7 @@ const featureProducts: FeatureProduct[] = [
       'An AI agent that finds, qualifies, and engages new business leads 24/7.',
     icon: Bot,
     price: '$499/mo',
+    page: '/dashboard/agent'
   },
   {
     id: 'digitalProductFunnel',
@@ -58,6 +64,7 @@ const featureProducts: FeatureProduct[] = [
       'An autonomous funnel to find, create, and market new digital products weekly.',
     icon: ShoppingBag,
     price: '$799/mo',
+    page: '/dashboard/digital-products'
   },
   {
     id: 'aiCallsAgent',
@@ -66,20 +73,36 @@ const featureProducts: FeatureProduct[] = [
       'An AI agent that can understand your business and answer customer phone calls.',
     icon: LifeBuoy,
     price: '$999/mo',
+    page: '/dashboard/ai-calls-agent'
   },
 ];
 
+const PlatformIcon = ({ platform }: { platform: string }) => {
+  switch (platform.toLowerCase()) {
+    case 'twitter':
+      return <Twitter className="h-5 w-5 text-sky-500" />;
+    case 'linkedin':
+      return <Linkedin className="h-5 w-5 text-blue-700" />;
+    case 'facebook':
+      return <Facebook className="h-5 w-5 text-blue-800" />;
+    default:
+      return <Bot className="h-5 w-5" />;
+  }
+};
+
+
 export default function ProductsPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<FeatureProduct['id'] | null>(null);
   const [
     marketingAssets,
     setMarketingAssets,
   ] = useState<GenerateFeatureMarketingAssetsOutput | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleGenerateAssets = async (feature: FeatureProduct) => {
-    setIsLoading(true);
+    setIsLoading(feature.id);
     setMarketingAssets(null);
     toast({
       title: `Generating assets for ${feature.name}...`,
@@ -101,7 +124,7 @@ export default function ProductsPage() {
         description: 'The AI encountered an error while creating assets.',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(null);
     }
   };
 
@@ -113,13 +136,13 @@ export default function ProductsPage() {
             Omarim AI Product Suite
           </h1>
           <p className="mt-2 text-lg text-muted-foreground">
-            Each feature of your platform is a sellable, autonomous business.
+            Each feature of your platform is a sellable, autonomous business. Generate marketing assets or go to the feature page.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {featureProducts.map((feature) => (
-            <Card key={feature.id} className="flex flex-col">
+            <Card key={feature.id} className="flex flex-col hover:bg-card/70 hover:shadow-xl transition-all">
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <feature.icon className="h-8 w-8 text-primary" />
@@ -132,13 +155,20 @@ export default function ProductsPage() {
               <CardContent className="flex-grow">
                 <p className="text-3xl font-bold text-primary">{feature.price}</p>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="flex flex-col gap-2">
+                 <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => router.push(feature.page)}
+                >
+                  Go to Feature Page <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
                 <Button
                   className="w-full"
                   onClick={() => handleGenerateAssets(feature)}
-                  disabled={isLoading}
+                  disabled={!!isLoading}
                 >
-                  {isLoading ? (
+                  {isLoading === feature.id ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <Sparkles className="mr-2 h-4 w-4" />
@@ -168,7 +198,7 @@ export default function ProductsPage() {
                     </CardHeader>
                     <CardContent>
                         <h3 className="font-bold text-lg">{marketingAssets.landingPage.headline}</h3>
-                        <p className="text-muted-foreground">{marketingAssets.landingPage.body}</p>
+                        <p className="text-muted-foreground whitespace-pre-wrap">{marketingAssets.landingPage.body}</p>
                     </CardContent>
                 </Card>
                  <Card>
@@ -177,11 +207,20 @@ export default function ProductsPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {marketingAssets.socialPosts.map((post, i) => (
-                            <div key={i} className="p-2 border-b">
-                                <h4 className="font-semibold">{post.platform} Post:</h4>
-                                <p className="text-sm whitespace-pre-wrap">{post.content}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{post.hashtags.join(' ')}</p>
-                            </div>
+                             <Card key={i} className="bg-card/50">
+                                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                    <CardTitle className="text-base flex items-center gap-2">
+                                        <PlatformIcon platform={post.platform} />
+                                        {post.platform}
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm whitespace-pre-wrap">{post.content}</p>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {post.hashtags.map(tag => <Badge key={tag} variant="outline" className="text-xs">#{tag}</Badge>)}
+                                    </div>
+                                </CardContent>
+                            </Card>
                         ))}
                     </CardContent>
                 </Card>
