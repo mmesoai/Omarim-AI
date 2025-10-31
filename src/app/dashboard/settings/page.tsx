@@ -48,7 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, PlusCircle, ShoppingCart, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard, Shirt } from "lucide-react";
+import { Loader2, PlusCircle, Mail, BarChart, Twitter, Linkedin, Facebook, Youtube, Instagram, CreditCard, Shirt } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const storeFormSchema = z.object({
