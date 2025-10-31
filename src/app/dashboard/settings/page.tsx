@@ -54,7 +54,7 @@ const profileFormSchema = z.object({
   email: z.string().email(),
 });
 
-type IntegrationProvider = 'sendgrid' | 'clearbit' | 'gmail' | 'stripe' | 'paypal' | 'printify';
+type IntegrationProvider = 'sendgrid' | 'clearbit' | 'gmail' | 'stripe' | 'paypal' | 'printify' | 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'youtube';
 
 type IntegrationDialogState = {
     isOpen: boolean;
@@ -68,6 +68,11 @@ const integrationDetails: Record<IntegrationProvider, { title: string, descripti
     stripe: { title: 'Connect Stripe', description: 'Enter your Stripe API key to process payments.', icon: CreditCard },
     paypal: { title: 'Connect PayPal', description: 'Enter your PayPal API credentials to process payments.', icon: CreditCard },
     printify: { title: 'Connect Printify', description: 'Enter your Printify API key to enable autonomous print-on-demand product creation.', icon: Shirt },
+    twitter: { title: 'Connect X (Twitter)', description: 'Publish threads and posts.', icon: Twitter },
+    linkedin: { title: 'Connect LinkedIn', description: 'Publish articles and posts.', icon: Linkedin },
+    facebook: { title: 'Connect Facebook', description: 'Publish to your pages and groups.', icon: Facebook },
+    instagram: { title: 'Connect Instagram', description: 'Publish reels and stories.', icon: Instagram },
+    youtube: { title: 'Connect YouTube', description: 'Publish shorts and videos.', icon: Youtube },
 };
 
 
@@ -127,7 +132,6 @@ export default function SettingsPage() {
         createdAt: new Date(),
       };
       
-      // The document ID will be the provider name to ensure only one per user.
       const integrationDocRef = doc(integrationsCollectionRef, provider);
       setDocumentNonBlocking(integrationDocRef, newIntegration, { merge: true });
 
@@ -274,15 +278,15 @@ export default function SettingsPage() {
                     </IntegrationCard>
 
                     <IntegrationCard title="Social Media Publishing" description="Connect your social accounts to publish content autonomously.">
-                        <IntegrationRow icon={Twitter} name="X (Twitter)" description="Publish threads and posts" action={() => {}} />
-                        <IntegrationRow icon={Linkedin} name="LinkedIn" description="Publish articles and posts" action={() => {}} />
-                        <IntegrationRow icon={Facebook} name="Facebook" description="Publish to your pages and groups" action={() => {}} />
-                        <IntegrationRow icon={Instagram} name="Instagram" description="Publish reels and stories" action={() => {}} />
-                        <IntegrationRow icon={Youtube} name="YouTube" description="Publish shorts and videos" action={() => {}} />
+                        <IntegrationRow provider="twitter" />
+                        <IntegrationRow provider="linkedin" />
+                        <IntegrationRow provider="facebook" />
+                        <IntegrationRow provider="instagram" />
+                        <IntegrationRow provider="youtube" />
                     </IntegrationCard>
 
                     <IntegrationCard title="E-commerce & Fulfillment" description="Sync products from your online stores and manage fulfillment.">
-                        <IntegrationRow icon={Shirt} name="Printify" description="Print-on-demand product fulfillment" action={() => openIntegrationDialog('printify')} isConnected={isConnected('printify')}/>
+                         <IntegrationRow provider="printify" />
                     </IntegrationCard>
 
                     <IntegrationCard title="Data & Enrichment" description="Enhance your lead and customer data.">
