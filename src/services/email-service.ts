@@ -26,14 +26,12 @@ interface EmailParams {
 export async function sendEmail(params: EmailParams): Promise<{ success: boolean; message: string }> {
   const { to, subject, body } = params;
   
-  // Check if the service is configured.
+  // Check if the service is configured for production.
   if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
-    console.warn("SendGrid API Key or From Email not configured. Email not sent.");
-    // In a real application, you might want a more user-friendly message.
-    // For this prototype, we simulate success but log a warning.
+    console.error("SendGrid API Key or From Email not configured in environment variables.");
     return { 
-        success: true, 
-        message: 'Email service is not configured. Simulating success and logging to console.' 
+        success: false, 
+        message: 'Email service is not configured. Please add SENDGRID_API_KEY and SENDGRID_FROM_EMAIL to your environment variables.' 
     };
   }
   
