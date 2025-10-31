@@ -42,7 +42,7 @@ import { Loader2, PlusCircle, Sparkles, Bot, TrendingUp, UserCheck, ShoppingCart
 import { useToast } from "@/hooks/use-toast";
 import { generateProductIdeas, type GenerateProductIdeasOutput } from "@/ai/flows/generate-product-ideas";
 import { findTrendingProducts, generateProductCampaign } from "@/app/actions";
-import { sourceProductFromImage, type SourceProductFromImageOutput } from '@/ai/flows/source-product-from-image';
+import { sourceProductFromImage } from '@/app/actions';
 import type { GenerateProductCampaignInput, GenerateProductCampaignOutput } from "@/app/schemas";
 import { Separator } from "@/components/ui/separator";
 
