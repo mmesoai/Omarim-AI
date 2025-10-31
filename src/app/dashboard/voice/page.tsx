@@ -40,19 +40,37 @@ export default function VoicePage() {
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const audioPlayerRef = useRef<HTMLAudioElement>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
 
   const { toast } = useToast();
   const router = useRouter();
-
+  
   useEffect(() => {
+    audioPlayerRef.current = new Audio();
+    const player = audioPlayerRef.current;
+    
+    const onEnded = () => {
+      if (commandState === 'responding') {
+        setCommandState('idle');
+      }
+      setTtsAudioUrl(null);
+    };
+
+    player.addEventListener('ended', onEnded);
+    
     return () => {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop();
       }
+       if (player) {
+        player.removeEventListener('ended', onEnded);
+        player.pause();
+        player.src = '';
+      }
     };
-  }, []);
+  }, [commandState]);
+
 
   const handleStartRecording = async () => {
     setTranscription("");
@@ -191,6 +209,10 @@ export default function VoicePage() {
     try {
       const result = await convertTextToSpeech({ text });
       setTtsAudioUrl(result.audioDataUri);
+      if (audioPlayerRef.current) {
+          audioPlayerRef.current.src = result.audioDataUri;
+          audioPlayerRef.current.play().catch(e => console.error("Audio playback failed", e));
+      }
     } catch (error) {
        console.error("Text-to-speech failed:", error);
       toast({
@@ -203,20 +225,6 @@ export default function VoicePage() {
         setIsSpeaking(false);
       }
     }
-  };
-  
-  useEffect(() => {
-    if (ttsAudioUrl && audioPlayerRef.current) {
-      audioPlayerRef.current.src = ttsAudioUrl;
-      audioPlayerRef.current.play().catch(e => console.error("Audio playback failed", e));
-    }
-  }, [ttsAudioUrl]);
-
-  const onAudioEnded = () => {
-    if (commandState === 'responding') {
-      setCommandState('idle');
-    }
-    setTtsAudioUrl(null);
   };
 
   const getStatusInfo = () => {
@@ -236,7 +244,6 @@ export default function VoicePage() {
 
   return (
     <div className="space-y-6">
-       <audio ref={audioPlayerRef} onEnded={onAudioEnded} />
       <div>
         <h2 className="text-2xl font-headline font-semibold">Voice Tools</h2>
         <p className="text-muted-foreground">
@@ -317,3 +324,5 @@ export default function VoicePage() {
     </div>
   );
 }
+
+    
