@@ -166,30 +166,37 @@ export default function SettingsPage() {
       </Card>
   );
 
-  const IntegrationRow = ({ provider }: { provider: IntegrationProvider }) => {
-      const details = integrationDetails[provider];
-      const connected = isConnected(provider);
+  const IntegrationRow = ({ provider, isOAuth }: { provider: IntegrationProvider | 'gmail', isOAuth?: boolean }) => {
+    const details = integrationDetails[provider as IntegrationProvider];
+    const connected = isConnected(provider);
+    const title = details ? details.title.replace('Connect ', '') : 'Gmail';
+    const description = details ? details.description : 'Allow Omarim to read and send emails on your behalf.';
+    const Icon = details ? details.icon : Icons.google;
 
-      return (
-          <div className="flex items-center justify-between rounded-md border p-4">
-              <div className="flex items-center gap-4">
-                  <details.icon className="h-6 w-6" />
-                  <div>
-                      <p className="font-medium">{details.title.replace('Connect ', '')}</p>
-                      <p className="text-sm text-muted-foreground">{details.description}</p>
-                  </div>
-              </div>
-              {connected ? (
-                  <div className="flex items-center gap-2 text-sm font-semibold text-green-500">
-                    <CheckCircle className="h-5 w-5" />
-                    Connected
-                  </div>
-              ) : (
-                <Button variant="secondary" onClick={() => openIntegrationDialog(provider)}>Connect</Button>
-              )}
-          </div>
-      );
-  };
+    return (
+        <div className="flex items-center justify-between rounded-md border p-4">
+            <div className="flex items-center gap-4">
+                <Icon className="h-6 w-6" />
+                <div>
+                    <p className="font-medium">{title}</p>
+                    <p className="text-sm text-muted-foreground">{description}</p>
+                </div>
+            </div>
+            {connected ? (
+                <div className="flex items-center gap-2 text-sm font-semibold text-green-500">
+                  <CheckCircle className="h-5 w-5" />
+                  Connected
+                </div>
+            ) : isOAuth ? (
+                <Button variant="secondary" onClick={() => handleOAuthConnect(title)}>
+                  <Icons.google className="mr-2 h-4 w-4" /> Connect with Google
+                </Button>
+            ) : (
+              <Button variant="secondary" onClick={() => openIntegrationDialog(provider as IntegrationProvider)}>Connect</Button>
+            )}
+        </div>
+    );
+};
 
 
   return (
@@ -275,25 +282,7 @@ export default function SettingsPage() {
             ) : (
                 <div className="space-y-6">
                     <IntegrationCard title="Email & Outreach" description="Connect your email providers to send outreach and analyze replies.">
-                        <div className="flex items-center justify-between rounded-md border p-4">
-                            <div className="flex items-center gap-4">
-                                <Icons.google className="h-6 w-6" />
-                                <div>
-                                    <p className="font-medium">Gmail</p>
-                                    <p className="text-sm text-muted-foreground">Allow Omarim to read and send emails on your behalf.</p>
-                                </div>
-                            </div>
-                            {isConnected('gmail') ? (
-                                <div className="flex items-center gap-2 text-sm font-semibold text-green-500">
-                                    <CheckCircle className="h-5 w-5" />
-                                    Connected
-                                </div>
-                            ) : (
-                                <Button variant="secondary" onClick={() => handleOAuthConnect('Gmail')}>
-                                    <Icons.google className="mr-2 h-4 w-4" /> Connect with Google
-                                </Button>
-                            )}
-                        </div>
+                        <IntegrationRow provider="gmail" isOAuth />
                         <IntegrationRow provider="sendgrid" />
                     </IntegrationCard>
 
