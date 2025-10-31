@@ -28,8 +28,8 @@ export const sendEmail = ai.defineTool(
   },
   async (input) => {
     try {
-      // The service now handles the logic of whether to send a real email
-      // or simulate it based on whether the user has configured their API key in the dashboard.
+      // The service handles the logic of whether to send a real email
+      // or simulate it based on whether the user has configured their API key.
       const result = await sendEmailService(input);
       return result;
     } catch (error: any) {

@@ -20,7 +20,7 @@ import {
   autonomousLeadGen,
   type AutonomousLeadGenOutput,
 } from '@/ai/flows/autonomous-lead-gen-flow';
-import { initiateOutreach } from '@/ai/flows/initiate-outreach-flow';
+import { initiateOutreach } from '@/app/actions';
 import type { QualifiedLead } from '@/ai/tools/find-and-qualify-leads';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';

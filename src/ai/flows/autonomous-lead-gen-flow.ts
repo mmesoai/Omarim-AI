@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview An autonomous AI agent flow for lead generation and qualification.
@@ -17,7 +16,7 @@ const AutonomousLeadGenInputSchema = z.object({
 export type AutonomousLeadGenInput = z.infer<typeof AutonomousLeadGenInputSchema>;
 
 const AutonomousLeadGenOutputSchema = z.object({
-  qualifiedLeads: z.array(findAndQualifyLeads.outputSchema).describe('A list of qualified leads that match the objective.'),
+  qualifiedLeads: z.array(z.custom<QualifiedLead>()).describe('A list of qualified leads that match the objective.'),
   summary: z.string().describe('A summary of the actions taken and the results.'),
 });
 export type AutonomousLeadGenOutput = z.infer<typeof AutonomousLeadGenOutputSchema>;

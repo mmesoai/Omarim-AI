@@ -21,7 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Mail } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { initiateOutreach } from "@/app/actions";
 import type { QualifiedLead } from "@/ai/tools/find-and-qualify-leads";
@@ -29,7 +28,6 @@ import type { QualifiedLead } from "@/ai/tools/find-and-qualify-leads";
 export default function LeadsPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const router = useRouter();
   const { toast } = useToast();
 
   const leadsCollectionRef = useMemoFirebase(() => {

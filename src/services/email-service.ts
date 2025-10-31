@@ -2,17 +2,33 @@
 'use server';
 /**
  * @fileOverview An email sending service using SendGrid.
- * API keys are retrieved on-demand from a secure tool.
+ * API keys are retrieved on-demand from a secure server-side function.
  */
 
 import sgMail from '@sendgrid/mail';
-import { getIntegrationApiKey } from '@/ai/tools/get-integration-api-key';
+import { getFirestore } from 'firebase-admin/firestore';
+import { initializeFirebase as initializeFirebaseAdmin } from '@/firebase/server-init';
 
 interface EmailParams {
   to: string;
   subject: string;
   body: string;
   userId: string; // The user on whose behalf we are sending.
+}
+
+async function getApiKeyForUser(userId: string, provider: 'sendgrid'): Promise<string | undefined> {
+    try {
+        const db = getFirestore(initializeFirebaseAdmin());
+        const docRef = db.collection(`users/${userId}/integrations`).doc(provider);
+        const docSnap = await docRef.get();
+        if (docSnap.exists()) {
+            return docSnap.data()?.apiKey;
+        }
+        return undefined;
+    } catch (error) {
+        console.error(`Failed to retrieve API key for ${provider}:`, error);
+        return undefined;
+    }
 }
 
 /**
@@ -25,26 +41,21 @@ export async function sendEmail(params: EmailParams): Promise<{ success: boolean
 
   try {
     if (!userId) {
-        // This is a critical guard. We cannot send an email without knowing which user's API key to use.
-        throw new Error("User ID could not be determined. Cannot send email.");
+        throw new Error("User ID is required to send an email.");
     }
 
-    // Securely fetch the API key using the tool, which reads from the user's integrations in Firestore
-    const apiKey = await getIntegrationApiKey({ userId, provider: 'sendgrid' });
+    const apiKey = await getApiKeyForUser(userId, 'sendgrid');
 
     if (!apiKey) {
       console.warn(`SendGrid API Key not configured for user ${userId}. Simulating success for dev environment.`);
-      // In a live production environment without a key, you'd want to return a failure.
-      // For this prototype, simulating success allows testing of dependent flows without a real key.
       return { 
           success: true, 
-          message: `Email service is not configured for this user. Simulating successful send to ${to}.`
+          message: `(Simulation) Email service is not configured. Successfully 'sent' to ${to}.`
       };
     }
     
     sgMail.setApiKey(apiKey);
 
-    // Using a generic 'from' email. SendGrid may have requirements for verified senders.
     const fromEmail = "no-reply@omarim.ai"; 
 
     const msg = {
@@ -53,12 +64,13 @@ export async function sendEmail(params: EmailParams): Promise<{ success: boolean
       subject: subject,
       html: body,
     };
-
-    // In a real production scenario, you would uncomment the following line.
+    
+    // For local development and testing without sending real emails,
+    // we will log the action instead of calling sgMail.send(msg).
+    // In a production environment, you would uncomment the line below.
     // await sgMail.send(msg);
-
-    // For now, we simulate the send to avoid errors if the key is invalid during testing.
-    console.log(`(Simulation) Email sent to ${to} using SendGrid.`);
+    
+    console.log(`(Simulation) Email sent to ${to} via SendGrid for user ${userId}.`);
     
     return { success: true, message: `(Simulation) Email successfully sent to ${to}` };
 
