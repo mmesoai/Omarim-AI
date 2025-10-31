@@ -19,7 +19,6 @@ import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Loader2 } from "lucide-react";
 import { DashboardNav } from "@/components/dashboard-nav";
@@ -106,12 +105,12 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <Sidebar side="left" variant="sidebar" collapsible="icon">
-        <SidebarHeader className="h-16 flex items-center justify-center p-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Icons.logo className="size-7 text-sidebar-primary" />
-            <span className="font-headline text-xl font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+        <SidebarHeader className="h-16 flex flex-col items-center justify-center p-2">
+            <span className="font-headline text-lg font-bold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
               Omarim AI
             </span>
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <Icons.logo className="size-7 text-sidebar-primary" />
           </Link>
         </SidebarHeader>
         <SidebarContent>
